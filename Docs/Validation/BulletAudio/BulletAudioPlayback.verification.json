@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "path": "H:\\Vanthex\\Saved\\BulletAudioPlayback.wav",
+  "channels": 2,
+  "sample_rate": 48000,
+  "duration": 4.992,
+  "peak": 0.105712890625,
+  "left_event_rms_lr": [
+    0.008247400454925379,
+    6.037996214429785e-06
+  ],
+  "right_event_rms_lr": [
+    5.940811818867777e-06,
+    0.008218258925125756
+  ],
+  "impact_rms_lr": [
+    0.001974347044234109,
+    0.001974347044234109
+  ]
+}

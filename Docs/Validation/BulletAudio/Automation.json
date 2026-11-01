@@ -1,0 +1,14 @@
+[
+  {
+    "fullTestPath": "Vanthex.BulletAudio.ClippedSegmentAndContinuity",
+    "state": "Success"
+  },
+  {
+    "fullTestPath": "Vanthex.BulletAudio.DistanceBands",
+    "state": "Success"
+  },
+  {
+    "fullTestPath": "Vanthex.BulletAudio.RealWallOcclusion",
+    "state": "Success"
+  }
+]

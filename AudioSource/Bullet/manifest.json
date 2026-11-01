@@ -1,0 +1,136 @@
+{
+  "description": "Original synthesized AUDIO M1 prototype effects; not recordings.",
+  "sample_rate": 44100,
+  "channels": 1,
+  "sample_width_bytes": 2,
+  "assets": [
+    {
+      "file": "S_Bullet_Whiz_01.wav",
+      "family": "Whiz",
+      "duration_seconds": 0.144989,
+      "peak": 0.45083,
+      "rms": 0.09,
+      "sha256": "501e0fdf02ad7891b3e02d363a9b4f45d9fca06d2f609d5cd23339b4af3d295b"
+    },
+    {
+      "file": "S_Bullet_Whiz_02.wav",
+      "family": "Whiz",
+      "duration_seconds": 0.144989,
+      "peak": 0.436814,
+      "rms": 0.09,
+      "sha256": "fcd56fe9fe7e29a49188b071e83287f6f954a7ad5fd134e1d8b468cac61705c3"
+    },
+    {
+      "file": "S_Bullet_Whiz_03.wav",
+      "family": "Whiz",
+      "duration_seconds": 0.144989,
+      "peak": 0.500268,
+      "rms": 0.09,
+      "sha256": "b15bb527a7d91bb91364435d5f3ec4af3b31b35be02e4cbad9dceb37ad262939"
+    },
+    {
+      "file": "S_Bullet_Flyby_01.wav",
+      "family": "Flyby",
+      "duration_seconds": 0.19,
+      "peak": 0.372161,
+      "rms": 0.09,
+      "sha256": "7a7719a6a91280959896a6f5865022f4f5090f6a9a3067c3b6e7c8362589ab40"
+    },
+    {
+      "file": "S_Bullet_Flyby_02.wav",
+      "family": "Flyby",
+      "duration_seconds": 0.19,
+      "peak": 0.394258,
+      "rms": 0.09,
+      "sha256": "84d85a4f3eefa294294dbaf0291db0ec0df186fceb663ffbc651ea02cab0a72b"
+    },
+    {
+      "file": "S_Bullet_Crack_01.wav",
+      "family": "Crack",
+      "duration_seconds": 0.055011,
+      "peak": 0.535817,
+      "rms": 0.074917,
+      "sha256": "655961e78bd8434a999adfd7078bebda99be33d57377833f0984b20e9207f006"
+    },
+    {
+      "file": "S_Bullet_Crack_02.wav",
+      "family": "Crack",
+      "duration_seconds": 0.055011,
+      "peak": 0.64,
+      "rms": 0.074965,
+      "sha256": "10abdcbb6db1805a7d8f00ca87a11a4771f763e1f956931029d21ec00bcc1cdb"
+    },
+    {
+      "file": "S_Bullet_Concrete_01.wav",
+      "family": "Concrete",
+      "duration_seconds": 0.164989,
+      "peak": 0.58838,
+      "rms": 0.077967,
+      "sha256": "0f0f5c41f613f882c2882345bc3407d2345ca8d3321ae4f081070cf22fa32283"
+    },
+    {
+      "file": "S_Bullet_Concrete_02.wav",
+      "family": "Concrete",
+      "duration_seconds": 0.164989,
+      "peak": 0.624136,
+      "rms": 0.077959,
+      "sha256": "a390bc101bd3f45b0a6838cc5d44bb1c8724546b8cea64e5dcf0846e94f41bcc"
+    },
+    {
+      "file": "S_Bullet_Concrete_03.wav",
+      "family": "Concrete",
+      "duration_seconds": 0.164989,
+      "peak": 0.64,
+      "rms": 0.077968,
+      "sha256": "b05dea9ebe4372c894be9ed0503ea1b9e58ea64310cd60757b498543c14e0130"
+    },
+    {
+      "file": "S_Bullet_Steel_01.wav",
+      "family": "Steel",
+      "duration_seconds": 0.24,
+      "peak": 0.62066,
+      "rms": 0.053807,
+      "sha256": "fac1bd97dd02ecc568edb2a33474d42d2de886abd05d3f2d69829578ccb4686d"
+    },
+    {
+      "file": "S_Bullet_Steel_02.wav",
+      "family": "Steel",
+      "duration_seconds": 0.24,
+      "peak": 0.630337,
+      "rms": 0.053816,
+      "sha256": "07a065093e9c7e85aecbe237b5701592e59d0c27bb44b9e85424dc8a8eb123cd"
+    },
+    {
+      "file": "S_Bullet_Steel_03.wav",
+      "family": "Steel",
+      "duration_seconds": 0.24,
+      "peak": 0.64,
+      "rms": 0.053812,
+      "sha256": "83ba8da81192682c3db36e4189e7358299ff1e1b21fc639a0d72a890cbc71226"
+    },
+    {
+      "file": "S_Bullet_MetalGrate_01.wav",
+      "family": "MetalGrate",
+      "duration_seconds": 0.27,
+      "peak": 0.574482,
+      "rms": 0.072223,
+      "sha256": "3d511838b0385ac7fbda13012e8c71e93bd01f2d7942c7a3745af5a84557b5c4"
+    },
+    {
+      "file": "S_Bullet_MetalGrate_02.wav",
+      "family": "MetalGrate",
+      "duration_seconds": 0.27,
+      "peak": 0.64,
+      "rms": 0.072222,
+      "sha256": "1923b98a0ae936633975e7da9d846317cc0e2a165bc4fe52756fcfce3003dc47"
+    },
+    {
+      "file": "S_Bullet_MetalGrate_03.wav",
+      "family": "MetalGrate",
+      "duration_seconds": 0.27,
+      "peak": 0.60351,
+      "rms": 0.072234,
+      "sha256": "f8631f253db5e0fdd505d79c0efa4e7e48f068000dc2218c3e3e8425c1efbeee"
+    }
+  ]
+}

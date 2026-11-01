@@ -1,0 +1,26 @@
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+.idea/
+
+# Local snapshots and the duplicate source project for the imported graphics kit.
+/_versions/
+/FactoryEnvironmentCollect/
+/Quantum_Modular_Character_Free_Sample-8e200050/
+
+# Download manifests contain account/entitlement metadata, not game content.
+/fbx/metadata
+
+# Local packaging output and logs.
+/Packaged/
+/StagedBuilds/
+*.log

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VANTHEX — GRID V3 · Ansichten</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0a1017; --panel:#111c28; --line:#26384a; --ink:#e9f1f8; --muted:#a2b4c6; --cyan:#78d3ee; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    header,main,footer { max-width:1440px; margin:auto; padding:28px 32px; }
+    header { padding-top:55px; padding-bottom:18px; }
+    .eyebrow { color:var(--cyan); letter-spacing:.2em; font-size:12px; font-weight:700; margin:0 0 12px; }
+    h1 { font-size:clamp(34px,5vw,64px); line-height:1.1; letter-spacing:-.045em; margin:0 0 18px; }
+    header p { max-width:800px; color:var(--muted); margin:8px 0; }
+    a { color:var(--cyan); text-underline-offset:4px; }
+    a:focus-visible { outline:3px solid #ffc775; outline-offset:4px; }
+    nav { display:flex; gap:12px 24px; flex-wrap:wrap; margin:22px 0 16px; }
+    .status { border-left:3px solid var(--cyan); padding:10px 16px; background:var(--panel); font-size:14px; }
+    .gallery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+    figure { margin:0; border:1px solid var(--line); border-radius:12px; background:var(--panel); overflow:hidden; }
+    figure:first-child { grid-column:1/-1; }
+    .frame { display:grid; place-items:center; aspect-ratio:16/9; background:#070c12; position:relative; overflow:hidden; text-decoration:none; }
+    .frame img { display:block; width:100%; height:100%; object-fit:contain; position:relative; z-index:1; }
+    .frame .placeholder { position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:24px; color:var(--muted); font-size:14px; }
+    .frame img.missing { visibility:hidden; }
+    figcaption { padding:18px 20px 20px; }
+    .label { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+    h2 { margin:0; font-size:19px; font-weight:650; line-height:1.35; }
+    .level { flex:none; color:var(--cyan); font-size:12px; font-weight:650; letter-spacing:.04em; }
+    figcaption p { color:var(--muted); font-size:14px; margin:8px 0 0; }
+    footer { color:var(--muted); font-size:13px; padding-bottom:50px; }
+    @media(max-width:760px) { header,main,footer { padding-left:18px; padding-right:18px; } .gallery { grid-template-columns:1fr; gap:18px; } .label { display:block; } .level { display:block; margin-top:6px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">VANTHEX / MERIDIAN FACILITY</p>
+    <h1>GRID V3</h1>
+    <p>23 Räume. Drei Höhen. Vier unabhängige Treppenrouten. Diese Galerie sammelt die 15 vorgesehenen Spielansichten der neuen Forschungsanlage.</p>
+    <nav aria-label="Dokumentation">
+      <a href="GRID_V3_LAYOUT.md">Raumplan</a>
+      <a href="GRID_V3_VALIDATION.md">Prüfbericht und Wege</a>
+      <a href="GRID_V3_REVIEW.md">Protokoll der Sichtprüfung</a>
+    </nav>
+    <p class="status" id="status" aria-live="polite">Die Bilder werden aus dem finalen Aufnahmeordner geladen. Die Verfügbarkeit einer Aufnahme bestätigt noch keine abgeschlossene Sichtprüfung.</p>
+  </header>
+  <main>
+    <div class="gallery">
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/01_core_chamber.png"><span class="placeholder">Aufnahme wird geladen · 01</span><img src="../Saved/GridV3Shots/final/01_core_chamber.png" alt="Core-Kammer mit Containment-Maschinen und Zugängen" width="1600" height="900"></a><figcaption><div class="label"><h2>01 · Core-Kammer</h2><span class="level">HAUPTGESCHOSS</span></div><p>Der zentrale Konfliktraum verbindet die Forschungsflügel mit den oberen und unteren Zugängen.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/02_server_room.png"><span class="placeholder">Aufnahme wird geladen · 02</span><img loading="lazy" src="../Saved/GridV3Shots/final/02_server_room.png" alt="Serverraum mit Technikschränken und Kühlung" width="1600" height="900"></a><figcaption><div class="label"><h2>02 · Serverraum</h2><span class="level">HAUPTGESCHOSS</span></div><p>Technik, Kühlung und Arbeitsplätze am westlichen Core-Zugang.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/03_research_laboratory.png"><span class="placeholder">Aufnahme wird geladen · 03</span><img loading="lazy" src="../Saved/GridV3Shots/final/03_research_laboratory.png" alt="Forschungslabor mit industriellen Arbeitsstationen" width="1600" height="900"></a><figcaption><div class="label"><h2>03 · Forschungslabor</h2><span class="level">HAUPTGESCHOSS</span></div><p>Versuchsanlagen und Arbeitsinseln im östlichen Forschungsflügel.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/04_power_distribution.png"><span class="placeholder">Aufnahme wird geladen · 04</span><img loading="lazy" src="../Saved/GridV3Shots/final/04_power_distribution.png" alt="Energieverteilung mit Schalttafeln und Maschinen" width="1600" height="900"></a><figcaption><div class="label"><h2>04 · Energieverteilung</h2><span class="level">HAUPTGESCHOSS</span></div><p>Schaltschränke am Rand halten den Weg zwischen Core, Bravo-Flügel und Servicezugang frei.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/05_maintenance_tunnel.png"><span class="placeholder">Aufnahme wird geladen · 05</span><img loading="lazy" src="../Saved/GridV3Shots/final/05_maintenance_tunnel.png" alt="Unterirdischer Wartungskorridor" width="1600" height="900"></a><figcaption><div class="label"><h2>05 · Wartungskorridor</h2><span class="level">UNTERGESCHOSS</span></div><p>Die untere Route bietet Umwege, Flanken und einen Zugang unterhalb des Core.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/06_upper_catwalk.png"><span class="placeholder">Aufnahme wird geladen · 06</span><img loading="lazy" src="../Saved/GridV3Shots/final/06_upper_catwalk.png" alt="Oberer nördlicher Verbindungsgang" width="1600" height="900"></a><figcaption><div class="label"><h2>06 · Nördlicher Steg</h2><span class="level">OBERGESCHOSS</span></div><p>Der obere Rundweg verbindet Treppenlandung, Beobachtung und Kontrollgalerie.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/07_observation_room.png"><span class="placeholder">Aufnahme wird geladen · 07</span><img loading="lazy" src="../Saved/GridV3Shots/final/07_observation_room.png" alt="Beobachtungsraum mit Blick in die Containment-Kammer" width="1600" height="900"></a><figcaption><div class="label"><h2>07 · Beobachtungsraum</h2><span class="level">OBERGESCHOSS</span></div><p>Ein lokaler Überblick über den Core-Raum und eine Möglichkeit für Pässe nach unten.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/08_extraction_a.png"><span class="placeholder">Aufnahme wird geladen · 08</span><img loading="lazy" src="../Saved/GridV3Shots/final/08_extraction_a.png" alt="Extraktion A im westlichen Transferraum" width="1600" height="900"></a><figcaption><div class="label"><h2>08 · Extraktion A</h2><span class="level">TRANSFER</span></div><p>Der westliche Transferraum ist über Lager und medizinischen Bereich erreichbar.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/09_extraction_b.png"><span class="placeholder">Aufnahme wird geladen · 09</span><img loading="lazy" src="../Saved/GridV3Shots/final/09_extraction_b.png" alt="Extraktion B im Quarantänebereich" width="1600" height="900"></a><figcaption><div class="label"><h2>09 · Extraktion B</h2><span class="level">QUARANTÄNE</span></div><p>Der östliche Quarantänebereich besitzt Zugänge aus Labor und äußerer Rotation.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/10_alpha_approach.png"><span class="placeholder">Aufnahme wird geladen · 10</span><img loading="lazy" src="../Saved/GridV3Shots/final/10_alpha_approach.png" alt="Alpha-Aufstellung und Anmarsch zum Sicherheitsbereich" width="1600" height="900"></a><figcaption><div class="label"><h2>10 · Alpha-Anmarsch</h2><span class="level">DEPLOYMENT</span></div><p>Die westliche Aufstellung öffnet Wege zur Sicherheitskontrolle und zum Lagerflügel.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/11_bravo_approach.png"><span class="placeholder">Aufnahme wird geladen · 11</span><img loading="lazy" src="../Saved/GridV3Shots/final/11_bravo_approach.png" alt="Bravo-Aufstellung und Anmarsch zum Kontrollpunkt" width="1600" height="900"></a><figcaption><div class="label"><h2>11 · Bravo-Anmarsch</h2><span class="level">DEPLOYMENT</span></div><p>Der östliche Anmarsch führt über Kontrollpunkt und Energieverteilung zum Zentrum.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/12_connected_rooms.png"><span class="placeholder">Aufnahme wird geladen · 12</span><img loading="lazy" src="../Saved/GridV3Shots/final/12_connected_rooms.png" alt="Türverbindung vom Serverraum zur Core-Kammer" width="1600" height="900"></a><figcaption><div class="label"><h2>12 · Verbundene Räume</h2><span class="level">SERVER → CORE</span></div><p>Die Türfolge zeigt den Übergang zwischen eigenständigen Funktionsräumen.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/13_first_person_core.png"><span class="placeholder">Aufnahme wird geladen · 13</span><img loading="lazy" src="../Saved/GridV3Shots/final/13_first_person_core.png" alt="Egoperspektive mit Waffe und HUD am Core-Zugang" width="1600" height="900"></a><figcaption><div class="label"><h2>13 · Core aus Spielersicht</h2><span class="level">EGOPERSPEKTIVE</span></div><p>Spielerhöhe, Waffe und HUD am südlichen Zugang zur Containment-Kammer.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/14_first_person_bridge.png"><span class="placeholder">Aufnahme wird geladen · 14</span><img loading="lazy" src="../Saved/GridV3Shots/final/14_first_person_bridge.png" alt="Egoperspektive von der oberen Brücke zur unteren Core-Ebene" width="1600" height="900"></a><figcaption><div class="label"><h2>14 · Brücke aus Spielersicht</h2><span class="level">EGOPERSPEKTIVE</span></div><p>Der Blick über die Brüstung zeigt den lokalen Höhenvorteil und die Ebene darunter.</p></figcaption></figure>
+      <figure><a class="frame" href="../Saved/GridV3Shots/final/15_generator_hall.png"><span class="placeholder">Aufnahme wird geladen · 15</span><img loading="lazy" src="../Saved/GridV3Shots/final/15_generator_hall.png" alt="Generatorhalle im unteren Technikbereich" width="1600" height="900"></a><figcaption><div class="label"><h2>15 · Generatorhalle</h2><span class="level">UNTERGESCHOSS</span></div><p>Maschinen und warme Beleuchtung kennzeichnen die untere Infrastruktur.</p></figcaption></figure>
+    </div>
+  </main>
+  <footer>Eine Aufnahme anklicken, um die PNG-Datei in Originalgröße zu öffnen. Quelle: <code>Saved/GridV3Shots/final/</code>. Bilder belegen die gerenderte Ansicht; Beweglichkeit, Core-Verhalten und Extraktion sind im separaten Prüfbericht dokumentiert.</footer>
+  <script>
+    const pictures = Array.from(document.querySelectorAll('.frame img'));
+    const status = document.getElementById('status');
+    function updateStatus() {
+      const ready = pictures.filter(picture => picture.complete && picture.naturalWidth > 0).length;
+      status.textContent = ready + ' von 15 finalen Aufnahmen geladen. Die abschließende Sichtprüfung wird im verlinkten Prüfprotokoll dokumentiert.';
+    }
+    pictures.forEach(picture => {
+      picture.addEventListener('load', () => { picture.classList.remove('missing'); updateStatus(); });
+      picture.addEventListener('error', () => {
+        picture.classList.add('missing');
+        picture.previousElementSibling.textContent = 'Finale Aufnahme noch nicht vorhanden. Nach Abschluss der Aufnahme diese Galerie neu laden.';
+        updateStatus();
+      });
+      if (picture.complete && picture.naturalWidth > 0) updateStatus();
+    });
+  </script>
+</body>
+</html>

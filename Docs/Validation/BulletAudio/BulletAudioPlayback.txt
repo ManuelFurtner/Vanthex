@@ -1,0 +1,2 @@
+PASS near=2 impact=1 played=3 duplicatesDropped=2 wavBytes=958508
+Mixer waveform must additionally be checked for nonzero samples and left/right direction.

@@ -1,0 +1,1 @@
+PASS characters=6 humanClients=3 bots=3 near=16 received=16 sent=16 impact=0 farClient1Sent=1 farClient2Sent=1 burstSteps=40 missingSoundsSafe=1 healthy=1
