@@ -38,6 +38,7 @@ enum class EVanthexSelfTestStage : uint8
 	Score,
 	CoreTests,
 	Match,
+	Equipment,
 	Finish
 };
 
@@ -119,6 +120,10 @@ protected:
 	void OnRoundFlow();
 
 	void AdvanceSelfTest();
+	void AdvanceEquipmentSelfTest();
+	int32 EquipmentTestStep = 0;
+	float EquipmentTestDeadline = 0.f;
+	UPROPERTY() TObjectPtr<AActor> EquipmentTestWall;
 	void AdvanceVisualShots();
  void AdvanceMapShots();
  void AdvanceGridV3Shots();

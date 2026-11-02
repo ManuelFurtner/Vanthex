@@ -1958,7 +1958,8 @@ void AVanthexGameMode::AdvanceSelfTest()
 		if (MatchState && MatchState->GetPhase() == EVanthexRoundPhase::MatchEnded && MatchState->GetAlphaScore() >= RoundsToWin && MatchState->GetMatchWinner() == EVanthexTeam::Alpha)
 		{
 			SelfTestExpect(true, TEXT("match"), FString::Printf(TEXT("alpha %d bravo %d"), MatchState->GetAlphaScore(), MatchState->GetBravoScore()));
-			SelfTestStage = EVanthexSelfTestStage::Finish;
+			SelfTestTicks = 0;
+			SelfTestStage = EVanthexSelfTestStage::Equipment;
 			return;
 		}
 		if (MatchState && MatchState->GetPhase() == EVanthexRoundPhase::RoundActive)
@@ -1975,6 +1976,9 @@ void AVanthexGameMode::AdvanceSelfTest()
 		}
 		return;
 	}
+	case EVanthexSelfTestStage::Equipment:
+		AdvanceEquipmentSelfTest();
+		return;
 	case EVanthexSelfTestStage::Finish:
 	default:
 		FinishSelfTest();

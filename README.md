@@ -41,6 +41,9 @@ WASD bewegt die Figur, Maus zielt, linke Maustaste schießt, R lädt nach, Umsch
 
 ## Dokumentation und Prüfungen
 
+- [Puška / nož: prebacivanje, animacija i provjere](Docs/WEAPON_EQUIPMENT.md)
+- **1**: puška, **3**: nož, lijevi klik: pucanje ili ubod. Prebacivanje ima animaciju spremanja i izvlačenja.
+
 - [Karte und Layout](Docs/GRID_V3_LAYOUT.md)
 - [GRID-V3-Prüfbericht](Docs/GRID_V3_VALIDATION.md)
 - [Bullet-Audio: Architektur, Konfiguration und Tests](Docs/BULLET_AUDIO.md)

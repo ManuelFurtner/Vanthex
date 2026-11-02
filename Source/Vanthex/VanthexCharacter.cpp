@@ -1,4 +1,5 @@
 #include "VanthexCharacter.h"
+#include "VanthexEquipmentComponent.h"
 #include "Net/UnrealNetwork.h"
 
 #include "Vanthex.h"
@@ -89,6 +90,7 @@ AVanthexCharacter::AVanthexCharacter()
 	FirstPersonCamera->PostProcessSettings.AutoExposureMaxBrightness = 1.f;
 
 	Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	Equipment = CreateDefaultSubobject<UVanthexEquipmentComponent>(TEXT("Equipment"));
 	WeaponClass = AHitscanWeapon::StaticClass();
 }
 
@@ -223,6 +225,8 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
  PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &AVanthexCharacter::InteractShift);
  PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &AVanthexCharacter::UseOperator);
+	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AVanthexCharacter::SelectRifle);
+	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AVanthexCharacter::SelectKnife);
 
 	if (!MappingContext)
 	{
@@ -375,8 +379,9 @@ void AVanthexCharacter::StopJump()
 
 void AVanthexCharacter::StartFire()
 {
+	if (Equipment && Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife) { Equipment->Attack(); return; }
  if (!HasAuthority()) { ServerAction(0, false); return; }
-	if (Weapon && !(Health && Health->IsDead()))
+	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
 	{
 		Weapon->StartFire();
 	}
@@ -394,7 +399,7 @@ void AVanthexCharacter::StopFire()
 void AVanthexCharacter::StartReload()
 {
  if (!HasAuthority()) { ServerAction(2, false); return; }
-	if (Weapon && !(Health && Health->IsDead()))
+	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
 	{
 		Weapon->StartReload();
 	}
@@ -480,6 +485,7 @@ bool AVanthexCharacter::IsCarryingCore() const
 
 void AVanthexCharacter::PrepareForRound(const FTransform& Spawn)
 {
+	if (Equipment) Equipment->ResetEquipment();
 	SetHoldForward(false);
  AbilityReadyTime = 0.f;
 	bSprintWanted = false;
@@ -542,6 +548,7 @@ void AVanthexCharacter::SetTeamAppearance(EVanthexTeam Team)
 
 void AVanthexCharacter::HandleDeath(AActor* /*DeadActor*/)
 {
+	if (Equipment) Equipment->ResetEquipment();
 	StopFire();
 	if (Weapon) { Weapon->CancelReload(); }
 	GetCharacterMovement()->DisableMovement();
@@ -574,6 +581,9 @@ void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled)
 
 
 void AVanthexCharacter::InteractShift() { ServerUseDevice(false); }
+void AVanthexCharacter::SelectRifle() { if (Equipment) Equipment->SelectRifle(); }
+void AVanthexCharacter::SelectKnife() { if (Equipment) Equipment->SelectKnife(); }
+bool AVanthexCharacter::CanUseRifle() const { return !Equipment || Equipment->CanUseRifle(); }
 void AVanthexCharacter::UseOperator() { ServerUseDevice(true); }
 void AVanthexCharacter::ServerUseDevice_Implementation(bool bRemote) {
  if (Health->IsDead() || (bRemote && GetWorld()->GetTimeSeconds()<AbilityReadyTime)) return;

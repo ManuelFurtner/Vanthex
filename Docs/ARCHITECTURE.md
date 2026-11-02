@@ -1,3 +1,13 @@
+# Equipment addition — 2026-11-02
+
+`UVanthexEquipmentComponent` owns rifle/knife selection, the replicated server
+animation clock, holster/draw transforms and authoritative delayed knife contact.
+The character routes selection and attack input; HitscanWeapon independently
+checks the equipment gate so holstered/timer-driven shots cannot bypass it.
+Melee submits the same health request as hitscan and respects CanDamage.
+Death cancels contact timers; round reset restores the rifle. No operator or
+Core rules change. See WEAPON_EQUIPMENT.md for controls and validation limits.
+
 # Current implementation — 2026-11-01
 
 The user authorized the complete basic prototype slice. The historical milestone

@@ -1,4 +1,5 @@
 #include "VanthexHUD.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexShiftDevice.h"
 #include "VanthexMapLayout.h"
 #include "EngineUtils.h"
@@ -77,6 +78,13 @@ void AVanthexHUD::DrawHUD()
 	if (Weapon && Weapon->IsReloading())
 	{
 		Status += TEXT("\nRELOADING");
+	}
+	if (Character && Character->GetEquipment())
+	{
+		const auto* Equipment = Character->GetEquipment();
+		Status += Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife
+			? TEXT("\nKNIFE - LMB stab\n1 RIFLE / 3 KNIFE") : TEXT("\nRIFLE\n1 RIFLE / 3 KNIFE");
+		if (Equipment->IsSwitching()) Status += TEXT("\nSWITCHING");
 	}
 	if (bDead)
 	{
