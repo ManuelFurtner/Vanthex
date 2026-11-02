@@ -41,6 +41,9 @@ WASD bewegt die Figur, Maus zielt, linke Maustaste schießt, R lädt nach, Umsch
 
 ## Dokumentation und Prüfungen
 
+- [Neues Waffen- und Wirtschaftssystem (Design)](Docs/ECONOMY_AND_WEAPONS.md)
+- [Waffenklang und räumliches Audio (Planung)](Docs/WEAPON_AUDIO_DESIGN.md)
+
 - [Puška / nož: prebacivanje, animacija i provjere](Docs/WEAPON_EQUIPMENT.md)
 - **1**: puška, **3**: nož, lijevi klik: pucanje ili ubod. Prebacivanje ima animaciju spremanja i izvlačenja.
 

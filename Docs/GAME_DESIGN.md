@@ -1,3 +1,13 @@
+# Neue Zielrichtung — 2026-11-02
+
+Das hybride Waffen-/Kaufsystem verbindet freie Operator-Fähigkeiten mit gekauften
+Waffen, Rüstung und maximal zwei zusätzlichen Gadgets. AUG und MP7 haben Priorität.
+Verbindliche Teamvorgaben und ausdrücklich vorläufige Ergänzungen stehen in
+[ECONOMY_AND_WEAPONS.md](ECONOMY_AND_WEAPONS.md); Soundplanung und Hörtests in
+[WEAPON_AUDIO_DESIGN.md](WEAPON_AUDIO_DESIGN.md).
+Dieses System ist eine Design-Spezifikation und noch nicht implementiert.
+Die folgenden Implementierungs- und Meilensteinaussagen beschreiben ältere Stände.
+
 # Current implementation — 2026-11-01
 
 The user authorized the complete basic prototype slice. The historical milestone

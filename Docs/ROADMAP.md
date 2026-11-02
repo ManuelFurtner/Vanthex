@@ -1,3 +1,12 @@
+# Neue Planung — 2026-11-02
+
+Nächster geplanter Slice: hybrides Kaufsystem, Standardpistole/AUG/MP7,
+Rüstung und serverseitige Wirtschaftsereignisse nach
+[ECONOMY_AND_WEAPONS.md](ECONOMY_AND_WEAPONS.md). Danach Gadget-Wirkungsprofile
+und Umsetzung. Soundentwicklung folgt [WEAPON_AUDIO_DESIGN.md](WEAPON_AUDIO_DESIGN.md).
+Die Spezifikation ist vorhanden; diese Funktionen sind noch nicht implementiert.
+Die darunterstehenden Meilensteine sind historische Entwicklungsnotizen.
+
 # Current implementation — 2026-11-01
 
 The user authorized the complete basic prototype slice. The historical milestone
