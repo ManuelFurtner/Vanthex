@@ -46,7 +46,15 @@ const TArray<FGridV3View>& GridV3Views()
   {{-1800,-600,165},{700,-600,165},TEXT("12_connected_rooms.png")},
   {{0,-1250,165},{450,350,165},TEXT("13_first_person_core.png"),true},
   {{700,-240,765},{0,-800,350},TEXT("14_first_person_bridge.png"),true},
-  {{-1700,-2100,-435},{-1700,-2650,-435},TEXT("15_generator_hall.png")}
+  {{-1700,-2100,-435},{-1700,-2650,-435},TEXT("15_generator_hall.png")},
+  {GridV3::VerticalLinks()[0].Bottom+FVector(0,-180,165),(GridV3::VerticalLinks()[0].Bottom+GridV3::VerticalLinks()[0].Top)*.5f+FVector(0,0,65),TEXT("16_stair_01_bottom.png")},
+  {GridV3::VerticalLinks()[0].Top+FVector(0,150,165),(GridV3::VerticalLinks()[0].Bottom+GridV3::VerticalLinks()[0].Top)*.5f+FVector(0,0,65),TEXT("17_stair_01_top.png")},
+  {GridV3::VerticalLinks()[1].Bottom+FVector(0,-180,165),(GridV3::VerticalLinks()[1].Bottom+GridV3::VerticalLinks()[1].Top)*.5f+FVector(0,0,65),TEXT("18_stair_02_bottom.png")},
+  {GridV3::VerticalLinks()[1].Top+FVector(0,150,165),(GridV3::VerticalLinks()[1].Bottom+GridV3::VerticalLinks()[1].Top)*.5f+FVector(0,0,65),TEXT("19_stair_02_top.png")},
+  {GridV3::VerticalLinks()[2].Bottom+FVector(0,-180,165),(GridV3::VerticalLinks()[2].Bottom+GridV3::VerticalLinks()[2].Top)*.5f+FVector(0,0,65),TEXT("20_stair_03_bottom.png")},
+  {GridV3::VerticalLinks()[2].Top+FVector(0,150,165),(GridV3::VerticalLinks()[2].Bottom+GridV3::VerticalLinks()[2].Top)*.5f+FVector(0,0,65),TEXT("21_stair_03_top.png")},
+  {GridV3::VerticalLinks()[3].Bottom+FVector(0,-180,165),(GridV3::VerticalLinks()[3].Bottom+GridV3::VerticalLinks()[3].Top)*.5f+FVector(0,0,65),TEXT("22_stair_04_bottom.png")},
+  {GridV3::VerticalLinks()[3].Top+FVector(0,150,165),(GridV3::VerticalLinks()[3].Bottom+GridV3::VerticalLinks()[3].Top)*.5f+FVector(0,0,65),TEXT("23_stair_04_top.png")}
  };
  return Views;
 }
@@ -77,7 +85,8 @@ void AVanthexGameMode::AdvanceGridV3Shots()
   Run.World = World;
   FParse::Value(FCommandLine::Get(), TEXT("GridV3Shot="), Run.SingleShot);
   Run.SingleShot = FMath::Clamp(Run.SingleShot, 0, Views.Num());
-  VisualShotIndex = Run.SingleShot > 0 ? (Run.SingleShot - 1) * 3 : 0;
+  const int32 FirstView = FParse::Param(FCommandLine::Get(), TEXT("GridV3StairShots")) ? 15 : 0;
+  VisualShotIndex = Run.SingleShot > 0 ? (Run.SingleShot - 1) * 3 : FirstView * 3;
   IFileManager::Get().MakeDirectory(*Directory, true);
   Run.TimingCsv = TEXT("View,Filename,SettlingSeconds,Frames,MeanFrameMs,Eye,Target\n");
   // A complete camera tour is longer than a normal round. Keep this diagnostic
@@ -87,7 +96,7 @@ void AVanthexGameMode::AdvanceGridV3Shots()
   Human->SetHoldForward(false);
   Human->SetSprinting(false);
   Human->SetActorEnableCollision(false);
-  UE_LOG(LogTemp, Display, TEXT("GRID V3 SHOTS: %d views; 8s settle per camera. Frame intervals describe an uncontested capture session, not a combat benchmark."), Run.SingleShot ? 1 : Views.Num());
+  UE_LOG(LogTemp, Display, TEXT("GRID V3 SHOTS: %d views; 8s settle per camera. Frame intervals describe an uncontested capture session, not a combat benchmark."), Run.SingleShot ? 1 : Views.Num() - FirstView);
  }
 
  const int32 ViewIndex = VisualShotIndex / 3;

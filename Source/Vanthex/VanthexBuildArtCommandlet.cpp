@@ -415,6 +415,7 @@ int32 UVanthexBuildArtCommandlet::Main(const FString& Params)
 {
 #if WITH_EDITOR
 	extern bool VanthexBakeFoundry(bool bGridV3);
+	if(Params.Contains(TEXT("InspectStairs"))) { extern bool VanthexInspectStairs(); return VanthexInspectStairs()?0:1; }
 	if(Params.Contains(TEXT("BakeGridV3"))) return VanthexBakeFoundry(true)?0:1;
 	if(Params.Contains(TEXT("BakeFoundry"))) return VanthexBakeFoundry(false)?0:1;
 	if(Params.Contains(TEXT("PrepareFactory"))) {

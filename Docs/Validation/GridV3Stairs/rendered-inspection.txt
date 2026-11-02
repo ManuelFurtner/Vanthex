@@ -1,0 +1,22 @@
+[2026.11.02-21.32.10:036][706]LogTemp: Display: GRID V3 SHOTS: 8 views; 8s settle per camera. Frame intervals describe an uncontested capture session, not a combat benchmark.
+[2026.11.02-21.32.10:036][706]LogTemp: Display: GRID V3 SHOTS: settle 16 16_stair_01_bottom.png eye=X=-4700.000 Y=-1780.000 Z=-435.000
+[2026.11.02-21.32.18:037][186]LogTemp: Display: GRID V3 SHOTS: capture 16 16_stair_01_bottom.png; 8.00s / 480 frames / 16.67ms mean (settling window)
+[2026.11.02-21.32.22:106][403]LogTemp: Display: GRID V3 SHOTS: settle 17 17_stair_01_top.png eye=X=-4700.000 Y=550.000 Z=165.000
+[2026.11.02-21.32.30:108][883]LogTemp: Display: GRID V3 SHOTS: capture 17 17_stair_01_top.png; 8.00s / 480 frames / 16.67ms mean (settling window)
+[2026.11.02-21.32.34:110][116]LogTemp: Display: GRID V3 SHOTS: settle 18 18_stair_02_bottom.png eye=X=4700.000 Y=-1180.000 Z=-435.000
+[2026.11.02-21.32.42:102][592]LogTemp: Display: GRID V3 SHOTS: capture 18 18_stair_02_bottom.png; 7.99s / 476 frames / 16.79ms mean (settling window)
+[2026.11.02-21.32.46:112][826]LogTemp: Display: GRID V3 SHOTS: settle 19 19_stair_02_top.png eye=X=4700.000 Y=1150.000 Z=165.000
+[2026.11.02-21.32.54:103][305]LogTemp: Display: GRID V3 SHOTS: capture 19 19_stair_02_top.png; 7.99s / 479 frames / 16.68ms mean (settling window)
+[2026.11.02-21.32.58:112][539]LogTemp: Display: GRID V3 SHOTS: settle 20 20_stair_03_bottom.png eye=X=-600.000 Y=1020.000 Z=165.000
+[2026.11.02-21.33.06:119][  8]LogTemp: Display: GRID V3 SHOTS: capture 20 20_stair_03_bottom.png; 8.01s / 469 frames / 17.07ms mean (settling window)
+[2026.11.02-21.33.10:104][240]LogTemp: Display: GRID V3 SHOTS: settle 21 21_stair_03_top.png eye=X=-600.000 Y=3350.000 Z=765.000
+[2026.11.02-21.33.18:106][720]LogTemp: Display: GRID V3 SHOTS: capture 21 21_stair_03_top.png; 8.00s / 480 frames / 16.67ms mean (settling window)
+[2026.11.02-21.33.22:114][953]LogTemp: Display: GRID V3 SHOTS: settle 22 22_stair_04_bottom.png eye=X=1200.000 Y=-2380.000 Z=165.000
+[2026.11.02-21.33.30:116][426]LogTemp: Display: GRID V3 SHOTS: capture 22 22_stair_04_bottom.png; 8.00s / 473 frames / 16.92ms mean (settling window)
+[2026.11.02-21.33.34:109][659]LogTemp: Display: GRID V3 SHOTS: settle 23 23_stair_04_top.png eye=X=1200.000 Y=-50.000 Z=765.000
+[2026.11.02-21.33.42:116][132]LogTemp: Display: GRID V3 SHOTS: capture 23 23_stair_04_top.png; 8.01s / 473 frames / 16.93ms mean (settling window)
+[2026.11.02-21.33.46:110][364]LogTemp: Display: GRID V3 SHOTS: complete; 8 requested files; result OK
+[2026.11.02-21.39.27:640][704]LogTemp: Display: GRID V3 SHOTS: 1 views; 8s settle per camera. Frame intervals describe an uncontested capture session, not a combat benchmark.
+[2026.11.02-21.39.27:640][704]LogTemp: Display: GRID V3 SHOTS: settle 23 23_stair_04_top.png eye=X=1200.000 Y=-50.000 Z=765.000
+[2026.11.02-21.39.35:632][170]LogTemp: Display: GRID V3 SHOTS: capture 23 23_stair_04_top.png; 7.99s / 466 frames / 17.15ms mean (settling window)
+[2026.11.02-21.39.39:682][387]LogTemp: Display: GRID V3 SHOTS: complete; 1 requested files; result OK

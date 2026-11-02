@@ -34,6 +34,10 @@ void AVanthexTestArena::ValidateGridV3()
  Check(Core && ExtractionA && ExtractionB,TEXT("Core and both extraction objectives exist"));
  Check(GridV3::Rooms().Num()>=18 && GridV3::Rooms().Num()<=25,FString::Printf(TEXT("%d distinct authored spaces"),GridV3::Rooms().Num()));
  Check(GridV3::VerticalLinks().Num()>=3,FString::Printf(TEXT("%d independent physical vertical links"),GridV3::VerticalLinks().Num()));
+#if WITH_EDITOR
+ extern bool VanthexValidateVisibleStairs(UWorld* World,TArray<FString>& Out);
+ Check(VanthexValidateVisibleStairs(World,Lines),TEXT("visible stair treads ascend with the collision ramps and meet both landings"));
+#endif
 
  int32 Nodes=0,Edges=0,Components=0;
  VanthexNavigation::GridV3GraphStats(World,Nodes,Edges,Components);

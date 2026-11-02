@@ -237,7 +237,27 @@ void AVanthexTestArena::BuildGridV3()
   const FVector Mid=(V.Bottom+V.Top)*.5f; const FRotator Slope(Angle,90,0);
   const FVector Normal=Slope.RotateVector(FVector(0,0,1));
   Collision(Mid-Normal*10,FVector(Delta.Size(),V.Width,20),Slope,TEXT("GridV3Ramp"));
-  Fit(TEXT("SM_Stair_01"),Mid,FVector(Run,V.Width,Delta.Z),FRotator(0,90,0));
+  // This kit stair climbs toward local -X. Its full bounds include the handrail,
+  // so neither +90 yaw nor fitting the bounding-box height describes its treads.
+  // Three 16-tread modules give roughly 12.5 cm risers instead of stretching one flight
+  // across the complete 600 cm rise. Anchors are measured from source tread faces.
+  if(auto* Stairs=Group(TEXT("SM_Stair_01"))) {
+   constexpr int32 Flights=3,TreadsPerFlight=16;
+   constexpr double LowerFrontX=-6.5697,LowerTreadZ=33.0207;
+   constexpr double UpperRearX=-522.4669,UpperTreadZ=336.8436;
+   const FVector NativeSize=Stairs->GetStaticMesh()->GetBoundingBox().GetSize();
+   const float FlightRun=Run/Flights,FlightRise=Delta.Z/Flights;
+   const float Riser=FlightRise/TreadsPerFlight;
+   const double ScaleZ=(FlightRise-Riser)/(UpperTreadZ-LowerTreadZ);
+   const FVector Scale(FlightRun/(LowerFrontX-UpperRearX),V.Width/NativeSize.Y,ScaleZ);
+   const FVector Anchor(LowerFrontX,Stairs->GetStaticMesh()->GetBoundingBox().GetCenter().Y,LowerTreadZ-Riser/ScaleZ);
+   const FRotator Rotation(0,Delta.Rotation().Yaw+180.f,0);
+   for(int32 Flight=0;Flight<Flights;++Flight) {
+    const FVector Bottom=V.Bottom+Delta*(double(Flight)/Flights);
+    Stairs->AddInstance(FTransform(Rotation,Bottom-Rotation.RotateVector(Anchor*Scale),Scale),true);
+    ++InstanceCount;
+   }
+  }
   Fit(TEXT("SM_FactoryFloorLarge01"),Mid+FVector(0,0,428),FVector(Delta.Size(),V.Width+40,16),Slope);
   Collision(Mid+FVector(0,0,428),FVector(Delta.Size(),V.Width+40,16),Slope,TEXT("GridV3Ceiling"));
   // Side walls follow the incline, leaving crossing main-floor passages below high treads.
@@ -362,7 +382,13 @@ void AVanthexTestArena::BuildGridV3()
  Fit(TEXT("SM_MetalBeam01"),FVector(750,0,1150),FVector(1800,100,100),FRotator(0,90,0));
  // Visible load paths: deep bridge bearers, suspension rods and upper trusses.
  for(float Y:{-250.f,250.f}) {
-  Fit(TEXT("SM_MetalBeam01"),FVector(1000,Y,565),FVector(1400,55,70));
+  if(Y<0) {
+   // Keep the southern bearer outside stair 04's upper opening and handrails.
+   const auto& Access=GridV3::VerticalLinks()[3];
+   const float Left=Access.Top.X-Access.Width*.5f-20,Right=Access.Top.X+Access.Width*.5f+20;
+   Fit(TEXT("SM_MetalBeam01"),FVector((300+Left)*.5f,Y,565),FVector(Left-300,55,70));
+   Fit(TEXT("SM_MetalBeam01"),FVector((Right+1700)*.5f,Y,565),FVector(1700-Right,55,70));
+  } else Fit(TEXT("SM_MetalBeam01"),FVector(1000,Y,565),FVector(1400,55,70));
   Fit(TEXT("SM_Column_02"),FVector(600,Y,910),FVector(18,18,680));
   Collision(FVector(600,Y,910),FVector(18,18,680),FRotator::ZeroRotator,TEXT("GridV3Structure"));
   Fit(TEXT("SM_MetalBeam01"),FVector(0,Y,1250),FVector(1800,75,90));

@@ -1,5 +1,20 @@
 # GRID V3 — Prüfbericht
 
+## Treppenkorrektur vom 2. November 2026
+
+Alle vier Treppen wurden in der gespeicherten `GridV3.umap` neu aufgebaut. Das Kit-Modell steigt entlang seiner lokalen negativen X-Achse; die alte Drehung zeigte in die Gegenrichtung. Außerdem umfasst seine Bounding Box das Geländer und eignet sich nicht zum Anpassen der Stufenhöhe. Die neue Platzierung verwendet die tatsächlichen unteren und oberen Trittflächen und drei Abschnitte mit zusammen 48 Stufen je Treppe. Die erste Stufe liegt 12,5 cm über der unteren Plattform, die letzte genau auf der oberen Plattform. Ein dekorativer Brückenträger wurde an der Öffnung von Treppe 04 geteilt, damit er nicht durch deren oberste Stufen ragt.
+
+- Editor- und Game-Build (Win64 Development): erfolgreich.
+- Geometrie und Navigation: **150 Prüfungen bestanden**, einschließlich 21 Proben an echten sichtbaren Mesh-Dreiecken je Treppe und beiden Anschlüssen. Die neue Prüfung schlägt auf der alten gespeicherten Karte erwartungsgemäß fehl.
+- Gameplay: **34 Prüfungen bestanden**, darunter alle acht tatsächlichen Auf- und Abstiege (3,65–3,69 s).
+- Acht gerenderte Treppenansichten kontrolliert; die obere Ansicht von Treppe 04 wurde nach der Trägerkorrektur erneut geprüft. Diese letzte Änderung betrifft ausschließlich einen dekorativen Träger; die 1.260 Kollisionskörper bleiben unverändert. Geometrie und Navigation wurden danach erneut geprüft.
+
+Die Stufenhöhen liegen bei ungefähr 11,6–13,4 cm. Die glatte Lauframpenkollision bleibt erhalten; ihre maximale Abweichung von den geprüften sichtbaren Trittflächen beträgt 12,23 cm. Das ist eine vereinfachte Bewegungskollision, keine exakte Fußplatzierung auf jeder Stufe.
+
+Nachweise: [Geometrie](Validation/GridV3Stairs/geometry.txt), [Gameplay](Validation/GridV3Stairs/gameplay.txt), [vorher](Validation/GridV3Stairs/before.png), [nachher unten](Validation/GridV3Stairs/after-bottom.png), [Treppe 04 oben](Validation/GridV3Stairs/after-stair04-top.png). Wiederholen: `-GridV3Test`, `-GridV3GameTest` beziehungsweise `-GridV3Shots -GridV3StairShots` auf `/Game/Vanthex/Maps/GridV3`. Einzelansichten sind mit `-GridV3Shots -GridV3Shot=16` bis `23` abrufbar.
+
+## Ursprünglicher Gesamtdurchlauf
+
 Stand: 1. November 2026, abschließender Durchlauf. Geprüft wurde die eigenständige Karte `/Game/Vanthex/Maps/GridV3` mit 23 Räumen auf −600, 0 und +600 cm, 37 Verbindungseinträgen und vier unabhängigen Treppenrouten.
 
 ## Ergebnisse
