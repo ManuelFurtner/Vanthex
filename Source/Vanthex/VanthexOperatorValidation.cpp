@@ -5,6 +5,7 @@
 #include "VanthexBotController.h"
 #include "VanthexCharacter.h"
 #include "VanthexOperatorComponent.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexPlayerState.h"
 #include "HealthComponent.h"
 #include "HitscanWeapon.h"
@@ -206,6 +207,19 @@ void VanthexRunOperatorTest(AVanthexGameMode* Mode)
  {
   const auto* Operator=Enemy->FindComponentByClass<UVanthexOperatorComponent>();
   Test.Check(!Enemy->GetHealthComponent()->IsDead() && FMath::IsNearlyEqual(Enemy->GetHealthComponent()->GetHealth(),100.f) && Enemy->GetCharacterMovement()->MovementMode==MOVE_Walking && Operator && Operator->IsPresentationReady() && Operator->GetWorldRifle()->IsVisible() && Enemy->GetMesh()->IsVisible(),TEXT("round reset restores healthy, visible, animated operator and rifle"));
+  Runner->GetEquipment()->ResetEquipment();
+  Runner->GetEquipment()->SelectKnife();
+  Test.PhaseStarted=Now; Test.Phase=6; return;
+ }
+ if(Test.Phase==6 && Age>=.7)
+ {
+  Test.Check(Runner->GetEquipment()->GetSelectedSlot()==EVanthexWeaponSlot::Knife && !Runner->GetEquipment()->IsSwitching(),TEXT("bot takeover fixture starts with a drawn knife"));
+  Runner->GetController()->SetActorTickEnabled(true);
+  Test.PhaseStarted=Now; Test.Phase=7; return;
+ }
+ if(Test.Phase==7 && Age>=.8)
+ {
+  Test.Check(Runner->GetEquipment()->CanUseRifle(),TEXT("live bot returns inherited knife equipment to a usable rifle"));
   Test.Finish();
  }
 #endif

@@ -1,0 +1,9 @@
+PASS 8 operator/equipment views rendered
+../../../../../Vanthex/Saved/OperatorShots/01_lineup.png
+../../../../../Vanthex/Saved/OperatorShots/02_side.png
+../../../../../Vanthex/Saved/OperatorShots/03_helmet.png
+../../../../../Vanthex/Saved/OperatorShots/04_crouch.png
+../../../../../Vanthex/Saved/OperatorShots/05_knife_ready.png
+../../../../../Vanthex/Saved/OperatorShots/06_knife_strike.png
+../../../../../Vanthex/Saved/OperatorShots/07_first_person_knife.png
+../../../../../Vanthex/Saved/OperatorShots/08_first_person_rifle.png

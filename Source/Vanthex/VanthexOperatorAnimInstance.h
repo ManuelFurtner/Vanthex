@@ -8,7 +8,7 @@ class UBlendSpace;
 class UAnimSequence;
 struct FVanthexOperatorAnimProxy;
 
-/** Native locomotion and rifle pose shared by human and AI ARC operators. */
+/** Native locomotion and equipment poses shared by human and AI ARC operators. */
 UCLASS(Transient)
 class UVanthexOperatorAnimInstance : public UAnimInstance
 {
@@ -23,7 +23,8 @@ public:
 
  // Mesh faces +Y; the authored rifle faces +X. Its grip, not its origin,
  // is anchored to the same target used by the right-arm IK.
- static FTransform GetRifleTransform(float Pitch, float Crouch);
+ static FTransform GetRifleTransform(float Pitch, float Crouch, float Lower = 0.f);
+ static FTransform GetKnifeTransform(float Pitch, float Crouch, float Lower = 0.f, float Swing = 0.f);
 
 protected:
  virtual FAnimInstanceProxy* CreateAnimInstanceProxy() override;

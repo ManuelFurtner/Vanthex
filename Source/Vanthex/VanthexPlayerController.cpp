@@ -18,6 +18,10 @@ AVanthexPlayerController::AVanthexPlayerController()
 void AVanthexPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	if(FParse::Param(FCommandLine::Get(),TEXT("EquipmentNetworkTest"))) {
+		extern void VanthexStartEquipmentNetworkTest(AVanthexPlayerController* PC);
+		VanthexStartEquipmentNetworkTest(this);
+	}
 	if (FParse::Param(FCommandLine::Get(), TEXT("BulletAudioNetworkTest")))
 	{
 		extern void VanthexStartBulletAudioNetworkTest(AVanthexPlayerController* PC);

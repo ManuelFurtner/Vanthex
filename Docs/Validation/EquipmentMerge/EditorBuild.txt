@@ -1,0 +1,18 @@
+[Adaptive Build] Excluded from Vanthex unity file: HitscanWeapon.cpp, VanthexBotController.cpp, VanthexCharacter.cpp, VanthexEquipmentComponent.cpp, VanthexEquipmentNetworkTest.cpp, VanthexEquipmentTest.cpp, VanthexGameMode.cpp, VanthexGridV3GameTest.cpp, VanthexGridV3Shots.cpp, VanthexHUD.cpp, VanthexMapShots.cpp, VanthexOperatorAnimInstance.cpp, VanthexOperatorComponent.cpp, VanthexOperatorShots.cpp, VanthexOperatorValidation.cpp, VanthexPlayerController.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 4 action(s)
+  CPU 6 physical cores, 12 logical cores
+  Memory 31.16 GB physical, 30.03 GB/51.16 GB committed
+  UBA Storage capacity 40 GB
+[1/4] Compile [x64] VanthexEquipmentComponent.cpp
+[2/4] Link [x64] UnrealEditor-Vanthex.lib
+   Bibliothek "H:/Vanthex/Intermediate/Build/Win64/x64/UnrealEditor/Development/Vanthex/UnrealEditor-Vanthex.lib" und Objekt "H:/Vanthex/Intermediate/Build/Win64/x64/UnrealEditor/Development/Vanthex/UnrealEditor-Vanthex.exp" werden erstellt.
+[3/4] Link [x64] UnrealEditor-Vanthex.dll
+[4/4] WriteMetadata VanthexEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 3.51 seconds
+Output binary: H:\epic\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 4.50 seconds
+Trace written to file C:\Users\manuf\AppData\Local\UnrealBuildTool\Trace.uba with size 5.6kb

@@ -1,0 +1,18 @@
+[2026.11.03-13.06.38:888][163]LogVanthex: Display: OPERATOR_SHOTS 8 actual operator/equipment views; 8 seconds settling each
+[2026.11.03-13.06.38:888][163]LogVanthex: Display: OPERATOR_SHOTS settling 01_lineup.png
+[2026.11.03-13.06.46:890][637]LogVanthex: Display: OPERATOR_SHOTS capture 01_lineup.png crouched=0
+[2026.11.03-13.06.47:350][638]LogVanthex: Display: OPERATOR_SHOTS settling 02_side.png
+[2026.11.03-13.06.55:349][118]LogVanthex: Display: OPERATOR_SHOTS capture 02_side.png crouched=0
+[2026.11.03-13.06.55:471][119]LogVanthex: Display: OPERATOR_SHOTS settling 03_helmet.png
+[2026.11.03-13.07.03:541][603]LogVanthex: Display: OPERATOR_SHOTS capture 03_helmet.png crouched=0
+[2026.11.03-13.07.03:658][604]LogVanthex: Display: OPERATOR_SHOTS settling 04_crouch.png
+[2026.11.03-13.07.11:742][ 89]LogVanthex: Display: OPERATOR_SHOTS capture 04_crouch.png crouched=1
+[2026.11.03-13.07.11:866][ 90]LogVanthex: Display: OPERATOR_SHOTS settling 05_knife_ready.png
+[2026.11.03-13.07.19:949][575]LogVanthex: Display: OPERATOR_SHOTS capture 05_knife_ready.png crouched=0
+[2026.11.03-13.07.20:071][576]LogVanthex: Display: OPERATOR_SHOTS settling 06_knife_strike.png
+[2026.11.03-13.07.28:338][ 72]LogVanthex: Display: OPERATOR_SHOTS capture 06_knife_strike.png crouched=0
+[2026.11.03-13.07.28:464][ 73]LogVanthex: Display: OPERATOR_SHOTS settling 07_first_person_knife.png
+[2026.11.03-13.07.36:547][558]LogVanthex: Display: OPERATOR_SHOTS capture 07_first_person_knife.png crouched=0
+[2026.11.03-13.07.36:669][559]LogVanthex: Display: OPERATOR_SHOTS settling 08_first_person_rifle.png
+[2026.11.03-13.07.44:736][ 43]LogVanthex: Display: OPERATOR_SHOTS capture 08_first_person_rifle.png crouched=0
+[2026.11.03-13.07.44:859][ 44]LogVanthex: Display: OPERATOR_SHOTS complete; 8 files

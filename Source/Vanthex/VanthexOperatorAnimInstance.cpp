@@ -1,6 +1,7 @@
 #include "VanthexOperatorAnimInstance.h"
 
 #include "VanthexCharacter.h"
+#include "VanthexEquipmentComponent.h"
 #include "HealthComponent.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Animation/AnimNode_SequencePlayer.h"
@@ -18,7 +19,17 @@ namespace
 {
 FVector ShoulderPivot(float Crouch) { return FVector(-14., 0., 142. - 32. * Crouch); }
 FQuat AimRotation(float Pitch) { return FQuat(FVector::ForwardVector, FMath::DegreesToRadians(Pitch)); }
-FVector RightGrip(float Pitch, float Crouch) { return ShoulderPivot(Crouch) + AimRotation(Pitch).RotateVector(FVector(0., 28., 0.)); }
+FQuat RifleAim(float Pitch, float Lower)
+{
+ Lower = FMath::Clamp(Lower, 0.f, 1.f);
+ return AimRotation(Pitch * (1.f - Lower) - 35.f * Lower);
+}
+FVector RightGrip(float Pitch, float Crouch, float Lower = 0.f)
+{
+ Lower = FMath::Clamp(Lower, 0.f, 1.f);
+ return ShoulderPivot(Crouch) + FVector(10. * Lower, 0., -24. * Lower)
+  + RifleAim(Pitch, Lower).RotateVector(FVector(0., 28. - 16. * Lower, 0.));
+}
 
 FCompactPoseBoneIndex Bone(const FCompactPose& Pose, const TCHAR* Name)
 {
@@ -58,8 +69,10 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
  UAnimSequence* Loop = nullptr;
  UAnimSequence* End = nullptr;
  float Speed = 0.f, Direction = 0.f, Pitch = 0.f, Crouch = 0.f, Death = 0.f;
+ float Lower = 0.f, Swing = 0.f;
  float AirTime = 0.f, LandingTime = 1.f, AuthoredRunSpeed = 375.f;
  bool WasFalling = false, Falling = false, Dead = false, SpeedOnX = false;
+ bool Knife = false;
 
  virtual FAnimNode_Base* GetCustomRootNode() override { return &GroundAir; }
  virtual void GetCustomNodes(TArray<FAnimNode_Base*>& Nodes) override
@@ -94,6 +107,16 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
   Direction = Speed > 5.f ? FMath::RadiansToDegrees(FMath::Atan2(LocalVelocity.Y, LocalVelocity.X)) : 0.f;
   Pitch = FMath::FInterpTo(Pitch, FMath::Clamp(FRotator::NormalizeAxis(Character->GetBaseAimRotation().Pitch), -60.f, 60.f), DeltaSeconds, 12.f);
   Crouch = FMath::FInterpTo(Crouch, Character->bIsCrouched ? 1.f : 0.f, DeltaSeconds, 12.f);
+  // Snapshot the replicated equipment presentation on the game thread. Pose
+  // evaluation never reads an actor/component from an animation worker.
+  Knife = false; Lower = 0.f; Swing = 0.f;
+  if (const auto* Equipment = Character->FindComponentByClass<UVanthexEquipmentComponent>())
+  {
+   const FVanthexEquipmentPresentation Presentation = Equipment->GetPresentation();
+   Knife = Presentation.VisibleSlot == EVanthexWeaponSlot::Knife;
+   Lower = FMath::Clamp(Presentation.Lower, 0.f, 1.f);
+   Swing = FMath::Clamp(Presentation.Swing, 0.f, 1.f);
+  }
   // Round restart clears the death pose immediately; falling into death eases in.
   Death = Dead ? FMath::Min(1.f, Death + DeltaSeconds * 2.2f) : 0.f;
   Falling = Movement && Movement->IsFalling() && !Dead;
@@ -149,19 +172,26 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
 
   if (Death < .2f)
   {
-   const FVector Grip = RightGrip(Pitch, Crouch);
-   const FQuat Aim = AimRotation(Pitch);
-   const FVector Forward = Aim.RotateVector(FVector(0., 1., 0.));
-   const FVector Up = Aim.RotateVector(FVector::UpVector);
+   const FTransform Mount = Knife ? UVanthexOperatorAnimInstance::GetKnifeTransform(Pitch, Crouch, Lower, Swing)
+    : UVanthexOperatorAnimInstance::GetRifleTransform(Pitch, Crouch, Lower);
+   const FVector NativeGrip = Knife ? FVector(-4., 0., 0.) : FVector(-1., 0., -3.2);
+   const FVector Grip = Mount.TransformPosition(NativeGrip);
+   const FVector Forward = Mount.GetRotation().GetAxisX();
+   const FVector Up = Mount.GetRotation().GetAxisZ();
    // The hand bone is the wrist: put the palm about 9 cm ahead onto each
    // grip. Targeting the palm with the wrist made the left arm overextend.
    const FVector RightWrist = Grip - Forward * 9.;
-   const FVector LeftWrist = Grip + Aim.RotateVector(FVector(4., 10., 0.));
+   const FVector LeftSupport = Grip + Forward * 10. + FVector(4., 0., 0.);
+   const FVector LeftGuard(23. + 5. * Swing, 13. - 6. * Swing, 124. - 32. * Crouch - 4. * Swing);
+   // The free hand guards the chest during knife use. Both poses converge at
+   // full holster, where VisibleSlot changes, avoiding a discontinuous wrist.
+   const FVector LeftWrist = Knife ? FMath::Lerp(LeftGuard, LeftSupport, double(Lower)) : LeftSupport;
    // This skeleton mirrors hand translations: fingers extend along -X on
    // the right hand and +X on the left. Palm normals are their local Y axes.
    const FQuat RightHand = FRotationMatrix::MakeFromXY(-Forward, FVector::ForwardVector).ToQuat();
    const FQuat LeftHand = FRotationMatrix::MakeFromXY(Forward, Up).ToQuat();
-   SolveLimb(ComponentPose, TEXT("upperarm_r"), TEXT("lowerarm_r"), TEXT("hand_r"), RightWrist, FVector(-65., 10., 105. - 32. * Crouch), &RightHand);
+   const float Thrust = Knife ? Swing * (1.f - Lower) : 0.f;
+   SolveLimb(ComponentPose, TEXT("upperarm_r"), TEXT("lowerarm_r"), TEXT("hand_r"), RightWrist, FVector(-65. + 10. * Thrust, 10. + 12. * Thrust, 105. - 32. * Crouch + 8. * Thrust), &RightHand);
    SolveLimb(ComponentPose, TEXT("upperarm_l"), TEXT("lowerarm_l"), TEXT("hand_l"), LeftWrist, FVector(65., 15., 105. - 32. * Crouch), &LeftHand);
   }
   FCSPose<FCompactPose>::ConvertComponentPosesToLocalPoses(MoveTemp(ComponentPose), Output.Pose);
@@ -177,9 +207,11 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
       if (Index.GetInt() == INDEX_NONE) continue;
       const bool Right = Side[0] == TCHAR('r');
       const float Curl = Right ? (Segment == 1 ? -25.f : Segment == 2 ? -55.f : -35.f) : (Segment == 3 ? 30.f : 55.f);
-      const float TriggerScale = Right && FCString::Strcmp(Finger, TEXT("index")) == 0 ? .55f : 1.f;
+      const bool TriggerFinger = Right && FCString::Strcmp(Finger, TEXT("index")) == 0;
+      const float TriggerScale = TriggerFinger ? (Knife ? FMath::Lerp(1.f, .55f, Lower) : .55f) : 1.f;
+      const float GuardScale = Knife && !Right ? FMath::Lerp(.45f, 1.f, Lower) : 1.f;
       FTransform& Transform = Output.Pose[Index];
-      Transform.SetRotation(Transform.GetRotation() * FQuat(FVector::UpVector, FMath::DegreesToRadians(Curl * TriggerScale)));
+      Transform.SetRotation(Transform.GetRotation() * FQuat(FVector::UpVector, FMath::DegreesToRadians(Curl * TriggerScale * GuardScale)));
      }
   }
 
@@ -207,12 +239,27 @@ UVanthexOperatorAnimInstance::UVanthexOperatorAnimInstance()
 
 bool UVanthexOperatorAnimInstance::HasLocomotionAssets() const { return Locomotion && JumpStart && JumpLoop && JumpEnd; }
 
-FTransform UVanthexOperatorAnimInstance::GetRifleTransform(float Pitch, float Crouch)
+FTransform UVanthexOperatorAnimInstance::GetRifleTransform(float Pitch, float Crouch, float Lower)
 {
- const FQuat Rotation = AimRotation(Pitch) * FRotator(0., 90., 0.).Quaternion();
+ const FQuat Rotation = RifleAim(Pitch, Lower) * FRotator(0., 90., 0.).Quaternion();
  constexpr double Scale = 1.7;
  const FVector NativeGrip(-1., 0., -3.2);
- return FTransform(Rotation, RightGrip(Pitch, Crouch) - Rotation.RotateVector(NativeGrip * Scale), FVector(Scale));
+ return FTransform(Rotation, RightGrip(Pitch, Crouch, Lower) - Rotation.RotateVector(NativeGrip * Scale), FVector(Scale));
+}
+
+FTransform UVanthexOperatorAnimInstance::GetKnifeTransform(float Pitch, float Crouch, float Lower, float Swing)
+{
+ Lower = FMath::Clamp(Lower, 0.f, 1.f);
+ Swing = FMath::Clamp(Swing, 0.f, 1.f);
+ const FQuat ReadyAim = AimRotation(Pitch + 8.f - 12.f * Swing);
+ const FVector ReadyGrip = FVector(-22. + 12. * Swing, 0., 128. - 32. * Crouch + 13. * Swing)
+  + ReadyAim.RotateVector(FVector(0., 24. + 18. * Swing, 0.));
+ const FQuat Aim = FQuat::Slerp(ReadyAim, RifleAim(Pitch, 1.f), Lower).GetNormalized();
+ const FQuat Rotation = Aim * FRotator(0., 90., 0.).Quaternion();
+ const FVector Grip = FMath::Lerp(ReadyGrip, RightGrip(Pitch, Crouch, 1.f), double(Lower));
+ // The knife geometry is authored at centimetre scale, with its palm grip at
+ // local X=-4. Its replicated swing envelope moves the same grip used by IK.
+ return FTransform(Rotation, Grip - Rotation.RotateVector(FVector(-4., 0., 0.)), FVector::OneVector);
 }
 
 FAnimInstanceProxy* UVanthexOperatorAnimInstance::CreateAnimInstanceProxy() { return new FVanthexOperatorAnimProxy(this); }

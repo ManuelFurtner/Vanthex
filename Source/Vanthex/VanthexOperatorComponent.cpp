@@ -1,6 +1,7 @@
 #include "VanthexOperatorComponent.h"
 #include "VanthexOperatorAnimInstance.h"
 #include "VanthexCharacter.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexArt.h"
 #include "HealthComponent.h"
 #include "Animation/AnimInstance.h"
@@ -121,9 +122,13 @@ void UVanthexOperatorComponent::TickComponent(float DeltaTime,ELevelTick TickTyp
  Super::TickComponent(DeltaTime,TickType,ThisTickFunction);
  if(!Character||!WorldRifle) return;
  const bool Dead=Character->GetHealthComponent()->IsDead();
+ const auto* Equipment=Character->GetEquipment();
+ const auto Presentation=Equipment?Equipment->GetPresentation():FVanthexEquipmentPresentation{};
+ const bool ShowRifle=!Dead&&!Character->IsHidden()&&Presentation.VisibleSlot==EVanthexWeaponSlot::Rifle;
  if(auto* Animation=Cast<UVanthexOperatorAnimInstance>(Character->GetMesh()->GetAnimInstance()))
-  WorldRifle->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(Animation->GetAimPitch(),Animation->GetCrouchAlpha()));
- WorldRifle->SetVisibility(!Dead);
+  WorldRifle->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(Animation->GetAimPitch(),Animation->GetCrouchAlpha(),Presentation.Lower));
+ WorldRifle->SetVisibility(ShowRifle);
+ WorldRifle->SetCastHiddenShadow(ShowRifle);
  MuzzleSeconds=FMath::Max(0.f,MuzzleSeconds-DeltaTime);
- if(WorldMuzzle) WorldMuzzle->SetVisibility(!Dead&&MuzzleSeconds>0);
+ if(WorldMuzzle) WorldMuzzle->SetVisibility(ShowRifle&&MuzzleSeconds>0);
 }

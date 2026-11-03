@@ -161,7 +161,7 @@ void AVanthexGameMode::BeginPlay()
   GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunOperatorTest(AVanthexGameMode*); VanthexRunOperatorTest(this); }),.1f,true,2.f);
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("OperatorShots"))) {
-  GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunOperatorShots(AVanthexGameMode*); VanthexRunOperatorShots(this); }),1.f,true,3.f);
+  GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunOperatorShots(AVanthexGameMode*); VanthexRunOperatorShots(this); }),.1f,true,3.f);
  }
  if (FParse::Param(FCommandLine::Get(),TEXT("VanthexMapShots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceMapShots,4.f,true,8.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceGridV3Shots,4.f,true,12.f);
@@ -1964,7 +1964,8 @@ void AVanthexGameMode::AdvanceSelfTest()
 		if (MatchState && MatchState->GetPhase() == EVanthexRoundPhase::MatchEnded && MatchState->GetAlphaScore() >= RoundsToWin && MatchState->GetMatchWinner() == EVanthexTeam::Alpha)
 		{
 			SelfTestExpect(true, TEXT("match"), FString::Printf(TEXT("alpha %d bravo %d"), MatchState->GetAlphaScore(), MatchState->GetBravoScore()));
-			SelfTestStage = EVanthexSelfTestStage::Finish;
+			SelfTestTicks = 0;
+			SelfTestStage = EVanthexSelfTestStage::Equipment;
 			return;
 		}
 		if (MatchState && MatchState->GetPhase() == EVanthexRoundPhase::RoundActive)
@@ -1981,6 +1982,9 @@ void AVanthexGameMode::AdvanceSelfTest()
 		}
 		return;
 	}
+	case EVanthexSelfTestStage::Equipment:
+		AdvanceEquipmentSelfTest();
+		return;
 	case EVanthexSelfTestStage::Finish:
 	default:
 		FinishSelfTest();

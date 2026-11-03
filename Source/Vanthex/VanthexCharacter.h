@@ -14,6 +14,7 @@ class UStaticMeshComponent;
 class AHitscanWeapon;
 class AVanthexCore;
 class UVanthexOperatorComponent;
+class UVanthexEquipmentComponent;
 
 UCLASS()
 class AVanthexCharacter : public ACharacter
@@ -47,6 +48,9 @@ public:
 
 	UHealthComponent* GetHealthComponent() const { return Health; }
 	AHitscanWeapon* GetWeapon() const { return Weapon; }
+	UVanthexEquipmentComponent* GetEquipment() const { return Equipment; }
+	UCameraComponent* GetFirstPersonCamera() const { return FirstPersonCamera; }
+	bool CanUseRifle() const;
 	bool IsSprintWanted() const { return bSprintWanted; }
 
 protected:
@@ -65,6 +69,8 @@ protected:
 	void StartFire();
 	void StopFire();
 	void StartReload();
+	void SelectRifle();
+	void SelectKnife();
 	void HandleDeath(AActor* DeadActor);
 	void BuildInput();
 
@@ -73,6 +79,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 	TObjectPtr<UHealthComponent> Health;
+
+	UPROPERTY(VisibleAnywhere, Category = "Equipment")
+	TObjectPtr<UVanthexEquipmentComponent> Equipment;
 
 	UPROPERTY(VisibleAnywhere, Category = "Presentation")
 	TObjectPtr<UStaticMeshComponent> BodyMesh;

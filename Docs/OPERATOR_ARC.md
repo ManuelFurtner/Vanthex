@@ -20,7 +20,7 @@ ARC bezeichnet den ersten visuellen Operator. Die bestehende Fernhack-Funktion b
 
 `Run-Operator-Checks.ps1` startet einen begrenzten Testlauf auf GRID V3 und verlangt einen frischen PASS-Bericht in `Saved/OperatorValidation.txt`. Er prüft das tatsächliche 3v3-Aufgebot, Teamfarben, Waffen, Knochenbewegung eines laufenden Bots, Kopf-/Körper-Trefferflächen, Bot-Reaktion, Feindbeschuss sowie Tod und Reset.
 
-Mit `-OperatorShots` auf GRID V3 entstehen vier Kontrollansichten in `Saved/OperatorShots`: Aufstellung beider Teams, Seitenansicht, Helm und Hocken. `-run=VanthexBuildArt -InspectOperator` protokolliert die tatsächlichen Assets und Knochen; `-BuildOperatorArt` erzeugt das ARC-Material anhand der vorhandenen Texturmasken. Die originalen Mannequin-Assets bleiben unverändert.
+Mit `-OperatorShots` auf GRID V3 entstehen acht Kontrollansichten in `Saved/OperatorShots`: Aufstellung beider Teams, Seitenansicht, Helm, Hocken, Messerhaltung, Stich sowie Messer und Gewehr in der Egoansicht. Mit zusätzlichem `-OperatorFirstPersonShots` werden nur die beiden Egoansichten aufgenommen. `-run=VanthexBuildArt -InspectOperator` protokolliert die tatsächlichen Assets und Knochen; `-BuildOperatorArt` erzeugt das ARC-Material anhand der vorhandenen Texturmasken. Die originalen Mannequin-Assets bleiben unverändert.
 
 ## Nachweis vom 3. November 2026
 
@@ -39,3 +39,11 @@ Der Navigationstest protokolliert echte Bot-Bewegung und Änderungen der Fußpos
 Protokolle liegen in [Validation/OperatorARC](Validation/OperatorARC). Der Armgriff ist eine prozedurale Annäherung an das vorhandene Gewehr; separate Reload-/Fingeranimationen und eigene Ego-Arme sind spätere Erweiterungen.
 
 ![ARC für Alpha und Bravo](Validation/OperatorARC/01_lineup.png)
+
+## Ergänzung: Messer und Waffenwechsel
+
+ARC verwendet jetzt auch das Messer aus dem zusammengeführten Equipment-Branch. `GetPresentation()` berechnet sichtbare Waffe, Absenkung und Stichbewegung aus dem replizierten Zustand und derselben Serveruhr. Weltmodelle und Hand-IK folgen diesem Zustand. Die Ego-Waffe ist nur für ihren Besitzer sichtbar (`OnlyOwnerSee`), das am Operator befestigte Weltmodell für andere Betrachter (`OwnerNoSee`). Übernimmt ein Bot eine Figur mit ausgewähltem Messer, wechselt er zurück zum Gewehr.
+
+Der kombinierte Stand besteht beide Builds mit UE 5.8.3, 64 Gameplay-/Equipment-Prüfungen, 34 Operator-Prüfungen, die GRID-Geometrieprüfung, 34 GRID-Gameplay-Prüfungen sowie die getrennten GRID- und Equipment-Host-/Client-Prüfungen. Acht Kontrollansichten wurden erzeugt; Messerhaltung, Stich sowie Ego-Messer und Ego-Gewehr sind visuell geprüft. Die ursprünglichen ARC-Nachweise oben bleiben als historischer Stand erhalten. Aktuelle Nachweise: [Validation/EquipmentMerge](Validation/EquipmentMerge); Verhalten und Steuerung: [Waffenausrüstung](WEAPON_EQUIPMENT.md).
+
+Separate Ego-Arme, endgültige Messer-Grafik und eigene Messersounds sind weiterhin offen. Wirtschaft, Rüstung und erweitertes Waffen-Audio liegen als Designentwürfe vor.

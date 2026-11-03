@@ -1,4 +1,5 @@
 #include "HitscanWeapon.h"
+#include "VanthexCharacter.h"
 
 #include "Vanthex.h"
 #include "VanthexArt.h"
@@ -222,6 +223,7 @@ void AHitscanWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AHitscanWeapon::StartFire()
 {
+	if (const auto* Character = Cast<AVanthexCharacter>(GetOwner())) { if (!Character->CanUseRifle()) return; }
 	Super::StartFire();
 	if (bReloading)
 	{
@@ -242,6 +244,7 @@ void AHitscanWeapon::StartFire()
 
 void AHitscanWeapon::StartReload()
 {
+	if (const auto* Character = Cast<AVanthexCharacter>(GetOwner())) { if (!Character->CanUseRifle()) return; }
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(FireTimer);
@@ -284,6 +287,7 @@ bool AHitscanWeapon::IsHeadHit(const FHitResult& Hit) const
 void AHitscanWeapon::FireShot()
 {
  if (!HasAuthority()) return;
+	if (const auto* Character = Cast<AVanthexCharacter>(GetOwner())) { if (!Character->CanUseRifle()) { StopFire(); return; } }
 	UWorld* World = GetWorld();
 	if (!World || bReloading)
 	{

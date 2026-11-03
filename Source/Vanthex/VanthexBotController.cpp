@@ -1,5 +1,6 @@
 #include "VanthexBotController.h"
 #include "VanthexCharacter.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexPlayerState.h"
 #include "VanthexGameMode.h"
 #include "VanthexCore.h"
@@ -23,6 +24,7 @@ void AVanthexBotController::PlanRoute(const FVector& Goal)
 void AVanthexBotController::Tick(float DeltaSeconds)
 {
  Super::Tick(DeltaSeconds);
+ if(FParse::Param(FCommandLine::Get(),TEXT("EquipmentNetworkTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("GridV3Test")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3GameTest")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioPlaybackTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexEnergyTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexNetworkProbe")) || FParse::Param(FCommandLine::Get(),TEXT("VanthexMapTest"))) return;
@@ -32,6 +34,8 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  if(!BotCharacter || !Mode || !BotCharacter->GetWeapon()) return;
  auto* Weapon=BotCharacter->GetWeapon();
  if(BotCharacter->GetHealthComponent()->IsDead() || !Mode->IsRoundActive()) { Weapon->StopFire(); Route.Reset(); return; }
+ // A departing human can leave this pawn holding a knife. Bots use rifle combat.
+ if(auto* Equipment=BotCharacter->GetEquipment(); Equipment && Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife) Equipment->SelectRifle();
  const float Now=GetWorld()->GetTimeSeconds();
  AVanthexCharacter* Enemy=nullptr; float Best=1800;
  for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) {

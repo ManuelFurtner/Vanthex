@@ -134,6 +134,7 @@ void AVanthexGameMode::AdvanceGridV3Shots()
    PC->SetIgnoreLookInput(true);
    if (PC->GetHUD()) PC->GetHUD()->bShowHUD = View.bFirstPerson;
   }
+  Human->SetActorHiddenInGame(!View.bFirstPerson);
   if (Human->GetWeapon()) Human->GetWeapon()->SetActorHiddenInGame(!View.bFirstPerson);
   // Scenic architecture views should not be obscured by the stationary test
   // roster at deployment. Combat viewpoints retain the normal visible roster.

@@ -5,6 +5,7 @@
 #include "VanthexBotController.h"
 #include "VanthexCharacter.h"
 #include "VanthexOperatorComponent.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexPlayerState.h"
 #include "HitscanWeapon.h"
 #include "Camera/CameraActor.h"
@@ -29,7 +30,7 @@ struct FOperatorShotState
  TWeakObjectPtr<APlayerController> Viewer;
  TWeakObjectPtr<AVanthexCharacter> Alpha, Bravo;
  TArray<FString> Files;
- double Started=0., PoseTime=-1.;
+ double Started=0., PoseTime=-1., StrikeTime=-1.;
  int32 View=0;
  bool WaitingForFile=false, Finished=false;
 };
@@ -43,12 +44,16 @@ const FOperatorView Views[] = {
  {FVector(140,-820,155),FVector(140,-350,105),52.f,TEXT("01_lineup.png")},
  {FVector(-390,-620,155),FVector(0,-350,105),45.f,TEXT("02_side.png")},
  {FVector(0,-510,168),FVector(0,-350,165),38.f,TEXT("03_helmet.png")},
- {FVector(140,-820,135),FVector(140,-350,95),52.f,TEXT("04_crouch.png")}
+ {FVector(140,-820,135),FVector(140,-350,95),52.f,TEXT("04_crouch.png")},
+ {FVector(-260,-600,150),FVector(0,-350,125),42.f,TEXT("05_knife_ready.png")},
+ {FVector(-260,-600,150),FVector(0,-350,125),42.f,TEXT("06_knife_strike.png")},
+ {FVector::ZeroVector,FVector::ZeroVector,90.f,TEXT("07_first_person_knife.png")},
+ {FVector::ZeroVector,FVector::ZeroVector,90.f,TEXT("08_first_person_rifle.png")}
 };
 }
 #endif
 
-// Explicit diagnostic only. Called once per second by -OperatorShots.
+// Explicit diagnostic only. Called every 0.1 seconds by -OperatorShots.
 void VanthexRunOperatorShots(AVanthexGameMode* Mode)
 {
 #if !UE_BUILD_SHIPPING
@@ -57,7 +62,7 @@ void VanthexRunOperatorShots(AVanthexGameMode* Mode)
  static FOperatorShotState State;
  const double Now=World->GetTimeSeconds();
  const FString Directory=FPaths::ProjectSavedDir()/TEXT("OperatorShots");
- if(State.World.Get()!=World) { State=FOperatorShotState(); State.World=World; State.Started=Now; }
+ if(State.World.Get()!=World) { State=FOperatorShotState(); State.World=World; State.Started=Now; if(FParse::Param(FCommandLine::Get(),TEXT("OperatorFirstPersonShots"))) State.View=6; }
  if(State.Finished) return;
  if(Now-State.Started>90.)
  {
@@ -106,7 +111,7 @@ void VanthexRunOperatorShots(AVanthexGameMode* Mode)
   if(!State.Camera.IsValid()) return;
   PC->SetViewTarget(State.Camera.Get());
   IFileManager::Get().MakeDirectory(*Directory,true);
-  UE_LOG(LogVanthex,Display,TEXT("OPERATOR_SHOTS four actual bot views; 8 seconds settling each"));
+  UE_LOG(LogVanthex,Display,TEXT("OPERATOR_SHOTS %d actual operator/equipment views; 8 seconds settling each"),UE_ARRAY_COUNT(Views)-State.View);
  }
  if(FScreenshotRequest::IsScreenshotRequested()) return;
  if(State.WaitingForFile)
@@ -119,7 +124,7 @@ void VanthexRunOperatorShots(AVanthexGameMode* Mode)
  if(State.View>=UE_ARRAY_COUNT(Views))
  {
   State.Finished=true;
-  FFileHelper::SaveStringToFile(TEXT("PASS four operator views rendered\n")+FString::Join(State.Files,TEXT("\n"))+TEXT("\n"),*(Directory/TEXT("capture.txt")));
+  FFileHelper::SaveStringToFile(FString::Printf(TEXT("PASS %d operator/equipment views rendered\n"),State.Files.Num())+FString::Join(State.Files,TEXT("\n"))+TEXT("\n"),*(Directory/TEXT("capture.txt")));
   UE_LOG(LogVanthex,Display,TEXT("OPERATOR_SHOTS complete; %d files"),State.Files.Num());
   FPlatformMisc::RequestExitWithStatus(false,0);
   return;
@@ -127,8 +132,11 @@ void VanthexRunOperatorShots(AVanthexGameMode* Mode)
  const auto& View=Views[State.View];
  if(State.PoseTime<0.)
  {
-  State.Bravo->SetActorHiddenInGame(State.View==1 || State.View==2);
+  State.Bravo->SetActorHiddenInGame(State.View==1 || State.View==2 || State.View>=4);
   State.Alpha->SetCrouching(State.View==3);
+  if(State.View>=4 && State.View<7) State.Alpha->GetEquipment()->SelectKnife();
+  if(State.View==7) State.Alpha->GetEquipment()->SelectRifle();
+  State.Viewer->SetViewTarget(State.View>=6?static_cast<AActor*>(State.Alpha.Get()):static_cast<AActor*>(State.Camera.Get()));
   State.Camera->SetActorLocationAndRotation(View.Eye,(View.Target-View.Eye).Rotation());
   auto* Camera=State.Camera->GetCameraComponent();
   Camera->SetFieldOfView(View.FOV);
@@ -143,6 +151,10 @@ void VanthexRunOperatorShots(AVanthexGameMode* Mode)
   return;
  }
  if(Now-State.PoseTime<8.) return;
+ if(State.View==5) {
+  if(State.StrikeTime<0.) { State.Alpha->GetEquipment()->Attack(); State.StrikeTime=Now; return; }
+  if(Now-State.StrikeTime<.15) return;
+ }
  const FString File=Directory/View.File;
  // Remove only this diagnostic's previous image so an old capture cannot pass.
  IFileManager::Get().Delete(*File,false,true);
