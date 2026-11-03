@@ -63,7 +63,7 @@ Source/Vanthex/
 
 `AVanthexCore` is the physical objective. It stores state, carrier, and throw velocity. `AVanthexExtractionZone` is a box the game mode queries. The game mode decides when a hold completes and then calls the same `EndRound` used by elimination. See `Docs/CORE_SYSTEM.md`.
 
-The local human is Alpha slot 0. `AVanthexBotController` fills the other five slots. Bots do not think or shoot. They exist so elimination and reset can be tested.
+The local human is Alpha slot 0. `AVanthexBotController` fills the other five slots with server-controlled operators. Bots navigate toward the Core and extraction zones, acquire visible opponents, react and fire, and collect the Core. Joining players take over bot pawns; disconnecting players hand their pawn back to a bot. Humans and bots share `AVanthexCharacter` and its operator presentation.
 
 `VanthexPlayerController` owns player input routing and restart/test commands. It does not own movement simulation.
 

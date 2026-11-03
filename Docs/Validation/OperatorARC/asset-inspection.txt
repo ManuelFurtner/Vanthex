@@ -1,0 +1,498 @@
+OVERALL PASS
+mesh=/Game/Meshes/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton bounds_origin=X=0.000 Y=-3.610 Z=91.247 bounds_extent=X=69.363 Y=18.361 Z=91.283 bones=68 materials=2
+bone=0 name=root parent=-1 local=Rotation: Pitch 0.000000 Yaw 0.000000 Roll -0.000000
+Translation: 0.000000 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 0.000000 Yaw 0.000000 Roll -0.000000
+Translation: 0.000000 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=1 name=pelvis parent=0 local=Rotation: Pitch 89.790113 Yaw 89.998387 Roll 89.998387
+Translation: 0.000000 -1.056153 96.750603
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 89.788257 Yaw 89.996508 Roll 89.996508
+Translation: 0.000000 -1.056153 96.750603
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=2 name=spine_01 parent=1 local=Rotation: Pitch 0.000000 Yaw 7.153849 Roll 0.000000
+Translation: 10.808878 0.851415 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 82.637671 Yaw 89.999800 Roll 89.999800
+Translation: 0.000002 -0.165452 107.556312
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=3 name=spine_02 parent=2 local=Rotation: Pitch 0.000000 Yaw -14.063534 Roll -0.000000
+Translation: 18.875349 -3.801159 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 83.298261 Yaw -89.999665 Roll -89.999665
+Translation: 0.000011 -1.516586 126.763126
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=4 name=spine_03 parent=3 local=Rotation: Pitch 0.000000 Yaw -2.779417 Roll -0.000000
+Translation: 13.407329 -0.420477 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 80.518935 Yaw -89.999755 Roll -89.999755
+Translation: 0.000020 -3.498759 140.029776
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=5 name=clavicle_l parent=4 local=Rotation: Pitch -61.853576 Yaw -101.540911 Roll 108.719156
+Translation: 11.883688 2.732088 -3.781983
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -9.742390 Yaw -26.536826 Roll -0.000001
+Translation: 3.782009 -2.761439 152.201154
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=6 name=upperarm_l parent=5 local=Rotation: Pitch -40.300541 Yaw 17.020993 Roll 7.673893
+Translation: 15.784872 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -49.541153 Yaw -6.413604 Roll 3.295934
+Translation: 17.700244 -9.711988 149.530060
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=7 name=lowerarm_l parent=6 local=Rotation: Pitch 10.397343 Yaw 30.360854 Roll -3.613279
+Translation: 30.339930 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -33.187232 Yaw 30.848097 Roll -28.515434
+Translation: 37.264641 -11.911191 126.445250
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=8 name=hand_l parent=7 local=Rotation: Pitch -2.499808 Yaw 0.412571 Roll -76.356201
+Translation: 26.975143 -0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -35.172564 Yaw 32.750998 Roll -105.931856
+Translation: 56.646050 -0.335490 111.679684
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=9 name=index_01_l parent=8 local=Rotation: Pitch 3.763788 Yaw -25.536938 Roll 14.866951
+Translation: 12.068114 -1.763462 -2.109398
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -60.632340 Yaw 39.185106 Roll -95.108246
+Translation: 63.042366 6.766240 103.815138
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=10 name=index_02_l parent=9 local=Rotation: Pitch 0.475290 Yaw -11.986130 Roll 1.337819
+Translation: 4.287498 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -72.603867 Yaw 41.145624 Roll -95.529876
+Translation: 64.672133 8.094740 100.078623
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=11 name=index_03_l parent=10 local=Rotation: Pitch -0.997271 Yaw 9.496319 Roll 1.137367
+Translation: 3.393790 -0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -63.056162 Yaw 41.326058 Roll -94.477393
+Translation: 65.436200 8.762351 96.840063
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=12 name=middle_01_l parent=8 local=Rotation: Pitch 7.040564 Yaw -22.825873 Roll 1.917851
+Translation: 12.244281 -1.293644 0.571162
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -58.987202 Yaw 31.396236 Roll -101.577025
+Translation: 64.490091 4.479341 103.481491
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=13 name=middle_02_l parent=12 local=Rotation: Pitch -1.136839 Yaw -12.280694 Roll -2.024952
+Translation: 4.640374 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -70.486457 Yaw 42.113155 Roll -113.470155
+Translation: 66.530884 5.724863 99.504448
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=14 name=middle_03_l parent=13 local=Rotation: Pitch 4.389953 Yaw 15.399740 Roll 0.781448
+Translation: 3.648844 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -56.627805 Yaw 23.489878 Roll -96.457374
+Translation: 67.435022 6.542191 96.065185
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=15 name=pinky_01_l parent=8 local=Rotation: Pitch 18.933967 Yaw -20.185867 Roll -18.724592
+Translation: 10.140665 -2.263151 4.643148
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -57.221074 Yaw 8.494251 Roll -103.297515
+Translation: 64.025058 -0.159049 103.017550
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=16 name=pinky_02_l parent=15 local=Rotation: Pitch 1.315685 Yaw -11.208044 Roll 1.063834
+Translation: 3.570981 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -68.396794 Yaw 11.974591 Roll -105.215183
+Translation: 65.937170 0.126522 100.015191
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=17 name=pinky_03_l parent=16 local=Rotation: Pitch -3.869665 Yaw -1.038999 Roll 0.445699
+Translation: 2.985631 0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -68.031511 Yaw 22.738941 Roll -114.804296
+Translation: 67.012479 0.354588 97.239283
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=18 name=ring_01_l parent=8 local=Rotation: Pitch 10.989255 Yaw -23.292107 Roll -13.510255
+Translation: 11.497885 -1.753527 2.846912
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -60.143182 Yaw 23.882148 Roll -110.450602
+Translation: 64.575657 2.082509 103.039344
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=19 name=ring_02_l parent=18 local=Rotation: Pitch 1.669746 Yaw -13.315435 Roll 0.301356
+Translation: 4.430177 -0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -72.950407 Yaw 34.323436 Roll -119.597091
+Translation: 66.592309 2.975415 99.197174
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=20 name=ring_03_l parent=19 local=Rotation: Pitch -2.987667 Yaw 12.899655 Roll -0.360764
+Translation: 3.476652 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -60.028373 Yaw 26.871629 Roll -112.741701
+Translation: 67.434145 3.550181 95.873316
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=21 name=thumb_01_l parent=8 local=Rotation: Pitch -36.918977 Yaw -27.056191 Roll 95.069137
+Translation: 4.762036 -2.374981 -2.537820
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -34.138646 Yaw 87.683088 Roll -52.981765
+Translation: 57.478036 3.876426 107.639199
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=22 name=thumb_02_l parent=21 local=Rotation: Pitch -9.833244 Yaw -15.151305 Roll 1.613140
+Translation: 3.869672 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -52.094491 Yaw 85.939649 Roll -51.473120
+Translation: 57.607517 7.076658 105.467549
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=23 name=thumb_03_l parent=22 local=Rotation: Pitch -0.479193 Yaw 12.385635 Roll 2.414764
+Translation: 4.062171 -0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -42.124912 Yaw 96.831095 Roll -57.027450
+Translation: 57.784225 9.566022 102.262395
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=24 name=lowerarm_twist_01_l parent=7 local=Rotation: Pitch 0.000000 Yaw 0.000000 Roll 0.000000
+Translation: 14.000000 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -33.187223 Yaw 30.848089 Roll -28.515426
+Translation: 47.323521 -5.903445 118.781976
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=25 name=upperarm_twist_01_l parent=6 local=Rotation: Pitch -0.000000 Yaw 0.000000 Roll 0.000000
+Translation: 0.500000 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -49.541137 Yaw -6.413602 Roll 3.295933
+Translation: 18.022664 -9.748231 149.149624
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=26 name=clavicle_r parent=4 local=Rotation: Pitch -61.853576 Yaw 78.459052 Roll 108.719156
+Translation: 11.883789 2.732102 3.782003
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 9.742390 Yaw 26.536826 Roll 179.999999
+Translation: -3.781972 -2.761441 152.201261
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=27 name=upperarm_r parent=26 local=Rotation: Pitch -40.300541 Yaw 17.020993 Roll 7.673893
+Translation: -15.784798 0.000007 -0.000011
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 49.541153 Yaw 6.413604 Roll -176.704054
+Translation: -17.700139 -9.711965 149.530191
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=28 name=lowerarm_r parent=27 local=Rotation: Pitch 10.397343 Yaw 30.360854 Roll -3.613279
+Translation: -30.340050 0.000004 0.000002
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 33.187232 Yaw -30.848097 Roll 151.484476
+Translation: -37.264613 -11.911180 126.445289
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=29 name=hand_r parent=28 local=Rotation: Pitch -2.499808 Yaw 0.412571 Roll -76.356201
+Translation: -26.975245 -0.000026 -0.000001
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 35.172564 Yaw -32.750998 Roll 74.067930
+Translation: -56.646089 -0.335414 111.679678
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=30 name=index_01_r parent=29 local=Rotation: Pitch 3.763788 Yaw -25.536938 Roll 14.866951
+Translation: -12.067942 1.763725 2.109428
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 60.632340 Yaw -39.185106 Roll 84.891320
+Translation: -63.042113 6.766255 103.815038
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=31 name=index_02_r parent=30 local=Rotation: Pitch 0.475290 Yaw -11.986130 Roll 1.337819
+Translation: -4.287688 -0.000092 -0.000074
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 72.603867 Yaw -41.145624 Roll 84.469305
+Translation: -64.672061 8.094797 100.078399
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=32 name=index_03_r parent=31 local=Rotation: Pitch -0.997271 Yaw 9.496319 Roll 1.137367
+Translation: -3.393798 -0.000121 -0.000012
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 63.056162 Yaw -41.326058 Roll 85.522017
+Translation: -65.436232 8.762466 96.839867
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=33 name=middle_01_r parent=29 local=Rotation: Pitch 7.040564 Yaw -22.825873 Roll 1.917851
+Translation: -12.244113 1.293724 -0.571130
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 58.987202 Yaw -31.396236 Roll 78.422624
+Translation: -64.489953 4.479370 103.481524
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=34 name=middle_02_r parent=33 local=Rotation: Pitch -1.136839 Yaw -12.280694 Roll -2.024952
+Translation: -4.640569 0.000145 0.000008
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 70.486457 Yaw -42.113155 Roll 66.529257
+Translation: -66.530710 5.724913 99.504242
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=35 name=middle_03_r parent=34 local=Rotation: Pitch 4.389953 Yaw 15.399740 Roll 0.781448
+Translation: -3.648909 -0.000033 -0.000002
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 56.627805 Yaw -23.489878 Roll 83.542233
+Translation: -67.434895 6.542263 96.064927
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=36 name=pinky_01_r parent=29 local=Rotation: Pitch 18.933967 Yaw -20.185867 Roll -18.724592
+Translation: -10.140593 2.263355 -4.643095
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 57.221074 Yaw -8.494251 Roll 76.702103
+Translation: -64.024902 -0.158963 103.017423
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=37 name=pinky_02_r parent=36 local=Rotation: Pitch 1.315685 Yaw -11.208044 Roll 1.063834
+Translation: -3.571057 0.000078 -0.000008
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 68.396794 Yaw -11.974591 Roll 74.784173
+Translation: -65.936989 0.126614 100.014958
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=38 name=pinky_03_r parent=37 local=Rotation: Pitch -3.869665 Yaw -1.038999 Roll 0.445700
+Translation: -2.985419 -0.000317 -0.000035
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 68.031511 Yaw -22.738942 Roll 65.195049
+Translation: -67.012516 0.354606 97.239356
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=39 name=ring_01_r parent=29 local=Rotation: Pitch 10.989255 Yaw -23.292107 Roll -13.510255
+Translation: -11.497973 1.753766 -2.846915
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 60.143182 Yaw -23.882148 Roll 69.549043
+Translation: -64.575611 2.082612 103.039089
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=40 name=ring_02_r parent=39 local=Rotation: Pitch 1.669746 Yaw -13.315435 Roll 0.301356
+Translation: -4.429864 -0.000084 -0.000018
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 72.950407 Yaw -34.323436 Roll 60.402260
+Translation: -66.592198 2.975437 99.197227
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=41 name=ring_03_r parent=40 local=Rotation: Pitch -2.987667 Yaw 12.899655 Roll -0.360764
+Translation: -3.476659 -0.000072 -0.000003
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 60.028373 Yaw -26.871629 Roll 67.257856
+Translation: -67.434105 3.550206 95.873381
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=42 name=thumb_01_r parent=29 local=Rotation: Pitch -36.918977 Yaw -27.056191 Roll 95.069137
+Translation: -4.762125 2.375120 2.537802
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 34.138646 Yaw -87.683088 Roll 127.018052
+Translation: -57.478057 3.876524 107.639037
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=43 name=thumb_02_r parent=42 local=Rotation: Pitch -9.833245 Yaw -15.151307 Roll 1.613142
+Translation: -3.869569 -0.000114 0.000056
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 52.094494 Yaw -85.939648 Roll 128.526608
+Translation: -57.607423 7.076707 105.467492
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=44 name=thumb_03_r parent=43 local=Rotation: Pitch -0.479193 Yaw 12.385635 Roll 2.414762
+Translation: -4.062176 -0.000002 0.000003
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 42.124914 Yaw -96.831094 Roll 122.972277
+Translation: -57.784128 9.566074 102.262333
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=45 name=lowerarm_twist_01_r parent=28 local=Rotation: Pitch 0.000000 Yaw 0.000000 Roll -13.510350
+Translation: -14.000000 -0.000024 -0.000007
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 33.187224 Yaw -30.848090 Roll 137.974095
+Translation: -47.323491 -5.903414 118.782029
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=46 name=upperarm_twist_01_r parent=27 local=Rotation: Pitch 0.000000 Yaw -0.000000 Roll -19.951905
+Translation: -0.500000 0.000004 -0.000001
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 49.541140 Yaw 6.413602 Roll 163.343998
+Translation: -18.022560 -9.748211 149.149756
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=47 name=neck_01 parent=4 local=Rotation: Pitch 0.000000 Yaw 23.508070 Roll 0.000000
+Translation: 16.558783 0.355318 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 75.972543 Yaw 89.999788 Roll 89.999788
+Translation: 0.000032 -5.875814 156.420894
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=48 name=head parent=47 local=Rotation: Pitch -0.000000 Yaw -15.348632 Roll -0.000000
+Translation: 9.283613 -0.364157 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 88.675756 Yaw -89.997137 Roll -89.997137
+Translation: 0.000040 -3.978921 165.515933
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=49 name=thigh_l parent=1 local=Rotation: Pitch 7.032295 Yaw 1.515470 Roll 8.563456
+Translation: -1.448829 0.531424 -9.005810
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 82.760333 Yaw 166.295808 Roll 174.753374
+Translation: 9.005807 -0.530000 95.299850
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=50 name=calf_l parent=49 local=Rotation: Pitch -1.787275 Yaw 7.613576 Roll -5.735970
+Translation: -42.572037 -0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 80.127387 Yaw 114.503421 Roll 117.834218
+Translation: 14.217828 -1.800958 53.067211
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=51 name=calf_twist_01_l parent=50 local=Rotation: Pitch 0.219085 Yaw 0.872982 Roll 0.323561
+Translation: -20.476776 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 79.250944 Yaw 113.356617 Roll 117.027791
+Translation: 15.673932 -4.995580 32.893667
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=52 name=foot_l parent=50 local=Rotation: Pitch -3.704935 Yaw -8.059569 Roll -0.415387
+Translation: -40.196690 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 88.874950 Yaw 139.205368 Roll 141.819303
+Translation: 17.076215 -8.072122 13.465778
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=53 name=ball_l parent=52 local=Rotation: Pitch -0.008952 Yaw 91.883585 Roll 0.003944
+Translation: -10.453837 16.577854 0.080156
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -2.576802 Yaw 87.342779 Roll 90.887227
+Translation: 17.908636 8.357099 2.812050
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=54 name=thigh_twist_01_l parent=49 local=Rotation: Pitch 0.000211 Yaw 0.056330 Roll -5.438674
+Translation: -22.094238 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 82.754731 Yaw 165.851154 Roll 168.873573
+Translation: 11.710767 -1.189608 73.381754
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=55 name=thigh_r parent=1 local=Rotation: Pitch 7.032295 Yaw -178.484529 Roll 8.563456
+Translation: -1.448645 0.531428 9.005803
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -82.760333 Yaw -166.295808 Roll -5.246586
+Translation: -9.005801 -0.529995 95.300038
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=56 name=calf_r parent=55 local=Rotation: Pitch -1.787275 Yaw 7.613576 Roll -5.735970
+Translation: 42.572250 0.000002 -0.000001
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -80.127387 Yaw -114.503421 Roll -62.165354
+Translation: -14.217848 -1.800961 53.067187
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=57 name=calf_twist_01_r parent=56 local=Rotation: Pitch 0.219132 Yaw 0.872964 Roll 0.323370
+Translation: 20.476908 -0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -79.251008 Yaw -113.356954 Roll -62.971648
+Translation: -15.673960 -4.995603 32.893514
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=58 name=foot_r parent=56 local=Rotation: Pitch -3.704935 Yaw -8.059569 Roll -0.415387
+Translation: 40.196819 -0.000002 -0.000011
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -88.874950 Yaw -139.205368 Roll -38.177062
+Translation: -17.076233 -8.072143 13.465625
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=59 name=ball_r parent=58 local=Rotation: Pitch -0.008952 Yaw 91.883585 Roll 0.003944
+Translation: 10.453816 -16.577797 -0.080158
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 2.576802 Yaw -87.342779 Roll -89.112638
+Translation: -17.908649 8.356988 2.811919
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=60 name=thigh_twist_01_r parent=55 local=Rotation: Pitch 0.000163 Yaw 0.056341 Roll -5.438865
+Translation: 22.094240 -0.000000 -0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -82.754795 Yaw -165.851039 Roll -11.126644
+Translation: -11.710761 -1.189603 73.381940
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=61 name=ik_foot_root parent=0 local=Rotation: Pitch 0.000000 Yaw -0.000000 Roll 0.000000
+Translation: 0.000000 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 0.000000 Yaw 0.000000 Roll -0.000000
+Translation: 0.000000 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=62 name=ik_foot_l parent=61 local=Rotation: Pitch 88.877882 Yaw 139.207269 Roll 141.821099
+Translation: 17.076271 -8.072127 13.465731
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 88.876837 Yaw 139.206585 Roll 141.820452
+Translation: 17.076271 -8.072127 13.465731
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=63 name=ik_foot_r parent=61 local=Rotation: Pitch -88.877882 Yaw -139.207269 Roll -38.178896
+Translation: -17.076288 -8.072148 13.465573
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -88.876837 Yaw -139.206585 Roll -38.178250
+Translation: -17.076288 -8.072148 13.465573
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=64 name=ik_hand_root parent=0 local=Rotation: Pitch 0.000000 Yaw -0.000000 Roll 0.000000
+Translation: 0.000000 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 0.000000 Yaw 0.000000 Roll -0.000000
+Translation: 0.000000 0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=65 name=ik_hand_gun parent=64 local=Rotation: Pitch 35.172619 Yaw -32.751040 Roll 74.068035
+Translation: -56.646099 -0.335412 111.679657
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 35.172605 Yaw -32.751027 Roll 74.068011
+Translation: -56.646099 -0.335412 111.679657
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=66 name=ik_hand_l parent=65 local=Rotation: Pitch 32.168747 Yaw 93.709015 Roll -145.800353
+Translation: 77.885429 69.601913 43.869503
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch -35.172605 Yaw 32.751026 Roll -105.931908
+Translation: 56.645981 -0.335444 111.679689
+Scale3D: 1.000000 1.000000 1.000000
+
+bone=67 name=ik_hand_r parent=65 local=Rotation: Pitch -0.000000 Yaw 0.000000 Roll -0.000000
+Translation: -0.000000 -0.000000 0.000000
+Scale3D: 1.000000 1.000000 1.000000
+ component=Rotation: Pitch 35.172595 Yaw -32.751018 Roll 74.067995
+Translation: -56.646099 -0.335412 111.679657
+Scale3D: 1.000000 1.000000 1.000000
+
+material_slot=0 slot_name=M_UE4Man_Body material=/Game/Meshes/Mannequin/Character/Materials/M_UE4Man_Body.M_UE4Man_Body
+material_slot=0 vector=BodyColor association=2 index=-1
+material_slot=0 texture=NormalMap association=2 index=-1
+material_slot=1 slot_name=M_UE4Man_ChestLogo material=/Game/Meshes/Mannequin/Character/Materials/M_UE4Man_ChestLogo.M_UE4Man_ChestLogo
+material_slot=1 vector=BodyColor association=2 index=-1
+material_slot=1 texture=NormalMap association=2 index=-1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle class=AnimSequence skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=2.633 exact_skeleton_match=1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPersonWalk.ThirdPersonWalk class=AnimSequence skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=1.000 exact_skeleton_match=1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPersonRun.ThirdPersonRun class=AnimSequence skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=0.600 exact_skeleton_match=1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPersonJump_Start.ThirdPersonJump_Start class=AnimSequence skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=0.467 exact_skeleton_match=1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPersonJump_Loop.ThirdPersonJump_Loop class=AnimSequence skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=0.700 exact_skeleton_match=1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPersonJump_End.ThirdPersonJump_End class=AnimSequence skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=0.200 exact_skeleton_match=1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPerson_Jump.ThirdPerson_Jump class=AnimSequence skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=0.200 exact_skeleton_match=1
+animation=/Game/Meshes/Mannequin/Animations/ThirdPerson_IdleRun_2D.ThirdPerson_IdleRun_2D class=BlendSpace1D skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton duration=-1.000 exact_skeleton_match=1
+blend_axis=0 name=Speed min=0.000 max=375.000
+blend_axis=1 name=None min=0.000 max=100.000
+blend_sample=/Game/Meshes/Mannequin/Animations/ThirdPersonIdle.ThirdPersonIdle value=X=0.000 Y=0.000 Z=0.000 rate=1.000
+blend_sample=/Game/Meshes/Mannequin/Animations/ThirdPersonWalk.ThirdPersonWalk value=X=93.750 Y=0.000 Z=0.000 rate=1.000
+blend_sample=/Game/Meshes/Mannequin/Animations/ThirdPersonRun.ThirdPersonRun value=X=375.000 Y=0.000 Z=0.000 rate=1.000
+anim_blueprint=/Game/Meshes/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP class=/Game/Meshes/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP_C skeleton=/Game/Meshes/Mannequin/Character/Mesh/UE4_Mannequin_Skeleton.UE4_Mannequin_Skeleton exact_skeleton_match=1

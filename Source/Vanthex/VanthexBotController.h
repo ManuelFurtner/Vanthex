@@ -4,7 +4,7 @@
 #include "GameFramework/Controller.h"
 #include "VanthexBotController.generated.h"
 
-/** Stands in for a missing roster slot. No combat AI. */
+/** Fills a missing roster slot with server-authoritative navigation and combat. */
 UCLASS()
 class AVanthexBotController : public AController
 {

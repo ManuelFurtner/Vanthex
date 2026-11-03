@@ -1,0 +1,32 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" VanthexEditor Win64 Development -Project=H:\Vanthex\Vanthex.uproject -WaitMutex
+Log file: C:\Users\manuf\AppData\Local\UnrealBuildTool\Log.txt
+Determining max actions to execute in parallel (6 physical cores, 12 logical cores)
+  Executing up to 6 processes, one per physical core
+Using 'git status' to determine working set for adaptive non-unity build (H:\Vanthex).
+UbaServer - Listening on 0.0.0.0:1345
+Building VanthexEditor...
+===== Toolchain Information =====
+Using ISPC compiler (H:\epic\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2)
+Using Visual Studio 14.44.35229 toolchain (H:\VS2022BuildTools\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+[Adaptive Build] Excluded from Vanthex unity file: HitscanWeapon.cpp, VanthexBotController.cpp, VanthexBuildArtCommandlet.cpp, VanthexCharacter.cpp, VanthexGameMode.cpp, VanthexHUD.cpp, VanthexOperatorAnimInstance.cpp, VanthexOperatorArt.cpp, VanthexOperatorComponent.cpp, VanthexOperatorInspection.cpp, VanthexOperatorShots.cpp, VanthexOperatorValidation.cpp, VanthexPlayerController.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 6 action(s)
+  CPU 6 physical cores, 12 logical cores
+  Memory 31.16 GB physical, 30.06 GB/51.16 GB committed
+  UBA Storage capacity 40 GB
+[1/6] Compile [x64] VanthexOperatorArt.cpp
+[2/6] Compile [x64] VanthexOperatorComponent.cpp
+[3/6] Compile [x64] VanthexOperatorAnimInstance.cpp
+[4/6] Link [x64] UnrealEditor-Vanthex.lib
+   Bibliothek "H:/Vanthex/Intermediate/Build/Win64/x64/UnrealEditor/Development/Vanthex/UnrealEditor-Vanthex.lib" und Objekt "H:/Vanthex/Intermediate/Build/Win64/x64/UnrealEditor/Development/Vanthex/UnrealEditor-Vanthex.exp" werden erstellt.
+[5/6] Link [x64] UnrealEditor-Vanthex.dll
+[6/6] WriteMetadata VanthexEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 4.28 seconds
+Output binary: H:\epic\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 5.31 seconds
+Trace written to file C:\Users\manuf\AppData\Local\UnrealBuildTool\Trace.uba with size 6.2kb

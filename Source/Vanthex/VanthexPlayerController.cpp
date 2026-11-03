@@ -3,6 +3,7 @@
 #include "Vanthex.h"
 #include "VanthexCharacter.h"
 #include "VanthexGameMode.h"
+#include "VanthexOperatorComponent.h"
 #include "VanthexMapLayout.h"
 #include "Engine/World.h"
 
@@ -110,7 +111,7 @@ void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
   if(auto* RemoteCharacter=Cast<AVanthexCharacter>(GetPawn())) { FVanthexDamageRequest Damage; Damage.Damage=40; RemoteCharacter->GetHealthComponent()->ApplyDamage(Damage); bProbeDamaged=true; }
  }
 
- if (IsLocalController()) {
+ if (IsLocalController() && !FParse::Param(FCommandLine::Get(),TEXT("OperatorShots"))) {
   auto* OwnCharacter=Cast<AVanthexCharacter>(GetPawn());
   if (OwnCharacter && OwnCharacter->GetHealthComponent()->IsDead()) {
    if (APawn* Spectated = BulletAudio->GetListenerPawn()) { if(GetViewTarget()!=Spectated) SetViewTargetWithBlend(Spectated,0.3f); }
@@ -125,15 +126,18 @@ void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
  if (Age>4 && !bProbeFired) { ProbeCharacter->ServerAction(0,false); bProbeFired=true; }
  if (Age>4.3f && !bProbeStopped) { ProbeCharacter->ServerAction(1,false); bProbeStopped=true; }
  if(Age<10) return;
- int32 Characters=0,Cores=0,Devices=0; for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) ++Characters;
+ int32 Characters=0,Cores=0,Devices=0,Operators=0; for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) {
+  ++Characters;
+  if(const auto* Operator=It->FindComponentByClass<UVanthexOperatorComponent>(); Operator && Operator->IsPresentationReady() && Operator->GetOperatorId()==TEXT("ARC")) ++Operators;
+ }
  for(TActorIterator<AVanthexCore> It(GetWorld());It;++It) ++Cores;
  int32 Offline=0; bool PowerCorrect=true;
  for(TActorIterator<AVanthexShiftDevice> It(GetWorld());It;++It) { ++Devices; Offline+=!It->bPowered; PowerCorrect &= It->bPowered==(It->Circuit!=1); }
  const auto* PS=GetPlayerState<AVanthexPlayerState>(); const auto* GS=GetWorld()->GetGameState<AVanthexGameState>();
  const float Moved=FVector::Dist2D(ProbeOrigin,ProbeCharacter->GetActorLocation());
  const bool bGridV3=VanthexMap::IsGridV3(GetWorld());
- bool Pass=Characters==6 && Cores==1 && Devices==(bGridV3?0:15) && Offline==(bGridV3?0:3) && PowerCorrect && PS && PS->GetTeam()!=EVanthexTeam::None && GS && GS->GetRoundIndex()>0 && Moved>100 && ProbeCharacter->GetWeapon()->GetAmmoInMagazine()<30 && (HasAuthority() || FMath::IsNearlyEqual(ProbeCharacter->GetHealthComponent()->GetHealth(),60.f));
- const FString Report=FString::Printf(TEXT("%s netmode=%d characters=%d cores=%d devices=%d offline=%d team=%d moved=%.1f health=%.0f ammo=%d"),Pass?TEXT("PASS"):TEXT("FAIL"),int32(GetNetMode()),Characters,Cores,Devices,Offline,PS?int32(PS->GetTeam()):-1,Moved,ProbeCharacter->GetHealthComponent()->GetHealth(),ProbeCharacter->GetWeapon()->GetAmmoInMagazine());
+ bool Pass=Characters==6 && Operators==6 && Cores==1 && Devices==(bGridV3?0:15) && Offline==(bGridV3?0:3) && PowerCorrect && PS && PS->GetTeam()!=EVanthexTeam::None && GS && GS->GetRoundIndex()>0 && Moved>100 && ProbeCharacter->GetWeapon()->GetAmmoInMagazine()<30 && (HasAuthority() || FMath::IsNearlyEqual(ProbeCharacter->GetHealthComponent()->GetHealth(),60.f));
+ const FString Report=FString::Printf(TEXT("%s netmode=%d characters=%d operators=%d cores=%d devices=%d offline=%d team=%d moved=%.1f health=%.0f ammo=%d"),Pass?TEXT("PASS"):TEXT("FAIL"),int32(GetNetMode()),Characters,Operators,Cores,Devices,Offline,PS?int32(PS->GetTeam()):-1,Moved,ProbeCharacter->GetHealthComponent()->GetHealth(),ProbeCharacter->GetWeapon()->GetAmmoInMagazine());
  FString Name=HasAuthority()?TEXT("NetworkHost.txt"):TEXT("NetworkClient.txt");
  if(bGridV3) Name=TEXT("GridV3")+Name;
  FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/Name)); bProbeReported=true;

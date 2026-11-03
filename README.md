@@ -2,6 +2,8 @@
 
 VANTHEX ist ein C++-Prototyp für einen taktischen 3v3-FPS mit Unreal Engine 5.8. Die aktuelle Startkarte ist **GRID V3 / MERIDIAN**. Das Projekt enthält Source, Konfiguration, Karten und Grafik-/Audio-Assets; lokale Build-Dateien und Caches werden neu erzeugt.
 
+Spieler und Bots verwenden den ersten animierten Operator **ARC** mit Teamfarben, Helm und Gewehr in der Außenansicht. Offline spielen ein Mensch und fünf Bots im 3v3. Details und Prüfnachweise: [Operator ARC](Docs/OPERATOR_ARC.md); eigener Testlauf: `Run-Operator-Checks.ps1`.
+
 ## Voraussetzungen
 
 - Windows, Unreal Engine **5.8**; Entwicklung und Prüfungen erfolgen mit 5.8.3.

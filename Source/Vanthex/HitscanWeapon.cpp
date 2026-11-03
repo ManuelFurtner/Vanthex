@@ -5,6 +5,7 @@
 #include "VanthexDamage.h"
 #include "VanthexBulletAudioComponent.h"
 #include "VanthexGameMode.h"
+#include "VanthexOperatorComponent.h"
 #include "HealthComponent.h"
 #include "Components/DecalComponent.h"
 #include "Components/SceneComponent.h"
@@ -56,6 +57,7 @@ void AHitscanWeapon::BeginPlay()
 	if (UStaticMeshComponent* Rifle = VanthexArt::AddMesh(this, RiflePivot, BodyMesh, RiflePivot->GetComponentLocation(), RiflePivot->GetComponentRotation(), BodyScale, Metal, false))
 	{
 		Rifle->SetMaterial(1, Optic);
+		Rifle->SetOnlyOwnerSee(true);
 		if (!RifleMesh)
 		{
 			Rifle->SetMaterial(0, Dark);
@@ -67,6 +69,7 @@ void AHitscanWeapon::BeginPlay()
 	{
 		MuzzleFlash->SetRelativeLocation(FVector(24.f, 0.f, 2.2f));
 		MuzzleFlash->SetVisibility(false);
+		MuzzleFlash->SetOnlyOwnerSee(true);
 	}
 }
 
@@ -153,7 +156,11 @@ void AHitscanWeapon::PresentShotFeedback(const FRotator& ViewRotation)
 		return;
 	}
 
-	const FVector Muzzle = MuzzleFlash->GetComponentLocation();
+	const auto* OwnerPawn=Cast<APawn>(GetOwner());
+	auto* Operator=OwnerPawn?OwnerPawn->FindComponentByClass<UVanthexOperatorComponent>():nullptr;
+	if(Operator) Operator->PresentShot();
+	const bool FirstPerson=OwnerPawn&&OwnerPawn->IsPlayerControlled()&&OwnerPawn->IsLocallyControlled();
+	const FVector Muzzle=Operator&&!FirstPerson?Operator->GetMuzzleLocation():MuzzleFlash->GetComponentLocation();
 	MuzzleFlash->SetVisibility(true);
 	const FVector Right = ViewRotation.RotateVector(FVector(0.f, 1.f, 0.f));
 	const FVector Up = FVector::UpVector;

@@ -157,6 +157,12 @@ void AVanthexGameMode::PerformSessionReset()
 void AVanthexGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+ if(FParse::Param(FCommandLine::Get(),TEXT("OperatorTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunOperatorTest(AVanthexGameMode*); VanthexRunOperatorTest(this); }),.1f,true,2.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("OperatorShots"))) {
+  GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunOperatorShots(AVanthexGameMode*); VanthexRunOperatorShots(this); }),1.f,true,3.f);
+ }
  if (FParse::Param(FCommandLine::Get(),TEXT("VanthexMapShots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceMapShots,4.f,true,8.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceGridV3Shots,4.f,true,12.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV3GameTest"))) GetWorldTimerManager().SetTimer(SelfTestTimer,this,&AVanthexGameMode::AdvanceGridV3GameTest,0.05f,true,3.f);

@@ -99,7 +99,7 @@ void AVanthexHUD::DrawHUD()
 		default: CoreLabel = TEXT("CORE: CENTER"); break;
 		}
 	}
-	Status += FString::Printf(TEXT("\n%s"), CoreLabel);
+	Status += FString::Printf(TEXT("\nOPERATOR: ARC\n%s"), CoreLabel);
 	if (Match && (Match->GetCoreReadout() == EVanthexCoreReadout::ExtractingA || Match->GetCoreReadout() == EVanthexCoreReadout::ExtractingB))
 	{
 		Status += FString::Printf(TEXT("\n%d"), FMath::Max(1, FMath::CeilToInt(Match->GetExtractionRemaining())));

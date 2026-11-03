@@ -12,7 +12,7 @@ public class Vanthex : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput", "Slate", "SlateCore", "GameplayTags", "DeveloperSettings", "PhysicsCore", "AudioMixer"
+			"EnhancedInput", "Slate", "SlateCore", "GameplayTags", "DeveloperSettings", "PhysicsCore", "AudioMixer", "AnimGraphRuntime", "AnimationCore"
 		});
 
 		if (Target.bBuildEditor)

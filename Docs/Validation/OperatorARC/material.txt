@@ -1,0 +1,6 @@
+MASK channel=R coverage_above_half=0.13602 mean=0.13597
+MASK channel=G coverage_above_half=0.47264 mean=0.47258
+MASK channel=B coverage_above_half=0.16735 mean=0.16735
+MASK channel=A coverage_above_half=1.00000 mean=1.00000
+SELECT accent=R plate=G texture=/Game/Meshes/Mannequin/Character/Textures/UE4_Mannequin_MAT_MASKA.UE4_Mannequin_MAT_MASKA size=1024x1024
+PASS material=/Game/Vanthex/Operators/ARC/M_ARC_Armor.M_ARC_Armor normal=/Game/Meshes/Mannequin/Character/Textures/UE4_Mannequin__normals.UE4_Mannequin__normals

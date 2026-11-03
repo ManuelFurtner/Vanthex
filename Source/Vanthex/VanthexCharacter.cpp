@@ -3,6 +3,7 @@
 
 #include "Vanthex.h"
 #include "VanthexArt.h"
+#include "VanthexOperatorComponent.h"
 #include "VanthexCore.h"
 #include "EngineUtils.h"
 #include "VanthexShiftDevice.h"
@@ -49,6 +50,7 @@ AVanthexCharacter::AVanthexCharacter()
 	Movement->NavAgentProps.bCanCrouch = true;
 
 	GetMesh()->SetVisibility(false);
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0,0,-96),FRotator(0,-90,0));
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
@@ -89,6 +91,7 @@ AVanthexCharacter::AVanthexCharacter()
 	FirstPersonCamera->PostProcessSettings.AutoExposureMaxBrightness = 1.f;
 
 	Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	OperatorPresentation = CreateDefaultSubobject<UVanthexOperatorComponent>(TEXT("OperatorPresentation"));
 	WeaponClass = AHitscanWeapon::StaticClass();
 }
 
@@ -525,6 +528,7 @@ void AVanthexCharacter::PrepareForRound(const FTransform& Spawn)
 
 void AVanthexCharacter::SetTeamAppearance(EVanthexTeam Team)
 {
+	if (OperatorPresentation) OperatorPresentation->SetTeamAppearance(Team);
 	const bool bBravo = Team == EVanthexTeam::Bravo;
 	const FLinearColor Color = bBravo ? FLinearColor(0.62f, 0.24f, 0.1f) : FLinearColor(0.16f, 0.32f, 0.62f);
 	const FLinearColor Head = bBravo ? FLinearColor(0.45f, 0.2f, 0.1f) : FLinearColor(0.12f, 0.22f, 0.4f);

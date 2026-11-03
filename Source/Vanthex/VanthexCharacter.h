@@ -13,6 +13,7 @@ class UInputMappingContext;
 class UStaticMeshComponent;
 class AHitscanWeapon;
 class AVanthexCore;
+class UVanthexOperatorComponent;
 
 UCLASS()
 class AVanthexCharacter : public ACharacter
@@ -78,6 +79,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Presentation")
 	TObjectPtr<UStaticMeshComponent> HeadMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Operator")
+	TObjectPtr<UVanthexOperatorComponent> OperatorPresentation;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<AHitscanWeapon> WeaponClass;

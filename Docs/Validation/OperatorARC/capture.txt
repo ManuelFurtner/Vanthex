@@ -1,0 +1,5 @@
+PASS four operator views rendered
+../../../../../Vanthex/Saved/OperatorShots/01_lineup.png
+../../../../../Vanthex/Saved/OperatorShots/02_side.png
+../../../../../Vanthex/Saved/OperatorShots/03_helmet.png
+../../../../../Vanthex/Saved/OperatorShots/04_crouch.png
