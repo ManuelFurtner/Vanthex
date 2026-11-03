@@ -17,6 +17,7 @@ private:
  TArray<FVector> Route;
  float NextRouteTime = 0.f;
  float TargetVisibleSince = 0.f;
+ float NextCombatShot = 0.f;
  TWeakObjectPtr<APawn> CombatTarget;
  void PlanRoute(const FVector& Goal);
 };

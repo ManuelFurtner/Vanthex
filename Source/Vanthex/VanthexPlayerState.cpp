@@ -1,6 +1,11 @@
 #include "VanthexPlayerState.h"
 
 #include "Net/UnrealNetwork.h"
+#include "VanthexCharacter.h"
+#include "VanthexGameMode.h"
+#include "VanthexGameState.h"
+#include "HealthComponent.h"
+#include "Engine/World.h"
 
 void AVanthexPlayerState::SetTeam(EVanthexTeam NewTeam, int32 NewSlot)
 {
@@ -9,6 +14,11 @@ void AVanthexPlayerState::SetTeam(EVanthexTeam NewTeam, int32 NewSlot)
 		return;
 	}
 
+	if (Team != EVanthexTeam::None && NewTeam != Team)
+	{
+		const auto* Match = GetWorld() ? GetWorld()->GetGameState<AVanthexGameState>() : nullptr;
+		if (Match && Match->GetPhase() != EVanthexRoundPhase::Waiting && Match->GetPhase() != EVanthexRoundPhase::MatchEnded) return;
+	}
 	Team = NewTeam;
 	SpawnSlot = NewSlot;
 }
@@ -29,4 +39,64 @@ void AVanthexPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AVanthexPlayerState, Team);
 	DOREPLIFETIME(AVanthexPlayerState, SpawnSlot);
 	DOREPLIFETIME(AVanthexPlayerState, bAlive);
+	DOREPLIFETIME_CONDITION(AVanthexPlayerState, Economy, COND_OwnerOnly);
+}
+
+void AVanthexPlayerState::ResetEconomyForMatch()
+{
+	if (!HasAuthority()) return;
+	Economy = FVanthexEconomyState();
+	LastPurchaseRequest = 0;
+	LastPurchaseError.Reset();
+	ForceNetUpdate();
+}
+
+void AVanthexPlayerState::CopyEconomyFrom(const AVanthexPlayerState* PreviousOwner)
+{
+	if (!HasAuthority() || !PreviousOwner) return;
+	Economy = PreviousOwner->Economy;
+	LastPurchaseRequest = 0;
+	LastPurchaseError.Reset();
+	ForceNetUpdate();
+}
+
+bool AVanthexPlayerState::TryPurchase(FName ItemId, uint32 RequestId)
+{
+	LastPurchaseError.Reset();
+	auto Reject = [this](const TCHAR* Reason) { LastPurchaseError = Reason; return false; };
+	if (!HasAuthority()) return Reject(TEXT("Kaeufe werden vom Server bestaetigt."));
+	if (RequestId == 0 || RequestId <= LastPurchaseRequest) return Reject(TEXT("Doppelte oder veraltete Kaufanfrage."));
+	LastPurchaseRequest = RequestId;
+	const auto* Mode = GetWorld() ? GetWorld()->GetAuthGameMode<AVanthexGameMode>() : nullptr;
+	if (!Mode || !Mode->IsBuyPhase()) return Reject(TEXT("Kaeufe sind nur in der Kaufphase moeglich."));
+	const auto* Character = Cast<AVanthexCharacter>(GetPawn());
+	if (!bAlive || !Character || !Character->GetController() || Character->GetPlayerState<AVanthexPlayerState>() != this ||
+		!Character->GetHealthComponent() || Character->GetHealthComponent()->IsDead() ||
+		(Team != EVanthexTeam::Alpha && Team != EVanthexTeam::Bravo))
+		return Reject(TEXT("Nur ein lebender Spieler im Team kann einkaufen."));
+	if (!VanthexEconomy::TryApplyPurchase(Economy, ItemId, &LastPurchaseError)) return false;
+	ForceNetUpdate();
+	return true;
+}
+
+void AVanthexPlayerState::AwardCredits(int32 Amount)
+{
+	if (!HasAuthority()) return;
+	VanthexEconomy::AddCredits(Economy, Amount);
+	ForceNetUpdate();
+}
+
+void AVanthexPlayerState::HandleEconomyDeath()
+{
+	if (!HasAuthority()) return;
+	VanthexEconomy::ResetOnDeath(Economy);
+	ForceNetUpdate();
+}
+
+float AVanthexPlayerState::ApplyArmorDamage(float Damage, bool Head, bool Melee)
+{
+	if (!HasAuthority()) return Damage;
+	const float Remaining = VanthexEconomy::ApplyArmorDamage(Economy, Damage, Head, Melee);
+	ForceNetUpdate();
+	return Remaining;
 }

@@ -24,6 +24,9 @@ void AVanthexBotController::PlanRoute(const FVector& Goal)
 void AVanthexBotController::Tick(float DeltaSeconds)
 {
  Super::Tick(DeltaSeconds);
+ if(FParse::Param(FCommandLine::Get(),TEXT("EconomyShots")) || FParse::Param(FCommandLine::Get(),TEXT("WeaponProfileTest"))) return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("CoreEconomyTest"))) return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("EconomyTest")) || FParse::Param(FCommandLine::Get(),TEXT("EconomyNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("WeaponAudioPlaybackTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("EquipmentNetworkTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("GridV3Test")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3GameTest")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioPlaybackTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexEnergyTest"))) return;
@@ -35,7 +38,9 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  auto* Weapon=BotCharacter->GetWeapon();
  if(BotCharacter->GetHealthComponent()->IsDead() || !Mode->IsRoundActive()) { Weapon->StopFire(); Route.Reset(); return; }
  // A departing human can leave this pawn holding a knife. Bots use rifle combat.
- if(auto* Equipment=BotCharacter->GetEquipment(); Equipment && Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife) Equipment->SelectRifle();
+ if(auto* Equipment=BotCharacter->GetEquipment(); Equipment && Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife) {
+  if(Equipment->HasSlot(EVanthexWeaponSlot::Rifle)) Equipment->SelectRifle(); else Equipment->SelectPistol();
+ }
  const float Now=GetWorld()->GetTimeSeconds();
  AVanthexCharacter* Enemy=nullptr; float Best=1800;
  for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) {
@@ -47,7 +52,11 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  if(Enemy!=CombatTarget.Get()) { CombatTarget=Enemy; TargetVisibleSince=Now; Weapon->StopFire(); }
  if(Enemy) {
   SetControlRotation((Enemy->GetActorLocation()-BotCharacter->GetPawnViewLocation()).Rotation());
-  if(Now-TargetVisibleSince>0.5f && !Weapon->IsTriggerHeld()) Weapon->StartFire();
+  if (Weapon->GetAmmoInMagazine()==0 && Weapon->GetReserveAmmo()>0) Weapon->StartReload();
+  if(Now-TargetVisibleSince>0.5f && !Weapon->IsReloading()) {
+   if (Weapon->IsAutomatic()) { if(!Weapon->IsTriggerHeld()) Weapon->StartFire(); }
+   else if(Now >= NextCombatShot) { Weapon->StopFire(); Weapon->StartFire(); NextCombatShot = Now + FMath::Max(.22f,Weapon->GetFireInterval()); }
+  }
  } else Weapon->StopFire();
  auto* Core=Mode->GetCore(); if(!Core) return;
  FVector Goal=Core->GetActorLocation();

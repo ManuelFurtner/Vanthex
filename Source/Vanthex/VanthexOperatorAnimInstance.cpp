@@ -72,7 +72,7 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
  float Lower = 0.f, Swing = 0.f;
  float AirTime = 0.f, LandingTime = 1.f, AuthoredRunSpeed = 375.f;
  bool WasFalling = false, Falling = false, Dead = false, SpeedOnX = false;
- bool Knife = false;
+ bool Knife = false, Sidearm = false;
 
  virtual FAnimNode_Base* GetCustomRootNode() override { return &GroundAir; }
  virtual void GetCustomNodes(TArray<FAnimNode_Base*>& Nodes) override
@@ -109,11 +109,12 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
   Crouch = FMath::FInterpTo(Crouch, Character->bIsCrouched ? 1.f : 0.f, DeltaSeconds, 12.f);
   // Snapshot the replicated equipment presentation on the game thread. Pose
   // evaluation never reads an actor/component from an animation worker.
-  Knife = false; Lower = 0.f; Swing = 0.f;
+  Knife = false; Sidearm = false; Lower = 0.f; Swing = 0.f;
   if (const auto* Equipment = Character->FindComponentByClass<UVanthexEquipmentComponent>())
   {
    const FVanthexEquipmentPresentation Presentation = Equipment->GetPresentation();
    Knife = Presentation.VisibleSlot == EVanthexWeaponSlot::Knife;
+   Sidearm = Presentation.VisibleSlot == EVanthexWeaponSlot::Pistol;
    Lower = FMath::Clamp(Presentation.Lower, 0.f, 1.f);
    Swing = FMath::Clamp(Presentation.Swing, 0.f, 1.f);
   }
@@ -181,7 +182,7 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
    // The hand bone is the wrist: put the palm about 9 cm ahead onto each
    // grip. Targeting the palm with the wrist made the left arm overextend.
    const FVector RightWrist = Grip - Forward * 9.;
-   const FVector LeftSupport = Grip + Forward * 10. + FVector(4., 0., 0.);
+   const FVector LeftSupport = Grip + Forward * (Sidearm ? 10. * Lower : 10.) + FVector(4., 0., 0.);
    const FVector LeftGuard(23. + 5. * Swing, 13. - 6. * Swing, 124. - 32. * Crouch - 4. * Swing);
    // The free hand guards the chest during knife use. Both poses converge at
    // full holster, where VisibleSlot changes, avoiding a discontinuous wrist.

@@ -128,7 +128,7 @@ void VanthexRunOperatorTest(AVanthexGameMode* Mode)
    Test.Check(Operator->GetOperatorId()==TEXT("ARC") && Mesh->GetSkeletalMeshAsset() && Mesh->GetNumBones()>30 && Mesh->IsVisible() && Mesh->bOwnerNoSee && Mesh->GetCollisionEnabled()==ECollisionEnabled::NoCollision && Mesh->GetAnimInstance(),
     FString::Printf(TEXT("%s has animated ARC mesh, owner hiding and separate collision"),*Character->GetName()));
    Test.Check(ColorMatches,FString::Printf(TEXT("%s team material follows replicated roster team (%s)"),*Character->GetName(),*TeamColor.ToString()));
-   Test.Check(Rifle && Rifle->GetStaticMesh() && Rifle->IsVisible() && Rifle->bOwnerNoSee && Rifle->GetCollisionEnabled()==ECollisionEnabled::NoCollision && Rifle->GetAttachParent()==Mesh,
+   Test.Check(Rifle && Rifle->GetStaticMesh() && Rifle->IsVisible() && Rifle->bOwnerNoSee && Rifle->GetCollisionEnabled()==ECollisionEnabled::NoCollision && Operator->GetWorldFirearmRoot() && Operator->GetWorldFirearmRoot()->GetAttachParent()==Mesh,
     FString::Printf(TEXT("%s has visible third-person rifle attached to skeleton"),*Character->GetName()));
   }
   Test.Check(Bots==5 && Alpha==3 && Bravo==3,TEXT("offline roster is one human and five bots, three operators per team"));

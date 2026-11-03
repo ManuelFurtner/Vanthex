@@ -1,9 +1,17 @@
 # VANTHEX – Waffen und Wirtschaft
 
-Stand: 2. November 2026. **Design-Spezifikation, noch nicht implementiert.**
+Stand: 3. November 2026. **Wirtschaft, Kaufphase, Rüstung und Waffenprofile sind
+implementiert; 45 Integrations-, 32 Core- und 24 Waffenprüfungen sowie der
+Host-/Client-Ablauf sind bestanden.** Den belegten Umfang und die verbleibenden
+Produktionsgrenzen nennt der
+[Validierungsstand](ECONOMY_IMPLEMENTATION.md#vorliegende-validierung).
+Gadget-Preise und zwei Inventarplätze sind vorhanden;
+die einzelnen Gadget-Wirkungen fehlen weiterhin.
 Die Preise, Credit-Belohnungen und Spielsäulen stammen aus dem neuen Teamkonzept.
 Die mit „Startvorschlag“ bezeichneten Regeln konkretisieren offene Entscheidungen
 für einen ersten Playtest. Sie sind keine bereits gemessenen Balance-Ergebnisse.
+Implementierungsumfang, offene Punkte und Testaufrufe:
+[Wirtschaft, Rüstung und Waffen-Audio](ECONOMY_IMPLEMENTATION.md).
 
 ## Spielrahmen
 
@@ -60,11 +68,13 @@ Unentschiedenregeln bleiben bestehen.
 | Shotgun | 1.600 CR |
 
 AUG: präzise Allround-Rifle für mittlere und größere Distanzen.
-MP7: schnelle SMG für enge Räume, Nahkampf und Pushes. Diese beiden Waffen sind
-die ersten vollständig auszuarbeitenden Waffenprofile nach der Standardpistole.
-Schaden, Feuerrate, Rückstoßkurve, Streuung, Reichweitenabfall, Magazin und
-Nachladedauer werden je Waffe als Datenprofil abgestimmt. Die aktuelle einzelne
-Prototyp-Rifle ist kein fertiges AUG- oder MP7-Profil.
+MP7: schnelle SMG für enge Räume, Nahkampf und Pushes. Standardpistole, AUG und MP7
+bleiben die ersten drei Prioritäten für die weitere Ausarbeitung. Alle neun
+aufgeführten Waffen haben inzwischen eigene Startprofile für Schaden, Feuerart,
+Feuerrate, Rückstoß, Streuung, Reichweitenabfall, Magazin, endliche Reserve und
+Nachladedauer. Diese Parameter sind Playtest-Ausgangswerte, keine abgeschlossene
+Balance oder Produktionsfreigabe. Die frühere 40-Schaden-Rifle bleibt ausschließlich
+als ausdrücklich ausgewählte Diagnose-Fixture erhalten.
 
 ## Gadgets und Rüstung
 
@@ -90,6 +100,9 @@ Kopfschaden verwendet weiterhin den jeweiligen Waffenmultiplikator.
 Beide Rüstungen haben zunächst keine Geschwindigkeitsstrafe. Gadget-spezifische
 Explosionen und EMP-Wirkung benötigen vor ihrer Umsetzung eigene Wirkungsprofile;
 aus dem Preis folgt noch kein implementiertes Gadget-Verhalten.
+Die aktuelle Rüstungsrechnung verarbeitet ausdrücklich als Projektil markierte
+Treffer. Umgebungsschaden bleibt unabsorbiert; spätere Explosionsprofile dürfen
+diese Entscheidung nicht stillschweigend übernehmen.
 
 | Testtreffer | HP-Verlust | Restliche Rüstung |
 |---|---:|---:|
@@ -215,4 +228,9 @@ Assist-Grenzen 29/30 HP und acht Sekunden, Pass-Grenzen 399/400 cm und alle Caps
 veraltete Wurfereignisse, Disconnect/Join und Host/Client-Konsistenz. Bestehende
 Kampf-, Core-, Karten- und Equipment-Regressionen müssen weiter bestehen.
 
-Diese Datei definiert die Umsetzung, sie bestätigt keine bestandenen neuen Tests.
+Die Zahlen und Abnahmekriterien bleiben die Grundlage der Implementierung.
+Bereits ausgewertete Läufe und ihre Grenzen sind im
+[Implementierungsbericht](ECONOMY_IMPLEMENTATION.md#vorliegende-validierung)
+aufgeführt. Die zugehörigen Nachweise liegen unter
+[Validation/EconomyArmorAudio](Validation/EconomyArmorAudio). Zusätzliche Prüfungen
+werden erst nach tatsächlicher Ausführung als bestanden ergänzt.

@@ -1,0 +1,1 @@
+PASS role=host client_driven=1 knife=1 swing=1 rifle_restored=1 switch_seen=1 no_double_weapon=1 samples=176 timeout=0

@@ -1,0 +1,958 @@
+{
+  "generator_version": 2,
+  "source": "Original deterministic procedural synthesis; no sampled or downloaded recordings",
+  "files": [
+    {
+      "file": "S_WA_Pistol_Shot_01.wav",
+      "sha256": "dcde6485ea01da6e71e087cb08de334ca41125b70f710ff50152334cb9e32cae",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.282,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_Shot_02.wav",
+      "sha256": "9a74aa7a7da2bd9a5822b7f58ce6b48b41e455bfbe3292a774da2696576ca1e1",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.282,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_Shot_03.wav",
+      "sha256": "4e4e479b9070546b6608e17c0efa83f0038140434e66606ebd7ad70062370b2d",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.282,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_Mechanic.wav",
+      "sha256": "3ae4eb0e9c246f182757a84d74b5eadfcf7f82ea58fe2680ee0ad210a3294764",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_ReloadStart.wav",
+      "sha256": "0730ad4dcae82041d5cddb2bf2193e0eee50f73027bb01f5fb66966c48e848b7",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_ReloadMagazineOut.wav",
+      "sha256": "24799e46b339d63cd59580e545f69375f178671e2cc9bb2f9f46fa105aa0f2fa",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_ReloadMagazineIn.wav",
+      "sha256": "8d982cfaab9202f2a4018c29ba87e3af1b0e33b4e7425a9272a1725bf7a02be5",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_ReloadBolt.wav",
+      "sha256": "30f8e8cf59756da274eeaf482c703cb6e20ec4e515b4392674be3912e129a6ef",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_ReloadEnd.wav",
+      "sha256": "12b06f4cd010d56aa0b61800c1a0824825110eea7ec5393a55d5a73c179d00ce",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_DryFire.wav",
+      "sha256": "db6da3c327f2d0a4374834c6b13425bae94bb64e6822c953242733abba92ec06",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_Draw.wav",
+      "sha256": "af2c067e106dc0a4369b23ec1288bf849e290ef4791e00997c980d6e4e51f87e",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Pistol_Holster.wav",
+      "sha256": "ef50b0349539642031a8384da99f5f0a3aa9ff56b07872a5804770c4821890a5",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_Shot_01.wav",
+      "sha256": "d4d964920462ac37cea433fbcd202ec900c1cfd73147eb9fc98b2ce2d0e978da",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3011875,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_Shot_02.wav",
+      "sha256": "13ac5dabdf520c8c887a41e3b2259f57f0f32620aaf3194869cb39bda8bf49c1",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3011875,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_Shot_03.wav",
+      "sha256": "820e8098dd75f97915b5144f852904c6206c09dd6d027ceeb292e358ad7b0b03",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3011875,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_Mechanic.wav",
+      "sha256": "5a73ce565b29f947fac51d406a7e7b8c4cd0c750d535c8b4fdf5c19af6888f5e",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_ReloadStart.wav",
+      "sha256": "59366ccebdbc898337d3e20726d11a03705bb5f70c0ee43d0b13b7e7caf69c25",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_ReloadMagazineOut.wav",
+      "sha256": "f9bb2454a6b96910e6744eb39c352fddf3819bbbe3a5fad7fabc22c8c17e8c0f",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_ReloadMagazineIn.wav",
+      "sha256": "cdaaa258f5a80ef410a627bc2f8ecb12ce8ff4f88a9ed30a4ed7526266801319",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_ReloadBolt.wav",
+      "sha256": "6a4ad1995b7b02125b71abd52a94ade7a59cdc4b00c90f15376e851e77e0f68c",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_ReloadEnd.wav",
+      "sha256": "d06cecfd6afb19eb811155f91f50234a845003259be11545115ef2c40ea6d09a",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_DryFire.wav",
+      "sha256": "757f2fbb245aee8a7a65b8ddfa2bbdbb57a4de2913ab677b8a8793001ab22823",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_Draw.wav",
+      "sha256": "2db18f80d06d2f362507f91e3e7abdf3aaaf33e48c80c1fb626efec2784942a6",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_P250_Holster.wav",
+      "sha256": "433ba643a7e521e91691e16b34868609fca809f2f5616d37b7a927615c9332a0",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_Shot_01.wav",
+      "sha256": "6f021b37a377b860d3196048360ab06314821ad46d407d0d97189e641cc591fa",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.266,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_Shot_02.wav",
+      "sha256": "d1c44f0de3046460a3cb080718db24cf33dec71f2d188ba02d6633affa358769",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.266,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_Shot_03.wav",
+      "sha256": "2d6ea339f1bf9b8d8d57add2938b99e54f632d099eebc5f7728b8775feaaa9c9",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.266,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_Mechanic.wav",
+      "sha256": "ffa2feecddc6d9afba951011b17f02cb04131a2464ff02231cba02301d2d1459",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_ReloadStart.wav",
+      "sha256": "178bb4607b4cc20658ccea36206c36b6d7741c17cb64f47752fb5d7f93969519",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_ReloadMagazineOut.wav",
+      "sha256": "d210bebae70a230073a99edcd05391ac305a4adbb443c73e70b938232ff36cd5",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_ReloadMagazineIn.wav",
+      "sha256": "b2ad5d38f2fc7b137e3d89429bbafbc092abe6ac68eac70f69d57d3cb83ab07a",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_ReloadBolt.wav",
+      "sha256": "63fdff6a9858e818a6d809fc19225ab055ea01abc8c24da74df11e507cc8a9e8",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_ReloadEnd.wav",
+      "sha256": "bc62ac6acc38a3d9ab1d1db0e720268fe1f530348cc78febe07e82a37f486780",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_DryFire.wav",
+      "sha256": "53e53d2154339a8bdc683f5f1f2d09c09736b973f8922ac0244e6edad7b8c261",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_Draw.wav",
+      "sha256": "eb77645e41db54f8e268e598aeb380009797ba855561229c4c9f12625eab4d01",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP5_Holster.wav",
+      "sha256": "3d998bb20e187a6331d64935a4af41288031950ff11ade8b3ccaa64dfe3b22e6",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_Shot_01.wav",
+      "sha256": "7b8ac0d818b74bcc2078ae292a1eb0994f83307b7518e3025001e3c856a6ca2c",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.23879166666666668,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_Shot_02.wav",
+      "sha256": "1acb113c5260380af36e59755c80841d782f2c67d0ddef74ee0a7ab5874dc390",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.23879166666666668,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_Shot_03.wav",
+      "sha256": "8d60cd34a0846b11caeecbd09e5d24eba972733df291feae8d0dcc7bea285637",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.23879166666666668,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_Mechanic.wav",
+      "sha256": "5f9468d0df490de7506551a588d851407223b0acd6ccf591f0ec903393b0f2a5",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_ReloadStart.wav",
+      "sha256": "4ce7cfaef1095b997394aa403fced750b1545a9e32959dd269b0f4409745102c",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_ReloadMagazineOut.wav",
+      "sha256": "35469aace8f34ea5de7ebdfd5700d57510aa6448f63c69cf251097563593eb90",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_ReloadMagazineIn.wav",
+      "sha256": "52cbca2e5f4128cbccb3af094232f140a99712d60b29a1e9c79f222d01a1862e",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_ReloadBolt.wav",
+      "sha256": "6955b5385242395c6df8b6b68510c0119c1c007dd4f6bebad7379d6e9b1c182b",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_ReloadEnd.wav",
+      "sha256": "f1b444cef1c63541e2b1ef914d6dd88d1d319f659141135eeb4a78c7d00d84d5",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_DryFire.wav",
+      "sha256": "e9bed725a169eae7756230ef8b08f86a626387c18421af63f6bfbf9e67c37ce5",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_Draw.wav",
+      "sha256": "728f8443893583d9453072bb5baa588f00b170010d86edac239bb89673fd28aa",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_MP7_Holster.wav",
+      "sha256": "4787aabddb2873a6ca520f575e8e3a87d03514ba7638e99a0621d0daeacfbe32",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_Shot_01.wav",
+      "sha256": "c838198b6fbe377487e72dd75dbb5d20b03d0b9cb21edd512640fbb2cc255424",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3011875,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_Shot_02.wav",
+      "sha256": "56361ffb2f1e9e032b48a136c2eb68cf6e8ff34c17debcaa20e7bf0ca75ce133",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3011875,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_Shot_03.wav",
+      "sha256": "0814861248bd86e0b3b1985693068b5e464396ef65c305abeb782cedc870008f",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3011875,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_Mechanic.wav",
+      "sha256": "61899531ec2020394c5f753a92d05c97a7876d71b1dc844032296824cb5167af",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_ReloadStart.wav",
+      "sha256": "6fcf2355db1585877cdb2393c1ffe639d8434a16af07fb240bc90a39c6964dfd",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_ReloadMagazineOut.wav",
+      "sha256": "a4f7c195bf4e5a2ff73c2f4fadb08901be86283d921f03ec2ea0d90d6627c598",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_ReloadMagazineIn.wav",
+      "sha256": "6c72503f7abb5314916c6d360da2fe1ddb8746cf0577ea113044255dc381ad83",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_ReloadBolt.wav",
+      "sha256": "af4b22eca0149a3ff3a47cbd0e81dbb68c4a88c7676188323ce681a40fd9a82b",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_ReloadEnd.wav",
+      "sha256": "d910940a2cad0a74f28868e30531c6ca9d9f5141140c35c12d82a2e1328b7545",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_DryFire.wav",
+      "sha256": "bd8c49d77b308725eb926e5cfb6a3fb5f45b6923fc4c48aaffdc87b0c6038c0d",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_Draw.wav",
+      "sha256": "96894dd86224c4b9e3c39970bd74a3c1873f18019f039c50604f9e42ce466de4",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_M4_Holster.wav",
+      "sha256": "751d26fd7337515b6d6c2f77ae1446cc2cfe6967b520b0fb04a9de4655d2073d",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_Shot_01.wav",
+      "sha256": "6a2c3ca3c4e43b6c6d2217c627e106440fcf9aaa96149cbe4899e2d45477b6c9",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.33,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_Shot_02.wav",
+      "sha256": "c1a5744fcb8845caa7cc7c0679774d8a08272065522ce83322186e181d85210f",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.33,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_Shot_03.wav",
+      "sha256": "0526b95bdd838ff82ff4de4a1ea07d0b74842903827d438d0fb3da55f38ff2c7",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.33,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_Mechanic.wav",
+      "sha256": "94750c315ab839d68bb7c6091f6f6200759f89bf21e7d27c34818fcd4362d4e4",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_ReloadStart.wav",
+      "sha256": "92eb0989d87b003cf553ea7beb01bb1a3e9fa643f7a6551bca87e29104572a78",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_ReloadMagazineOut.wav",
+      "sha256": "d834be713a1e68e2c87ccffe01ea0ca29ff9c2c7cde0656386ffea974951f152",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_ReloadMagazineIn.wav",
+      "sha256": "3778188c5260969f6bd7edd25ebcf722eb7ea3e0e73efc9fa7fad7b179086618",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_ReloadBolt.wav",
+      "sha256": "bfe9d652a97069d76692dc97f7c03f3a426b1c504a59beb0b5036daf37de2a3a",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_ReloadEnd.wav",
+      "sha256": "22565a3178a3cabf5620b2abdd498c66326d90da814b9f1b931a2546af8357fa",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_DryFire.wav",
+      "sha256": "bcdba89e9482c0e5b741886c646b8af8d8bac0c7d0a0514e2866410337fd76dc",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_Draw.wav",
+      "sha256": "12e876223d3af27744e07a419f820151968176dc957a7f5a4c6867da3180b577",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AK_Holster.wav",
+      "sha256": "1320f4a30b41815b8b102f8f9f6f7f07c363af1915703c4601f0df40ef83ae30",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_Shot_01.wav",
+      "sha256": "4ca4f4af28b21af798023ea3abf76bd67ed4d191adc7fdb9533b295b892d0850",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3155833333333333,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_Shot_02.wav",
+      "sha256": "51beab5457d0562b300d65e27136e7aaccbda3b0f322b41d07af969d23bc1226",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3155833333333333,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_Shot_03.wav",
+      "sha256": "781f84faa2c8e10bf7a0fc3df735a02499f1530b6045e0d508436559b5251411",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3155833333333333,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_Mechanic.wav",
+      "sha256": "9821b4df28e1c602d6d74e7184ac4cd38cdde896f883aa759e469cc8b8efb316",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_ReloadStart.wav",
+      "sha256": "47ff16f8f0bafd81f16fb898992b42fb39d71adaff9277bf2e6d3489583f1ad9",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_ReloadMagazineOut.wav",
+      "sha256": "c762815713c63aea115e2925b25036d8289f43be79f222b507874cea3b2d3fa7",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_ReloadMagazineIn.wav",
+      "sha256": "88f74aa5c86b2528699e609d1b2d4468fde989f80ada6e94398e2aaa634a5251",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_ReloadBolt.wav",
+      "sha256": "94b3e32f8540f8ccf1b9f131959d738eb8f914b0cb998994702ec1889ee8c306",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_ReloadEnd.wav",
+      "sha256": "ccf2dcff7dccd928484a305d4f1cd329c03d43c027b9a8eddfe8c9af362f0d0c",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_DryFire.wav",
+      "sha256": "1540f74ed90077cab736f26a7cd58b14caa5ca3d66ff1f3aa6ab49dbfb2c9dd8",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_Draw.wav",
+      "sha256": "fe157c6f3a7f3ddf74d61df8708fbc70a17b22cb1727f9eb58c8eda0b67e2c67",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_AUG_Holster.wav",
+      "sha256": "fd5dd80ac3b9e6af8cfdbc5c9644d2f150fbe78170c5b8798b4b83356313f551",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_Shot_01.wav",
+      "sha256": "0127cf5f4307cbebe2346e4ca587170a445ce54339a88dbd7155f9c2f72bb45b",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.37,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_Shot_02.wav",
+      "sha256": "c53e4e19a9725c48fd3841455a80f097fa7c03f774a4e3badad6f4c7f0d2e805",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.37,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_Shot_03.wav",
+      "sha256": "95b02f5df2995f009ee534327ba587b57957c56d2bb40f62d871e08275faca57",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.37,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_Mechanic.wav",
+      "sha256": "2f60cb53187e8beee35f87df0ed7a5f0d417f3f448dfc5c7ab64c1dabba7d970",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_ReloadStart.wav",
+      "sha256": "7066192aefeccd78cfb9080e8d008079cb7fae6b7bd19012acbbe2a6d5795e42",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_ReloadMagazineOut.wav",
+      "sha256": "ea1de949eb5e807ca1b5e1095f76928b355110ee712946ebfbf94fe185590c40",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_ReloadMagazineIn.wav",
+      "sha256": "fb0162575eef73a24be120bd388440af070bd9d73b20f3084d9b0411cff92f45",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_ReloadBolt.wav",
+      "sha256": "b21183390b12545b5871923feffbc1fee778e4e29f356d37ad2868151e8d3daf",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_ReloadEnd.wav",
+      "sha256": "0e32d4a2ad46e8c81b3f4800e6e5a12b8e140740a3b5f28d5db3fcc379d025ae",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_DryFire.wav",
+      "sha256": "4e3f5606c2896993b8aa62ee1b95b74c7a934043e43c23c655ec33f23ca8090a",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_Draw.wav",
+      "sha256": "990e09f291f9626a3f7d01d2523b8773a12d96925e43cf7430bfc58e5d66b800",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_DMR_Holster.wav",
+      "sha256": "69b737f1efa4760973665045181b4b53aab970ebe651c0bacec08ec8c5f4bf6a",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_Shot_01.wav",
+      "sha256": "184754b83dc6ec23f392230b36f90459ec31c456c4e2539468687588e8886c87",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.402,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_Shot_02.wav",
+      "sha256": "ab30b0df7b24a555d1c8c3107274dd764ddaefe40e26c10371f3ad52a44340ca",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.402,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_Shot_03.wav",
+      "sha256": "48bc1ef62679bcd86eb53fde2eb2277d9d53993b3d9f32fba5306193e1fe3c80",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.402,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_Mechanic.wav",
+      "sha256": "42e6b74ae3abfcefff0772a0447b2c6666dde29098c63e59c64b5a2d2ca3e37d",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.075,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadStart.wav",
+      "sha256": "a1f1158aac0492749d48ab43e113aaa7402383dec357df38a946a9e198d6961d",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadMagazineOut.wav",
+      "sha256": "11cbb8494bb16f31354fcbcb0ceeabc5550a22ae5bbbd7141ca01f368543444e",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadMagazineIn.wav",
+      "sha256": "217c8160d10a93d740f0581b9d591795579d153e20ca9f9afe5cddec474d4d45",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadBolt.wav",
+      "sha256": "d075043f4c87fe4aa0a6d3aff841ae5bb92496c166ee7f309dbbfe30683d1f73",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadEnd.wav",
+      "sha256": "f05da5ca76e63142665f6c1ef47e8af9fcb5cf3723f9e2e1fc61bf2d1fbbeef3",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_DryFire.wav",
+      "sha256": "0f0b976425eb10eff742917bde7f4b101b237389afc58b2803d976229bbd4ad6",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.065,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_Draw.wav",
+      "sha256": "c7a4883b61a5f1e540f25352a8abd3f763f5667a19157c03417b41daf16bb594",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Shotgun_Holster.wav",
+      "sha256": "3fc228cd035f51ffce73a78910c7b32379209744dc269b4adcecf34ea619d4c7",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Knife_Draw.wav",
+      "sha256": "050268950c68c373be34ec72c343bf05bfcbd31eb7ec5cce511a8d12c3b11af3",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.26,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Knife_Holster.wav",
+      "sha256": "80d1e1eda85e0ff5c935830301f9dbeeaada080a924ffb1694e943b2d8bce1bc",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.22,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_Knife_KnifeSwing.wav",
+      "sha256": "979311695905fd31f91c4f451aa51f28c8ba5164ea3588dab10c03df42bfbfa4",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.27,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_UI_PurchaseAccepted.wav",
+      "sha256": "2252608648b3687d0c86fc7b7708fc38768f4713d5d51b70150b237afa52c5d0",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_UI_PurchaseRejected.wav",
+      "sha256": "945d4213df3db62ae084307b80d3f2f1648f1808b79f9e850b12eacea4202d26",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_UI_BuyPhaseStart.wav",
+      "sha256": "54e5a696ddf40f3daac483f6cab74033e2c2e13dd8cc8fbbe834c3345cd37126",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.36,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_UI_RoundStart.wav",
+      "sha256": "9b8d5858dc4605d1373a6f525326b8eac22b687a58c4396893a6acac493fe483",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.36,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_RoomTail.wav",
+      "sha256": "d943e211ba998f5f3073e04e5e46cdf3defeed68c0050b59ac7afeb2243c3825",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.18,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_EquipmentMove_01.wav",
+      "sha256": "dd3e6410dc9ef87287632787c25ea4df4436fffaade11ae3ba7b3f0c65025058",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.23,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_EquipmentMove_02.wav",
+      "sha256": "9778c1411aeaf6a8fabaf7c7ba9824cbd9a80744da531478d2f3edd207374cd2",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.23,
+      "peak_dbfs": -6.375
+    },
+    {
+      "file": "S_WA_EquipmentMove_03.wav",
+      "sha256": "fc4a1677126c966388c191f799ee69c3cfa4eaac4e040abc06bd0d71cb7c3646",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.23,
+      "peak_dbfs": -6.375
+    }
+  ]
+}

@@ -7,6 +7,7 @@
 
 class UMaterialInstanceDynamic;
 class UStaticMeshComponent;
+class USceneComponent;
 class AVanthexCharacter;
 
 /** Shared ARC presentation for human players and server-controlled bots. */
@@ -24,6 +25,7 @@ public:
  FName GetOperatorId() const { return TEXT("ARC"); }
  bool IsPresentationReady() const;
  UStaticMeshComponent* GetWorldRifle() const { return WorldRifle; }
+ USceneComponent* GetWorldFirearmRoot() const { return WorldFirearmRoot; }
  UMaterialInstanceDynamic* GetArmorMaterial() const { return ArmorMaterial; }
 
 private:
@@ -31,6 +33,10 @@ private:
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> ArmorMaterial;
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> AccentMaterial;
  UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> WorldRifle;
+ UPROPERTY(Transient) TObjectPtr<USceneComponent> WorldFirearmRoot;
+ UPROPERTY(Transient) TArray<TObjectPtr<UStaticMeshComponent>> WorldFirearmParts;
+ FName VisualWeaponId;
+ void RefreshWeaponVisual();
  UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> WorldMuzzle;
  float MuzzleSeconds=0.f;
  EVanthexTeam CurrentTeam=EVanthexTeam::None;

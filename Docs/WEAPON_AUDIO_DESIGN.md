@@ -1,8 +1,17 @@
 # VANTHEX – Waffen- und Wirtschaftsaudio
 
-Stand: 2. November 2026. **Geplantes Sounddesign, noch keine neuen Audioassets.**
+Stand: 3. November 2026. **Audio-Router, Ereignisprofile und GRID-Raummodell sind
+implementiert; 119 originale synthetische Mono-WAVs liegen als Quelldateien vor.**
+Import, automatisierte Prüfungen und echte Stereo-Mixeraufnahme sind bestanden;
+die Messwerte stehen unten. Produktionsmix und menschliche Hörabnahme bleiben offen.
 Waffen-/Wirtschaftsregeln: ECONOMY_AND_WEAPONS.md. Bestehender Vorbeiflug und
 Materialeinschlag: BULLET_AUDIO.md.
+
+Der Import-Commandlet erzeugt editierbare Unreal-Ereignisbänke, Attenuation und
+Concurrency-Konfiguration. Herkunft, Generator, Manifest und Import stehen in
+[AudioSource/Weapons/README.md](../AudioSource/Weapons/README.md).
+[Implementierung und Prüfaufrufe](ECONOMY_IMPLEMENTATION.md) unterscheiden den
+vorliegenden Prototyp vom nachstehenden gestalterischen Abnahmeziel.
 
 ## Erste Priorität: AUG und MP7
 
@@ -89,5 +98,69 @@ gemischt, statt unbegrenzt überlagert.
 6. Mixeraufnahmen auf Richtung, Pegel und Clipping prüfen; anschließend menschliche
    Hörtests auf Waffenidentität und taktische Verständlichkeit durchführen.
 
-Noch nicht nachgewiesen: neue Waffenklänge, Raum-/Portalmodell, Höhenortung,
-finaler Mix und belastbares Audio-Performancebudget.
+## Aktueller Implementierungsstand und Grenzen
+
+Die neun Feuerwaffen besitzen eigene Schussvarianten, Mechanik, Nachladephasen,
+Leerschuss und Holster/Draw. Messer und lokale Kauf-/Phasenhinweise haben eigene
+Ereignisse. Die 119 Quelldateien sind reproduzierbare prozedurale Synthese in
+Mono, 48 kHz PCM16; sie sind keine authentischen Waffenaufnahmen. Für die noch
+fehlenden Gadget-Wirkungen werden keine Wirkungsgeräusche behauptet.
+
+Drei gemeinsame Bewegungsvarianten mischen Fußkontakt und leise Ausrüstung in
+einer Aktion. Klangwahl und Klangfarbe lesen weder Rüstungstyp noch Rüstungspunkte.
+Die tatsächlich zurückgelegte Bodenstrecke bestimmt serverseitig die Schritte;
+Stillstand, Luftbewegung, Tod, inaktive Runde und Teleports setzen den Schrittgeber
+zurück. Geduckte Bewegung hat 32 % Lautstärke. Die Bewegung liegt im Stimmenbudget
+unter Schüssen und über Mechanikdetails und benutzt denselben räumlichen Router.
+
+Der Server löst Weltgeräusche aus und adressiert hörbare Besitzer-Verbindungen.
+Ereignis-IDs begrenzen Doppelwiedergabe; Reload-Abbruch stoppt laufende und verspätete
+Phasen. Die vorhandenen Projektil-Vorbeiflug- und Einschlagereignisse bleiben getrennt.
+
+GRID verwendet einen Graphen aus Korridor- und Treppenverbindungen, aktuelle
+Blockierungstests einschließlich beweglicher Türen, Weglänge, Tiefpassfilterung und
+eine leise Transmissionsersatzlösung bei fehlendem offenen Weg. Die Prüfung der
+Graphkanten wird höchstens alle 100 ms erneuert. Frühe Reflexionen sind kurz und
+vereinfacht. Das ist eine begrenzte Portal-/Raum-Näherung, keine Simulation der
+Schallwellenausbreitung.
+
+## Belegte Prüfungen vom 3. November 2026
+
+Der Import meldet **119 WAVs und zehn Waffenbänke**. Alle 14 Automation-Gruppen
+des gemeinsamen Laufs bestehen, darunter die vier Waffen-Audio-Gruppen
+`CompleteMonoBanks`, `EquipmentMovementCadence`, `MixPriorities` und
+`PhysicalPortalAndWall`. Die letzte Gruppe prüft physische Tür-/Wand-/Deckenblockierung
+und alternative GRID-Hörwege in einer Kollisions-Testwelt.
+[Import-/Buildnachweis](Validation/EconomyArmorAudio/BuildAndImport.txt),
+[Automation-Ergebnisse](Validation/EconomyArmorAudio/Automation.json).
+
+Die echte Mixeraufnahme mit `-WeaponAudioPlaybackTest` besteht alle **13 Prüfungen**:
+sieben geplante Ereignisse, keine Doppelwiedergabe, Reload-Abbruch und Unterdrückung
+verspäteter Phasen, fehlende Assets, gemeinsamer Fuß-/Equipmentklang, getrennte
+Schusszähler, Stimmenlimit und Prioritätsverdrängung, autorisierter Dispatch,
+Reichweite und frische Aufnahme. [Laufzeitbericht](Validation/EconomyArmorAudio/WeaponAudioPlayback.txt).
+
+Die [aufgenommene WAV](Validation/EconomyArmorAudio/WeaponAudioPlayback.wav) enthält
+**428.032 Stereo-Frames bei 48 kHz** (8,917 Sekunden). Der gemessene Spitzenwert
+beträgt **0,180939 beziehungsweise −14,85 dBFS**; **kein Sample erreicht die
+Clipping-Prüfschwelle von 0,999**. Alle sieben Ereignisfenster enthalten ein
+Signal. [Wellenformanalyse](Validation/EconomyArmorAudio/WeaponAudioPlayback-analysis.json).
+
+| Probe | RMS links | RMS rechts |
+|---|---:|---:|
+| AUG links | 0,0177533 | 0 |
+| MP7 rechts | 0 | 0,0116994 |
+| Pistole vorne | 0,0076927 | 0,0076927 |
+| AUG hinten | 0,0088577 | 0,0088577 |
+| AUG oben | 0,0088638 | 0,0088638 |
+| AUG unten | 0,0088763 | 0,0088763 |
+| AUG vorne, vorgegeben gedämpft/gefiltert | 0,0008826 | 0,0008826 |
+
+Links-/Rechts-Verteilung und Wiedergabe der vorgegebenen Dämpfung sind damit
+gemessen. Die physische Portalberechnung wird separat durch die Automation geprüft;
+die Mixerprobe ersetzt keinen Hörtest durch Türen in einer laufenden Partie.
+Gleiche Stereopegel für vorne/hinten/oben/unten beweisen weder deren wahrnehmbare
+Unterscheidung noch HRTF oder zuverlässige Höhenortung. Höhenwahrnehmung,
+Waffenunterscheidbarkeit, finaler Mix, Paketverlustverhalten und belastbare
+Performancegrenzen benötigen weiterhin dokumentierte Hör- und Belastungstests.
+Der obige gestalterische Abnahmekatalog bleibt für diese Punkte offen.

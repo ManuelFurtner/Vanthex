@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "VanthexWeaponProfile.h"
 #include "WeaponBase.generated.h"
 
 UCLASS(Abstract)
@@ -27,6 +28,13 @@ public:
 	float GetHeadshotMultiplier() const { return HeadshotMultiplier; }
 	float GetReloadDuration() const { return ReloadDuration; }
 	float GetFireInterval() const { return FireInterval; }
+ int32 GetReserveAmmo() const { return ReserveAmmo; }
+ FName GetWeaponId() const { return ActiveWeaponId; }
+ const FVanthexWeaponProfile& GetProfile() const;
+ bool IsAutomatic() const { return GetProfile().IsAutomatic(); }
+ void SetReserveAmmo(int32 NewAmmo);
+ bool EquipProfile(FName Id, int32 Magazine = -1, int32 Reserve = -1);
+ void HolsterForKnife();
 
 	/** Single magazine write. Fire, reload, and the M1 self-test all go through this. */
 	void SetMagazineAmmo(int32 NewAmmo);
@@ -37,9 +45,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void FinishReload();
+ virtual void OnWeaponProfileChanged() {}
+ UFUNCTION() void OnRep_ActiveWeaponId();
+ void ApplyProfileSettings();
+ uint32 NextActionId() { return ++ActionSequence; }
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 	TObjectPtr<USceneComponent> WeaponRoot;
+ UPROPERTY(ReplicatedUsing=OnRep_ActiveWeaponId) FName ActiveWeaponId = TEXT("Pistol");
+ UPROPERTY(Replicated) int32 ReserveAmmo = 48;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	int32 MagazineSize = 30;
@@ -66,4 +80,6 @@ protected:
 	bool bTriggerHeld = false;
 
 	FTimerHandle ReloadTimer;
+ FTimerHandle MagazineOutTimer, MagazineInTimer, BoltTimer;
+ uint32 ActionSequence = 0, ReloadActionId = 0;
 };

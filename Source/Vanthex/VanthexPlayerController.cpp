@@ -5,11 +5,14 @@
 #include "VanthexGameMode.h"
 #include "VanthexOperatorComponent.h"
 #include "VanthexMapLayout.h"
+#include "VanthexBuyMenuComponent.h"
 #include "Engine/World.h"
 
 AVanthexPlayerController::AVanthexPlayerController()
 {
 	BulletAudio = CreateDefaultSubobject<UVanthexBulletAudioComponent>(TEXT("BulletAudio"));
+	WeaponAudio = CreateDefaultSubobject<UVanthexWeaponAudioComponent>(TEXT("WeaponAudio"));
+	BuyMenu = CreateDefaultSubobject<UVanthexBuyMenuComponent>(TEXT("BuyMenu"));
 	bShowMouseCursor = false;
 	bEnableClickEvents = false;
 	bEnableMouseOverEvents = false;
@@ -18,6 +21,14 @@ AVanthexPlayerController::AVanthexPlayerController()
 void AVanthexPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	if(FParse::Param(FCommandLine::Get(),TEXT("WeaponAudioPlaybackTest"))) {
+		extern void VanthexStartWeaponAudioPlaybackTest(AVanthexPlayerController* PC);
+		VanthexStartWeaponAudioPlaybackTest(this);
+	}
+	if(FParse::Param(FCommandLine::Get(),TEXT("EconomyNetworkTest"))) {
+		extern void VanthexStartEconomyNetworkTest(AVanthexPlayerController* PC);
+		VanthexStartEconomyNetworkTest(this);
+	}
 	if(FParse::Param(FCommandLine::Get(),TEXT("EquipmentNetworkTest"))) {
 		extern void VanthexStartEquipmentNetworkTest(AVanthexPlayerController* PC);
 		VanthexStartEquipmentNetworkTest(this);
@@ -58,6 +69,15 @@ void AVanthexPlayerController::RestartTest()
 	}
 }
 
+void AVanthexPlayerController::PawnLeavingGame()
+{
+ // UE invokes this before AController::Destroyed calls GameMode::Logout.
+ // Transfer first so the base implementation finds no roster pawn to destroy.
+ if(UWorld* World=GetWorld())
+  if(auto* Mode=World->GetAuthGameMode<AVanthexGameMode>()) Mode->HandOverPlayerSlot(this);
+ Super::PawnLeavingGame();
+}
+
 
 #include "Kismet/GameplayStatics.h"
 void AVanthexPlayerController::HostGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::IsGridV3(GetWorld())?TEXT("/Game/Vanthex/Maps/GridV3"):TEXT("/Game/Vanthex/Maps/Foundry")), true, "listen"); }
@@ -73,13 +93,18 @@ void AVanthexPlayerController::LeaveGame() { if (IsLocalController()) UGameplayS
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Text/STextBlock.h"
-void AVanthexPlayerController::SetupInputComponent() { Super::SetupInputComponent(); InputComponent->BindKey(EKeys::Escape,IE_Pressed,this,&AVanthexPlayerController::ToggleSessionMenu); }
+void AVanthexPlayerController::SetupInputComponent() {
+ Super::SetupInputComponent();
+ InputComponent->BindKey(EKeys::Escape,IE_Pressed,this,&AVanthexPlayerController::ToggleSessionMenu);
+ InputComponent->BindKey(EKeys::B,IE_Pressed,BuyMenu.Get(),&UVanthexBuyMenuComponent::Toggle);
+}
 void AVanthexPlayerController::CloseSessionMenu() {
  if(SessionMenu.IsValid() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(SessionMenu.ToSharedRef());
  SessionMenu.Reset(); AddressBox.Reset(); bShowMouseCursor=false; SetInputMode(FInputModeGameOnly()); SetIgnoreMoveInput(false); SetIgnoreLookInput(false);
 }
 void AVanthexPlayerController::EndPlay(const EEndPlayReason::Type Reason) { if(IsLocalController()) CloseSessionMenu(); Super::EndPlay(Reason); }
 void AVanthexPlayerController::ToggleSessionMenu() {
+ if(BuyMenu) BuyMenu->Close();
  if(!IsLocalController() || !GetWorld()->GetGameViewport()) return;
  if(SessionMenu.IsValid()) { CloseSessionMenu(); return; }
  if (auto* OwnPawn=Cast<AVanthexCharacter>(GetPawn())) OwnPawn->ServerAction(1,false);
@@ -152,5 +177,10 @@ void AVanthexPlayerController::ClientConfirmHit_Implementation(bool bHeadshot) {
 void AVanthexPlayerController::ClientBulletAudio_Implementation(const FVanthexBulletAudioPacket& Packet)
 {
  if (BulletAudio) BulletAudio->Receive(Packet);
+}
+
+void AVanthexPlayerController::ClientWeaponAudio_Implementation(const FVanthexWeaponAudioPacket& Packet)
+{
+ if (WeaponAudio) WeaponAudio->Receive(Packet);
 }
 

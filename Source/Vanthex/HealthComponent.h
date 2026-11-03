@@ -17,7 +17,7 @@ public:
 public:
 	UHealthComponent();
 
-	/** Only entry that changes health. Later this is the server function. */
+	/** Server-only entry for validated damage and actual-HP economy events. */
 	void ApplyDamage(const FVanthexDamageRequest& Request);
 
 	/** Round start. Restores max health and clears the death flag. */
@@ -27,6 +27,7 @@ public:
 	float GetMaxHealth() const { return MaxHealth; }
 	bool IsDead() const { return bDead; }
 	float GetLastDamage() const { return LastDamage; }
+	float GetLastAppliedHPDamage() const { return LastAppliedHPDamage; }
 	bool WasLastHitHeadshot() const { return bLastHitWasHeadshot; }
 
 	FVanthexDeathSignature OnDeath;
@@ -43,6 +44,9 @@ protected:
 
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
 	float LastDamage = 0.f;
+
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
+	float LastAppliedHPDamage = 0.f;
 
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
 	bool bLastHitWasHeadshot = false;

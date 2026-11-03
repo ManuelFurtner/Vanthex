@@ -1,5 +1,6 @@
 #include "VanthexCharacter.h"
 #include "VanthexEquipmentComponent.h"
+#include "VanthexWeaponAudioComponent.h"
 #include "Net/UnrealNetwork.h"
 
 #include "Vanthex.h"
@@ -9,6 +10,7 @@
 #include "EngineUtils.h"
 #include "VanthexShiftDevice.h"
 #include "VanthexGameMode.h"
+#include "VanthexGameState.h"
 #include "VanthexPlayerController.h"
 #include "VanthexPlayerState.h"
 #include "HealthComponent.h"
@@ -106,10 +108,12 @@ void AVanthexCharacter::SetHoldForward(bool bHold)
 void AVanthexCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+ TickEquipmentMovementAudio(DeltaSeconds);
  if (const auto* PS = GetPlayerState<AVanthexPlayerState>()) { if (CachedTeam != PS->GetTeam()) { CachedTeam = PS->GetTeam(); SetTeamAppearance(CachedTeam); } }
  if (!HasAuthority() && Health) {
   if (Health->IsDead()) GetCharacterMovement()->DisableMovement();
-  else if (GetCharacterMovement()->MovementMode == MOVE_None) GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+  else if (CanPerformRoundActions() && GetCharacterMovement()->MovementMode == MOVE_None) GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+  else if (!CanPerformRoundActions() && GetCharacterMovement()->MovementMode != MOVE_None) GetCharacterMovement()->DisableMovement();
  }
 
 	if (bHoldForward)
@@ -145,7 +149,21 @@ void AVanthexCharacter::BeginPlay()
 		Weapon->SetActorRelativeRotation(FRotator::ZeroRotator);
 	}
 
-	UE_LOG(LogVanthex, Display, TEXT("Controls: WASD move, mouse look, Shift sprint, Ctrl crouch, Space jump, LMB fire, R reload, E pickup, G drop, Q throw, F5 restart"));
+	SyncEconomyLoadout(false);
+ if(Equipment) Equipment->SelectRoundWeapon();
+ UE_LOG(LogVanthex, Display, TEXT("Controls: WASD move, mouse look, Shift sprint, Ctrl crouch, Space jump, LMB fire, R reload, E pickup, G drop, Q throw, F5 restart"));
+}
+
+void AVanthexCharacter::TickEquipmentMovementAudio(float DeltaSeconds)
+{
+ if(!HasAuthority()) return;
+ const auto* Movement=GetCharacterMovement();
+ if(!Movement) return;
+ if(EquipmentStepClock.Advance(GetActorLocation(),Movement->Velocity,DeltaSeconds,Movement->IsMovingOnGround(),
+  Health && !Health->IsDead(),CanPerformRoundActions(),Movement->bJustTeleported,bIsCrouched)) {
+  if(++EquipmentMovementActionId==0) ++EquipmentMovementActionId;
+  UVanthexWeaponAudioComponent::DispatchEvent(this,NAME_None,EVanthexWeaponAudioEvent::EquipmentMove,EquipmentMovementActionId);
+ }
 }
 
 void AVanthexCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -229,6 +247,7 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
  PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &AVanthexCharacter::InteractShift);
  PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &AVanthexCharacter::UseOperator);
 	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AVanthexCharacter::SelectRifle);
+ PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AVanthexCharacter::SelectPistol);
 	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AVanthexCharacter::SelectKnife);
 
 	if (!MappingContext)
@@ -306,6 +325,7 @@ void AVanthexCharacter::StopCrouchInput()
 
 void AVanthexCharacter::DoMove(float Right, float Forward)
 {
+ if(!CanPerformRoundActions()) return;
 	if (!GetController() || (Health && Health->IsDead()))
 	{
 		return;
@@ -329,6 +349,7 @@ void AVanthexCharacter::DoAim(float Yaw, float Pitch)
 
 void AVanthexCharacter::SetSprinting(bool bNewSprinting)
 {
+ if(bNewSprinting&&!CanPerformRoundActions()) return;
  if (!HasAuthority()) ServerAction(6, bNewSprinting);
 	if (Health && Health->IsDead())
 	{
@@ -348,6 +369,7 @@ void AVanthexCharacter::SetSprinting(bool bNewSprinting)
 
 void AVanthexCharacter::SetCrouching(bool bNewCrouching)
 {
+ if(bNewCrouching&&!CanPerformRoundActions()) return;
  if (bNewCrouching) SetSprinting(false);
 	if (Health && Health->IsDead())
 	{
@@ -368,6 +390,7 @@ void AVanthexCharacter::SetCrouching(bool bNewCrouching)
 
 void AVanthexCharacter::StartJump()
 {
+ if(!CanPerformRoundActions()) return;
 	if (Health && Health->IsDead())
 	{
 		return;
@@ -382,6 +405,7 @@ void AVanthexCharacter::StopJump()
 
 void AVanthexCharacter::StartFire()
 {
+ if(!CanPerformRoundActions()) return;
 	if (Equipment && Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife) { Equipment->Attack(); return; }
  if (!HasAuthority()) { ServerAction(0, false); return; }
 	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
@@ -401,6 +425,7 @@ void AVanthexCharacter::StopFire()
 
 void AVanthexCharacter::StartReload()
 {
+ if(!CanPerformRoundActions()) return;
  if (!HasAuthority()) { ServerAction(2, false); return; }
 	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
 	{
@@ -418,6 +443,7 @@ void AVanthexCharacter::RequestRestart()
 
 void AVanthexCharacter::TryPickupCore()
 {
+ if(!CanPerformRoundActions()) return;
  if (!HasAuthority()) { ServerAction(3, false); return; }
 	if (Health && Health->IsDead())
 	{
@@ -438,6 +464,7 @@ void AVanthexCharacter::TryPickupCore()
 
 void AVanthexCharacter::DropCarriedCore()
 {
+ if(!CanPerformRoundActions()) return;
  if (!HasAuthority()) { ServerAction(4, false); return; }
 	if (Health && Health->IsDead())
 	{
@@ -458,6 +485,7 @@ void AVanthexCharacter::DropCarriedCore()
 
 void AVanthexCharacter::ThrowCarriedCore()
 {
+ if(!CanPerformRoundActions()) return;
  if (!HasAuthority()) { ServerAction(5, false); return; }
 	if (Health && Health->IsDead())
 	{
@@ -488,7 +516,6 @@ bool AVanthexCharacter::IsCarryingCore() const
 
 void AVanthexCharacter::PrepareForRound(const FTransform& Spawn)
 {
-	if (Equipment) Equipment->ResetEquipment();
 	SetHoldForward(false);
  AbilityReadyTime = 0.f;
 	bSprintWanted = false;
@@ -530,6 +557,8 @@ void AVanthexCharacter::PrepareForRound(const FTransform& Spawn)
 			RosterState->SetAlive(true);
 		}
 	}
+ SyncEconomyLoadout(true);
+ if(Equipment) Equipment->SelectRoundWeapon();
 }
 
 void AVanthexCharacter::SetTeamAppearance(EVanthexTeam Team)
@@ -586,11 +615,12 @@ void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled)
 
 void AVanthexCharacter::InteractShift() { ServerUseDevice(false); }
 void AVanthexCharacter::SelectRifle() { if (Equipment) Equipment->SelectRifle(); }
+void AVanthexCharacter::SelectPistol() { if (Equipment) Equipment->SelectPistol(); }
 void AVanthexCharacter::SelectKnife() { if (Equipment) Equipment->SelectKnife(); }
-bool AVanthexCharacter::CanUseRifle() const { return !Equipment || Equipment->CanUseRifle(); }
+bool AVanthexCharacter::CanUseRifle() const { return CanPerformRoundActions() && (!Health || !Health->IsDead()) && (!Equipment || Equipment->CanUseRifle()); }
 void AVanthexCharacter::UseOperator() { ServerUseDevice(true); }
 void AVanthexCharacter::ServerUseDevice_Implementation(bool bRemote) {
- if (Health->IsDead() || (bRemote && GetWorld()->GetTimeSeconds()<AbilityReadyTime)) return;
+ if (!CanPerformRoundActions() || Health->IsDead() || (bRemote && GetWorld()->GetTimeSeconds()<AbilityReadyTime)) return;
  AVanthexShiftDevice* Best=nullptr; float Distance=bRemote ? 1200.f : 250.f;
  for (TActorIterator<AVanthexShiftDevice> It(GetWorld()); It; ++It) {
   const FVector Offset=It->InteractionPoint(GetActorLocation())-GetPawnViewLocation();
@@ -598,4 +628,34 @@ void AVanthexCharacter::ServerUseDevice_Implementation(bool bRemote) {
   if (Offset.Size()<Distance && (OnLift || FVector::DotProduct(Offset.GetSafeNormal(),GetControlRotation().Vector())>0.65f)) { Best=*It; Distance=Offset.Size(); }
  }
  if (Best && Best->Activate(this,bRemote ? 1200.f : 250.f) && bRemote) AbilityReadyTime=GetWorld()->GetTimeSeconds()+15.f;
+}
+bool AVanthexCharacter::CanPerformRoundActions() const
+{
+ if(!GetWorld()) return false;
+ if(HasAuthority()) if(const auto* Mode=GetWorld()->GetAuthGameMode<AVanthexGameMode>()) return Mode->IsRoundActive();
+ const auto* State=GetWorld()->GetGameState<AVanthexGameState>();
+ return State&&State->GetPhase()==EVanthexRoundPhase::RoundActive;
+}
+void AVanthexCharacter::SyncEconomyLoadout(bool Refill)
+{
+ if(!HasAuthority()||!Equipment||!Weapon) return;
+ const auto* Mode=GetWorld()->GetAuthGameMode<AVanthexGameMode>();
+ if(Mode&&Mode->UsesLegacyCombatFixture()) { Equipment->SyncLoadout(TEXT("LegacyRifle"),TEXT("Pistol"),Refill); return; }
+ const auto* PS=GetPlayerState<AVanthexPlayerState>();
+ Equipment->SyncLoadout(PS?PS->GetEconomy().PrimaryWeapon:NAME_None,PS?PS->GetEconomy().Sidearm:FName(TEXT("Pistol")),Refill);
+}
+void AVanthexCharacter::ApplyWeaponRecoil(FVector2D Kick)
+{
+ if(!HasAuthority()||!GetController()||Kick.IsNearlyZero()) return;
+ auto Rotation=GetController()->GetControlRotation();
+ Rotation.Pitch=FMath::Clamp(FRotator::NormalizeAxis(Rotation.Pitch)+Kick.X,-89.f,89.f);
+ Rotation.Yaw+=Kick.Y; GetController()->SetControlRotation(Rotation);
+ if(auto* PC=Cast<APlayerController>(GetController())) if(!PC->IsLocalController()) ClientWeaponRecoil(Kick);
+}
+void AVanthexCharacter::ClientWeaponRecoil_Implementation(FVector2D Kick)
+{
+ if(!IsLocallyControlled()||!GetController()) return;
+ auto Rotation=GetController()->GetControlRotation();
+ Rotation.Pitch=FMath::Clamp(FRotator::NormalizeAxis(Rotation.Pitch)+Kick.X,-89.f,89.f);
+ Rotation.Yaw+=Kick.Y; GetController()->SetControlRotation(Rotation);
 }

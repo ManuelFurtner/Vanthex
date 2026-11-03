@@ -3,7 +3,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "VanthexBulletAudioComponent.h"
+#include "VanthexWeaponAudioComponent.h"
 #include "VanthexPlayerController.generated.h"
+
+class UVanthexBuyMenuComponent;
 
 UCLASS()
 class AVanthexPlayerController : public APlayerController
@@ -14,6 +17,9 @@ public:
 	AVanthexPlayerController();
  UVanthexBulletAudioComponent* GetBulletAudio() const { return BulletAudio; }
  UFUNCTION(Client, Unreliable) void ClientBulletAudio(const FVanthexBulletAudioPacket& Packet);
+ UVanthexWeaponAudioComponent* GetWeaponAudio() const { return WeaponAudio; }
+ UVanthexBuyMenuComponent* GetBuyMenu() const { return BuyMenu; }
+ UFUNCTION(Client, Unreliable) void ClientWeaponAudio(const FVanthexWeaponAudioPacket& Packet);
 
 	/** Local test restart. Later this is a server round restart. */
 	UFUNCTION(Exec)
@@ -28,9 +34,12 @@ public:
 
 protected:
  UPROPERTY(VisibleAnywhere, Category="Audio") TObjectPtr<UVanthexBulletAudioComponent> BulletAudio;
+ UPROPERTY(VisibleAnywhere, Category="Audio") TObjectPtr<UVanthexWeaponAudioComponent> WeaponAudio;
+ UPROPERTY(VisibleAnywhere, Category="Economy") TObjectPtr<UVanthexBuyMenuComponent> BuyMenu;
 	virtual void BeginPlay() override;
  virtual void SetupInputComponent() override;
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+ virtual void PawnLeavingGame() override;
  void ToggleSessionMenu();
  virtual void PlayerTick(float DeltaSeconds) override;
  float ProbeStart = -1.f;

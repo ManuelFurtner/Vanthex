@@ -1,5 +1,6 @@
 #include "HitscanWeapon.h"
 #include "VanthexCharacter.h"
+#include "VanthexWeaponAudioComponent.h"
 
 #include "Vanthex.h"
 #include "VanthexArt.h"
@@ -36,42 +37,24 @@ AHitscanWeapon::AHitscanWeapon()
 
 void AHitscanWeapon::BeginPlay()
 {
-	Super::BeginPlay();
-	RiflePivot = NewObject<USceneComponent>(this, TEXT("RiflePivot"));
-	RiflePivot->SetupAttachment(WeaponRoot);
-	RiflePivot->SetRelativeLocation(FVector(28.f, 8.f, -6.f));
-	RiflePivot->RegisterComponent();
-
-	UStaticMesh* Cube = VanthexArt::LoadCube();
-	UStaticMesh* RifleMesh = VanthexArt::LoadKit(TEXT("SM_Rifle"));
-	UMaterialInstanceDynamic* Metal = VanthexArt::MakeSurface(this, FLinearColor(0.045f, 0.046f, 0.048f), 0.34f, 0.88f, FLinearColor::Black, 0.f, EVanthexSurface::BareSteel);
-	UMaterialInstanceDynamic* Dark = VanthexArt::MakeSurface(this, FLinearColor(0.02f, 0.02f, 0.022f), 0.62f, 0.08f, FLinearColor::Black, 0.f, EVanthexSurface::Rubber);
-	UMaterialInstanceDynamic* Optic = VanthexArt::MakeEnergy(this, FLinearColor(1.f, 0.22f, 0.12f), 1.4f);
-
-	if (ViewMesh)
-	{
-		ViewMesh->SetVisibility(false);
-	}
-
-	UStaticMesh* BodyMesh = RifleMesh ? RifleMesh : Cube;
-	const FVector BodyScale = RifleMesh ? FVector(1.f) : FVector(0.22f, 0.045f, 0.055f);
-	if (UStaticMeshComponent* Rifle = VanthexArt::AddMesh(this, RiflePivot, BodyMesh, RiflePivot->GetComponentLocation(), RiflePivot->GetComponentRotation(), BodyScale, Metal, false))
-	{
-		Rifle->SetMaterial(1, Optic);
-		Rifle->SetOnlyOwnerSee(true);
-		if (!RifleMesh)
-		{
-			Rifle->SetMaterial(0, Dark);
-		}
-	}
-
-	MuzzleFlash = VanthexArt::AddMesh(this, RiflePivot, VanthexArt::LoadSphere(), FVector::ZeroVector, FRotator::ZeroRotator, FVector(0.07f, 0.04f, 0.04f), VanthexArt::MakeEnergy(this, FLinearColor(1.f, 0.42f, 0.08f), 3.2f), false);
-	if (MuzzleFlash)
-	{
-		MuzzleFlash->SetRelativeLocation(FVector(24.f, 0.f, 2.2f));
-		MuzzleFlash->SetVisibility(false);
-		MuzzleFlash->SetOnlyOwnerSee(true);
-	}
+ Super::BeginPlay();
+ RiflePivot=NewObject<USceneComponent>(this,TEXT("RiflePivot")); RiflePivot->SetupAttachment(WeaponRoot);
+ RiflePivot->SetRelativeLocation(FVector(28,8,-6)); RiflePivot->RegisterComponent();
+ if(ViewMesh) ViewMesh->SetVisibility(false);
+ MuzzleFlash=VanthexArt::AddMesh(this,RiflePivot,VanthexArt::LoadSphere(),FVector::ZeroVector,FRotator::ZeroRotator,
+  FVector(.07f,.04f,.04f),VanthexArt::MakeEnergy(this,FLinearColor(1,.42f,.08f),3.2f),false);
+ if(MuzzleFlash) { MuzzleFlash->SetOnlyOwnerSee(true); MuzzleFlash->SetVisibility(false); }
+ OnWeaponProfileChanged();
+}
+void AHitscanWeapon::OnWeaponProfileChanged()
+{
+ if(GetWeaponId()==TEXT("Knife")) return;
+ const auto& P=GetProfile(); TraceRange=P.TraceRange; bSupersonicBullet=P.bSupersonic;
+ BurstIndex=0; LastShotTime=-100.f;
+ if(!RiflePivot) return;
+ FVector Muzzle;
+ VanthexWeapons::BuildVisual(this,RiflePivot,GetWeaponId(),true,FirearmParts,Muzzle);
+ if(MuzzleFlash) MuzzleFlash->SetRelativeLocation(Muzzle);
 }
 
 void AHitscanWeapon::Tick(float DeltaSeconds)
@@ -223,51 +206,42 @@ void AHitscanWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AHitscanWeapon::StartFire()
 {
-	if (const auto* Character = Cast<AVanthexCharacter>(GetOwner())) { if (!Character->CanUseRifle()) return; }
-	Super::StartFire();
-	if (bReloading)
-	{
-		return;
-	}
-
-	FireShot();
-	if (bReloading)
-	{
-		return;
-	}
-
-	if (UWorld* World = GetWorld())
-	{
-		World->GetTimerManager().SetTimer(FireTimer, this, &AHitscanWeapon::FireShot, FireInterval, true, FireInterval);
-	}
+ if(!HasAuthority()||bTriggerHeld) return;
+ if(const auto* Character=Cast<AVanthexCharacter>(GetOwner())) if(!Character->CanUseRifle()) return;
+ Super::StartFire();
+ if(bReloading) return;
+ FireShot();
+ if(!bTriggerHeld||bReloading||!IsAutomatic()) return;
+ ScheduleAutomaticFire();
 }
-
+void AHitscanWeapon::ScheduleAutomaticFire()
+{
+ if(!GetWorld()||!bTriggerHeld||bReloading||!IsAutomatic()) return;
+ const float Delay=FMath::Max(.001f,NextFireTime-GetWorld()->GetTimeSeconds());
+ GetWorld()->GetTimerManager().SetTimer(FireTimer,this,&AHitscanWeapon::ContinueAutomaticFire,Delay,false);
+}
+void AHitscanWeapon::ContinueAutomaticFire()
+{
+ FireShot();
+ ScheduleAutomaticFire();
+}
 void AHitscanWeapon::StartReload()
 {
-	if (const auto* Character = Cast<AVanthexCharacter>(GetOwner())) { if (!Character->CanUseRifle()) return; }
-	if (UWorld* World = GetWorld())
-	{
-		World->GetTimerManager().ClearTimer(FireTimer);
-	}
-	Super::StartReload();
+ if(!HasAuthority()||bReloading||AmmoInMagazine>=MagazineSize||GetReserveAmmo()<=0) return;
+ if(const auto* Character=Cast<AVanthexCharacter>(GetOwner())) if(!Character->CanUseRifle()) return;
+ if(GetWorld()) GetWorld()->GetTimerManager().ClearTimer(FireTimer);
+ Super::StartReload();
 }
-
 void AHitscanWeapon::StopFire()
 {
-	Super::StopFire();
-	if (UWorld* World = GetWorld())
-	{
-		World->GetTimerManager().ClearTimer(FireTimer);
-	}
+ Super::StopFire();
+ if(GetWorld()) GetWorld()->GetTimerManager().ClearTimer(FireTimer);
 }
-
 void AHitscanWeapon::FinishReload()
 {
-	Super::FinishReload();
-	if (bTriggerHeld)
-	{
-		StartFire();
-	}
+ const bool Resume=bTriggerHeld&&IsAutomatic();
+ Super::FinishReload();
+ if(Resume) { bTriggerHeld=false; StartFire(); }
 }
 
 bool AHitscanWeapon::IsHeadHit(const FHitResult& Hit) const
@@ -286,111 +260,62 @@ bool AHitscanWeapon::IsHeadHit(const FHitResult& Hit) const
 
 void AHitscanWeapon::FireShot()
 {
- if (!HasAuthority()) return;
-	if (const auto* Character = Cast<AVanthexCharacter>(GetOwner())) { if (!Character->CanUseRifle()) { StopFire(); return; } }
-	UWorld* World = GetWorld();
-	if (!World || bReloading)
-	{
-		return;
-	}
-
-	if (const AVanthexGameMode* Mode = Cast<AVanthexGameMode>(World->GetAuthGameMode()))
-	{
-		if (!Mode->IsRoundActive())
-		{
-			return;
-		}
-	}
-
-	APawn* OwnerPawn = Cast<APawn>(GetOwner());
-	if (!OwnerPawn)
-	{
-		return;
-	}
-
-	if (const UHealthComponent* OwnerHealth = OwnerPawn->FindComponentByClass<UHealthComponent>())
-	{
-		if (OwnerHealth->IsDead())
-		{
-			StopFire();
-			return;
-		}
-	}
-
-	const float Now = World->GetTimeSeconds();
-	if (Now + 0.02f < NextFireTime)
-	{
-		return;
-	}
-
-	if (AmmoInMagazine <= 0)
-	{
-		StartReload();
-		return;
-	}
-
-	AController* Controller = OwnerPawn->GetController();
-	if (!Controller)
-	{
-		return;
-	}
-
-	FVector ViewLocation;
-	FRotator ViewRotation;
-	ViewLocation = OwnerPawn->GetPawnViewLocation();
-	ViewRotation = Controller->GetControlRotation();
-
-	const FVector TraceEnd = ViewLocation + (ViewRotation.Vector() * TraceRange);
-
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(VanthexHitscan), false, OwnerPawn);
-	Params.AddIgnoredActor(this);
-	Params.bReturnPhysicalMaterial = true;
-
-	FHitResult Hit;
-	const bool bHit = World->LineTraceSingleByChannel(Hit, ViewLocation, TraceEnd, ECC_Visibility, Params);
-	MulticastShot(ViewRotation, Hit);
-
-	NextFireTime = Now + FireInterval;
-	SetMagazineAmmo(AmmoInMagazine - 1);
-	UVanthexBulletAudioComponent::DispatchShot(World, OwnerPawn, ViewLocation, TraceEnd, Hit, bSupersonicBullet);
-
-	if (!bHit || !Hit.GetActor())
-	{
-		UE_LOG(LogVanthex, Display, TEXT("Hitscan miss  ammo %d/%d"), AmmoInMagazine, MagazineSize);
-		return;
-	}
-
-	const bool bHeadshot = IsHeadHit(Hit);
-	const float Damage = bHeadshot ? BodyDamage * HeadshotMultiplier : BodyDamage;
-
-	if (UHealthComponent* Health = Hit.GetActor()->FindComponentByClass<UHealthComponent>())
-	{
-		if (const AVanthexGameMode* Mode = Cast<AVanthexGameMode>(World->GetAuthGameMode()))
-		{
-			if (!Mode->CanDamage(OwnerPawn, Hit.GetActor()))
-			{
-				UE_LOG(LogVanthex, Display, TEXT("Hitscan blocked friendly fire on %s"), *GetNameSafe(Hit.GetActor()));
-				return;
-			}
-		}
-
-		FVanthexDamageRequest Request;
-		Request.InstigatorActor = OwnerPawn;
-		Request.InstigatorController = Controller;
-		Request.Damage = Damage;
-		Request.bHeadshot = bHeadshot;
-		Request.Hit = Hit;
-		Health->ApplyDamage(Request);
-	}
-	else
-	{
-		UE_LOG(LogVanthex, Display, TEXT("Hitscan hit %s/%s at %s (no health)  ammo %d/%d"),
-			*GetNameSafe(Hit.GetActor()),
-			*GetNameSafe(Hit.GetComponent()),
-			*Hit.ImpactPoint.ToCompactString(),
-			AmmoInMagazine,
-			MagazineSize);
-	}
+ if(!HasAuthority()) return;
+ auto* Character=Cast<AVanthexCharacter>(GetOwner());
+ if(Character&&!Character->CanUseRifle()) { StopFire(); return; }
+ auto* World=GetWorld(); if(!World||bReloading) return;
+ auto* Mode=Cast<AVanthexGameMode>(World->GetAuthGameMode());
+ if(Mode&&!Mode->IsRoundActive()) { StopFire(); return; }
+ auto* OwnerPawn=Cast<APawn>(GetOwner()); if(!OwnerPawn||!OwnerPawn->GetController()) return;
+ if(const auto* Health=OwnerPawn->FindComponentByClass<UHealthComponent>()) if(Health->IsDead()) { StopFire(); return; }
+ const float Now=World->GetTimeSeconds();
+ if(Now+KINDA_SMALL_NUMBER<NextFireTime) return;
+ if(AmmoInMagazine<=0) {
+  if(GetWeaponId()==TEXT("LegacyRifle")&&GetReserveAmmo()>0) StartReload();
+  else { UVanthexWeaponAudioComponent::DispatchEvent(this,GetWeaponId(),EVanthexWeaponAudioEvent::DryFire,NextActionId()); StopFire(); NextFireTime=Now+.2f; }
+  return;
+ }
+ auto* Controller=OwnerPawn->GetController();
+ const FVector Start=OwnerPawn->GetPawnViewLocation();
+ const FRotator View=Controller->GetControlRotation();
+ const auto& Profile=GetProfile();
+ if(Now-LastShotTime>FMath::Max(.35f,FireInterval*2.5f)) BurstIndex=0;
+ LastShotTime=Now; NextFireTime=Now+FireInterval; ++ShotSequence;
+ SetMagazineAmmo(AmmoInMagazine-1);
+ const uint32 Action=NextActionId();
+ UVanthexWeaponAudioComponent::DispatchEvent(this,GetWeaponId(),EVanthexWeaponAudioEvent::Shot,Action);
+ UVanthexWeaponAudioComponent::DispatchEvent(this,GetWeaponId(),EVanthexWeaponAudioEvent::Mechanic,Action);
+ FCollisionQueryParams Params(SCENE_QUERY_STAT(VanthexHitscan),false,OwnerPawn);
+ Params.AddIgnoredActor(this); Params.bReturnPhysicalMaterial=true;
+ FHitResult FirstHit; TArray<FHitResult> ExtraImpacts;
+ for(int32 Pellet=0;Pellet<Profile.Pellets;++Pellet) {
+  const FVector End=Start+Profile.ShotDirection(View,ShotSequence,Pellet,OwnerPawn->GetVelocity().Size2D())*TraceRange;
+  FHitResult Hit; World->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,Params);
+  if(Pellet==0) {
+   FirstHit=Hit;
+   // One representative ballistic audio event per trigger, also for shotguns.
+   UVanthexBulletAudioComponent::DispatchShot(World,OwnerPawn,Start,End,Hit,bSupersonicBullet);
+  } else if(Hit.bBlockingHit) ExtraImpacts.Add(Hit);
+  if(!Hit.bBlockingHit||!Hit.GetActor()) continue;
+  auto* TargetHealth=Hit.GetActor()->FindComponentByClass<UHealthComponent>();
+  if(!TargetHealth||(Mode&&!Mode->CanDamage(OwnerPawn,Hit.GetActor()))) continue;
+  const bool Head=IsHeadHit(Hit);
+  FVanthexDamageRequest Request;
+  Request.InstigatorActor=OwnerPawn; Request.InstigatorController=Controller;
+  Request.Damage=Profile.DamageAtDistance(Hit.Distance)*(Head?HeadshotMultiplier:1.f);
+  Request.bHeadshot=Head; Request.DamageKind=EVanthexDamageKind::Bullet; Request.Hit=Hit;
+  TargetHealth->ApplyDamage(Request);
+ }
+ MulticastShot(View,FirstHit);
+ if(!ExtraImpacts.IsEmpty()) MulticastPelletImpacts(ExtraImpacts);
+ if(Character) Character->ApplyWeaponRecoil(Profile.RecoilForShot(BurstIndex++));
 }
-
-void AHitscanWeapon::MulticastShot_Implementation(FRotator ViewRotation, FHitResult Hit) { Recoil = 2.2f; MuzzleTime = 0.035f; PresentShotFeedback(ViewRotation); if (Hit.bBlockingHit) PresentImpact(Hit); }
+void AHitscanWeapon::MulticastShot_Implementation(FRotator View,FHitResult Hit)
+{
+ Recoil=GetWeaponId()==TEXT("LegacyRifle")?2.2f:FMath::Max(.5f,GetProfile().RecoilPitch*2.f);
+ MuzzleTime=.035f; PresentShotFeedback(View); if(Hit.bBlockingHit) PresentImpact(Hit);
+}
+void AHitscanWeapon::MulticastPelletImpacts_Implementation(const TArray<FHitResult>& Hits)
+{
+ for(const auto& Hit:Hits) if(Hit.bBlockingHit) PresentImpact(Hit);
+}

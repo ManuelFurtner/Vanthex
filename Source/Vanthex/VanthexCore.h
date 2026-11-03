@@ -39,6 +39,7 @@ public:
 	float GetThrowSpeed() const { return ThrowSpeed; }
 	float GetPickupRadius() const { return PickupRadius; }
 	float GetCatchRadius() const { return CatchRadius; }
+	bool IsRewardEligible() const { return bRewardEligible; }
 
 private:
 	void AttachToCarrier(AVanthexCharacter* Character);
@@ -89,4 +90,7 @@ private:
 	float ThrowSpeed = 2000.f;
 	float DropIgnoreTime = 0.45f;
 	bool bCatchEnabled = false;
+	uint32 RewardThrowId = 0;
+	bool bRewardEligible = false;
+	FVector LastRewardPosition = FVector::ZeroVector;
 };

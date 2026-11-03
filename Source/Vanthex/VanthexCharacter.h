@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "VanthexTypes.h"
+#include "VanthexWeaponAudioMovement.h"
 #include "VanthexCharacter.generated.h"
 
 class UCameraComponent;
@@ -36,6 +37,10 @@ public:
 	void SetHoldForward(bool bHold);
 	void RequestRestart();
 	void PrepareForRound(const FTransform& Spawn);
+ void SyncEconomyLoadout(bool bRefillAmmo);
+ bool CanPerformRoundActions() const;
+ void ApplyWeaponRecoil(FVector2D Kick);
+ UFUNCTION(Client, Unreliable) void ClientWeaponRecoil(FVector2D Kick);
 	void SetTeamAppearance(EVanthexTeam Team);
 	void TryPickupCore();
 	void DropCarriedCore();
@@ -57,6 +62,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaSeconds) override;
+ void TickEquipmentMovementAudio(float DeltaSeconds);
 
 	void MoveInput(const FInputActionValue& Value);
 	void LookInput(const FInputActionValue& Value);
@@ -70,6 +76,7 @@ protected:
 	void StopFire();
 	void StartReload();
 	void SelectRifle();
+ void SelectPistol();
 	void SelectKnife();
 	void HandleDeath(AActor* DeadActor);
 	void BuildInput();
@@ -146,4 +153,6 @@ protected:
 	bool bSprintWanted = false;
 	bool bHoldForward = false;
  EVanthexTeam CachedTeam = EVanthexTeam::None;
+ FVanthexEquipmentStepClock EquipmentStepClock;
+ uint32 EquipmentMovementActionId=0;
 };

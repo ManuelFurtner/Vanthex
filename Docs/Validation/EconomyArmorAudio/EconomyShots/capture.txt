@@ -1,0 +1,11 @@
+PASS 4 fresh UI and first-person weapon views rendered
+ACOUSTICS actual map spawn->core direct=0 portal=1 distance=6106.6 gain=0.580 lowpass=5200 hops=16 sourceRoom=0 listenerRoom=6
+ACOUSTICS actual map spawn->upper_observation direct=0 portal=1 distance=13394.7 gain=0.580 lowpass=5200 hops=38 sourceRoom=0 listenerRoom=18
+VIEW 01_buy_start.png credits=800 primary=None equipped=Pistol armor=0 menu=1 ownPawnView=1
+VIEW 02_buy_aug.png credits=3350 primary=AUG equipped=Pistol armor=80 menu=1 ownPawnView=1
+VIEW 03_aug_first_person.png credits=3350 primary=AUG equipped=AUG armor=80 menu=0 ownPawnView=1
+VIEW 04_mp7_first_person.png credits=1450 primary=MP7 equipped=MP7 armor=80 menu=0 ownPawnView=1
+../../../../../Vanthex/Saved/EconomyShots/01_buy_start.png
+../../../../../Vanthex/Saved/EconomyShots/02_buy_aug.png
+../../../../../Vanthex/Saved/EconomyShots/03_aug_first_person.png
+../../../../../Vanthex/Saved/EconomyShots/04_mp7_first_person.png

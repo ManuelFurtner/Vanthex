@@ -3,6 +3,7 @@
 #include "Vanthex.h"
 #include "VanthexBotController.h"
 #include "VanthexCharacter.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexCore.h"
 #include "VanthexShiftDevice.h"
 #include "VanthexExtractionZone.h"
@@ -92,10 +93,17 @@ void AVanthexGameMode::HandleStartingNewPlayer_Implementation(APlayerController*
                 }
                 if (!Replacement) { NewPlayer->StartSpectatingOnly(); return; }
                 auto* Bot = Replacement->GetController();
+                PlayerState->CopyEconomyFrom(Bot->GetPlayerState<AVanthexPlayerState>());
                 Bot->UnPossess();
                 PlayerState->SetTeam(SelectedTeam, SelectedSlot);
                 NewPlayer->Possess(Replacement);
                 PlayerState->SetAlive(!Replacement->GetHealthComponent()->IsDead());
+                // Remote possession dispatches Character::Restart, restoring Walking.
+                // Reapply the authoritative phase/death lock after that engine callback.
+                if (IsBuyPhase() || Replacement->GetHealthComponent()->IsDead()) {
+                    Replacement->GetCharacterMovement()->StopMovementImmediately();
+                    Replacement->GetCharacterMovement()->DisableMovement();
+                }
                 Bot->Destroy();
                 if (FParse::Param(FCommandLine::Get(), TEXT("VanthexNetworkProbe"))) { FVanthexDamageRequest Damage; Damage.Damage=40; Replacement->GetHealthComponent()->ApplyDamage(Damage); }
                 return;
@@ -157,6 +165,18 @@ void AVanthexGameMode::PerformSessionReset()
 void AVanthexGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+ if(FParse::Param(FCommandLine::Get(),TEXT("WeaponProfileTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunWeaponProfileTest(AVanthexGameMode*); VanthexRunWeaponProfileTest(this); }),.05f,true,2.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("EconomyShots"))) {
+  GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunEconomyShots(AVanthexGameMode*); VanthexRunEconomyShots(this); }),.1f,true,1.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("CoreEconomyTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunCoreEconomyTest(AVanthexGameMode*); VanthexRunCoreEconomyTest(this); }),.05f,true,2.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("EconomyTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunEconomyIntegrationTest(AVanthexGameMode*); VanthexRunEconomyIntegrationTest(this); }),.1f,true,2.f);
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("OperatorTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunOperatorTest(AVanthexGameMode*); VanthexRunOperatorTest(this); }),.1f,true,2.f);
  }
@@ -394,6 +414,7 @@ void AVanthexGameMode::NotifyCombatantDied(AVanthexCharacter* Combatant)
 	if (AVanthexPlayerState* PlayerState = GetVanthexPlayerState(Combatant))
 	{
 		PlayerState->SetAlive(false);
+		PlayerState->HandleEconomyDeath();
 	}
 	EvaluateElimination();
 }
@@ -467,6 +488,10 @@ void AVanthexGameMode::RestartMatch()
 	}
 
 	AlphaScore = 0;
+	AlphaLossStreak = BravoLossStreak = 0;
+	LastSettledRound = -1;
+	DamageHistory.Reset(); RewardedDeaths.Reset();
+	for (AVanthexCharacter* Combatant : Combatants) if (auto* State = GetVanthexPlayerState(Combatant)) State->ResetEconomyForMatch();
 	BravoScore = 0;
 	RoundIndex = 0;
 	MatchWinner = EVanthexTeam::None;
@@ -491,28 +516,41 @@ void AVanthexGameMode::BeginRound()
 	}
 
 	++RoundIndex;
+	DamageHistory.Reset(); RewardedDeaths.Reset(); ProcessedThrows.Reset();
+	PaidPasses.Reset(); PaidPassPairs.Reset(); PaidIntercepts.Reset(); AlphaPasses = BravoPasses = 0;
 	RoundWinner = EVanthexTeam::None;
-	TimeRemaining = RoundDuration;
-	Phase = EVanthexRoundPhase::RoundStarting;
+	const bool Legacy = UsesLegacyCombatFixture();
+	TimeRemaining = Legacy ? RoundDuration : BuyDuration;
+	Phase = Legacy ? EVanthexRoundPhase::RoundStarting : EVanthexRoundPhase::BuyPhase;
 	ResetCombatants();
+	if (!Legacy) {
+		for (AVanthexCharacter* Combatant : Combatants) if (Combatant) { Combatant->GetCharacterMovement()->StopMovementImmediately(); Combatant->GetCharacterMovement()->DisableMovement(); }
+		BuyForBots();
+	}
 	PublishMatch();
 
 	FlowStep = 1;
 	if (UWorld* World = GetWorld())
 	{
-		World->GetTimerManager().SetTimer(FlowTimer, this, &AVanthexGameMode::OnRoundFlow, RoundStartDelay, false);
+		if (Legacy) World->GetTimerManager().SetTimer(FlowTimer, this, &AVanthexGameMode::OnRoundFlow, RoundStartDelay, false);
+		else World->GetTimerManager().SetTimer(FlowTimer, this, &AVanthexGameMode::TickBuyPhase, .1f, true);
 	}
 	UE_LOG(LogVanthex, Display, TEXT("Round %d starting"), RoundIndex);
 }
 
 void AVanthexGameMode::ActivateRound()
 {
-	if (Phase != EVanthexRoundPhase::RoundStarting)
+	if (Phase != EVanthexRoundPhase::RoundStarting && Phase != EVanthexRoundPhase::BuyPhase)
 	{
 		return;
 	}
 
 	Phase = EVanthexRoundPhase::RoundActive;
+	for (AVanthexCharacter* Combatant : Combatants) if (Combatant) {
+		Combatant->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		Combatant->SyncEconomyLoadout(true);
+		if (auto* Equipment = Combatant->GetEquipment()) Equipment->SelectRoundWeapon();
+	}
 	TimeRemaining = RoundDuration;
 	PublishMatch();
 	FlowStep = 2;
@@ -589,6 +627,8 @@ void AVanthexGameMode::EndRound(EVanthexTeam Winner)
 	}
 
 	RoundWinner = Winner;
+	SettleRoundEconomy(Winner, Core && Core->GetCoreState() == EVanthexCoreState::Extracted);
+	for (AVanthexCharacter* Combatant : Combatants) if (Combatant && Combatant->GetWeapon()) { Combatant->GetWeapon()->StopFire(); Combatant->GetWeapon()->CancelReload(); }
 	if (Winner == EVanthexTeam::Alpha)
 	{
 		++AlphaScore;
@@ -1993,13 +2033,44 @@ void AVanthexGameMode::AdvanceSelfTest()
 }
 
 
-void AVanthexGameMode::Logout(AController* Exiting) {
- auto* Pawn=Exiting ? Cast<AVanthexCharacter>(Exiting->GetPawn()) : nullptr;
- auto* PS=Exiting ? Exiting->GetPlayerState<AVanthexPlayerState>() : nullptr;
- if(Pawn && PS) {
-  const auto Team=PS->GetTeam(); const int32 Slot=PS->GetSpawnSlot();
-  auto* Bot=GetWorld()->SpawnActor<AVanthexBotController>();
-  if(Bot) { Bot->InitPlayerState(); if(auto* BPS=Bot->GetPlayerState<AVanthexPlayerState>()) { BPS->SetTeam(Team,Slot); BPS->SetAlive(!Pawn->GetHealthComponent()->IsDead()); } Exiting->UnPossess(); Bot->Possess(Pawn); }
+bool AVanthexGameMode::HandOverPlayerSlot(AController* Exiting)
+{
+ UWorld* World=GetWorld();
+ if(!HasAuthority() || !World || World->bIsTearingDown || World->IsBeingCleanedUp() ||
+  !Exiting || !Exiting->IsPlayerController() || Exiting->GetWorld()!=World) return false;
+ auto* Pawn=Cast<AVanthexCharacter>(Exiting->GetPawn());
+ auto* State=Exiting->GetPlayerState<AVanthexPlayerState>();
+ // Successful handover unpossesses Exiting, making the later Logout call a no-op.
+ if(!IsValid(Pawn) || Pawn->IsActorBeingDestroyed() || !State || !Combatants.Contains(Pawn) || !Pawn->GetHealthComponent()) return false;
+ const auto Team=State->GetTeam();
+ const int32 Slot=State->GetSpawnSlot();
+ if((Team!=EVanthexTeam::Alpha && Team!=EVanthexTeam::Bravo) || Slot<0 || Slot>=MaxPlayersPerTeam) return false;
+ FActorSpawnParameters Params;
+ Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+ auto* Bot=World->SpawnActor<AVanthexBotController>(AVanthexBotController::StaticClass(),Pawn->GetActorTransform(),Params);
+ if(!Bot) return false;
+ if(!Bot->GetPlayerState<AVanthexPlayerState>()) Bot->InitPlayerState();
+ auto* BotState=Bot->GetPlayerState<AVanthexPlayerState>();
+ if(!BotState) { Bot->Destroy(); return false; }
+ BotState->SetTeam(Team,Slot);
+ BotState->SetPlayerName(FString::Printf(TEXT("%s %d"),Team==EVanthexTeam::Bravo?TEXT("Bravo"):TEXT("Alpha"),Slot+1));
+ BotState->CopyEconomyFrom(State);
+ BotState->SetAlive(!Pawn->GetHealthComponent()->IsDead());
+ const FRotator Facing=Exiting->GetControlRotation();
+ Exiting->UnPossess();
+ Bot->Possess(Pawn);
+ Bot->SetControlRotation(Facing);
+ if(IsBuyPhase() || Pawn->GetHealthComponent()->IsDead()) {
+  Pawn->GetCharacterMovement()->StopMovementImmediately();
+  Pawn->GetCharacterMovement()->DisableMovement();
  }
+ Pawn->ForceNetUpdate();
+ UE_LOG(LogVanthex,Display,TEXT("Player slot handed to bot: team=%d slot=%d pawn=%s credits=%d"),int32(Team),Slot,*Pawn->GetName(),BotState->GetEconomy().Credits);
+ return Pawn->GetController()==Bot;
+}
+
+void AVanthexGameMode::Logout(AController* Exiting)
+{
+ HandOverPlayerSlot(Exiting);
  Super::Logout(Exiting);
 }

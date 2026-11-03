@@ -1,6 +1,8 @@
 #include "VanthexOperatorComponent.h"
 #include "VanthexOperatorAnimInstance.h"
 #include "VanthexCharacter.h"
+#include "HitscanWeapon.h"
+#include "VanthexWeaponProfile.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexArt.h"
 #include "HealthComponent.h"
@@ -80,20 +82,17 @@ void UVanthexOperatorComponent::BeginPlay()
   Label->SetTextRenderColor(FColor(205,222,235)); Label->SetOwnerNoSee(true);
   Label->SetCollisionEnabled(ECollisionEnabled::NoCollision); Character->AddInstanceComponent(Label); Label->RegisterComponent();
  }
- WorldRifle=NewObject<UStaticMeshComponent>(Character,TEXT("ARC_WorldRifle"));
- WorldRifle->SetStaticMesh(VanthexArt::LoadKit(TEXT("SM_Rifle")));
- WorldRifle->SetupAttachment(Mesh);
- WorldRifle->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(0,0));
- WorldRifle->SetCollisionEnabled(ECollisionEnabled::NoCollision);
- WorldRifle->SetOwnerNoSee(true); WorldRifle->SetCastHiddenShadow(true);
- WorldRifle->SetMaterial(0,Dark); WorldRifle->SetMaterial(1,AccentMaterial);
- WorldRifle->ComponentTags.Add(TEXT("OperatorRifle")); Character->AddInstanceComponent(WorldRifle); WorldRifle->RegisterComponent();
+ WorldFirearmRoot=NewObject<USceneComponent>(Character,TEXT("ARC_WorldFirearmPivot"));
+ WorldFirearmRoot->SetupAttachment(Mesh);
+ WorldFirearmRoot->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(0,0));
+ Character->AddInstanceComponent(WorldFirearmRoot); WorldFirearmRoot->RegisterComponent();
  WorldMuzzle=NewObject<UStaticMeshComponent>(Character,TEXT("ARC_WorldMuzzle"));
- WorldMuzzle->SetStaticMesh(VanthexArt::LoadSphere()); WorldMuzzle->SetupAttachment(WorldRifle);
+ WorldMuzzle->SetStaticMesh(VanthexArt::LoadSphere()); WorldMuzzle->SetupAttachment(WorldFirearmRoot);
  WorldMuzzle->SetRelativeLocation(FVector(23,0,1.1f)); WorldMuzzle->SetRelativeScale3D(FVector(.045f,.025f,.025f));
  WorldMuzzle->SetMaterial(0,VanthexArt::MakeEnergy(this,FLinearColor(1,.42f,.08f),3.2f));
  WorldMuzzle->SetCollisionEnabled(ECollisionEnabled::NoCollision); WorldMuzzle->SetOwnerNoSee(true); WorldMuzzle->SetCastShadow(false); WorldMuzzle->SetVisibility(false);
  Character->AddInstanceComponent(WorldMuzzle); WorldMuzzle->RegisterComponent();
+ RefreshWeaponVisual();
  SetTeamAppearance(CurrentTeam);
 }
 
@@ -120,15 +119,28 @@ void UVanthexOperatorComponent::PresentShot() { MuzzleSeconds=.06f; }
 void UVanthexOperatorComponent::TickComponent(float DeltaTime,ELevelTick TickType,FActorComponentTickFunction* ThisTickFunction)
 {
  Super::TickComponent(DeltaTime,TickType,ThisTickFunction);
- if(!Character||!WorldRifle) return;
+ if(!Character||!WorldFirearmRoot) return;
+ RefreshWeaponVisual();
  const bool Dead=Character->GetHealthComponent()->IsDead();
  const auto* Equipment=Character->GetEquipment();
  const auto Presentation=Equipment?Equipment->GetPresentation():FVanthexEquipmentPresentation{};
- const bool ShowRifle=!Dead&&!Character->IsHidden()&&Presentation.VisibleSlot==EVanthexWeaponSlot::Rifle;
+ const bool ShowRifle=!Dead&&!Character->IsHidden()&&Presentation.VisibleSlot!=EVanthexWeaponSlot::Knife;
  if(auto* Animation=Cast<UVanthexOperatorAnimInstance>(Character->GetMesh()->GetAnimInstance()))
-  WorldRifle->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(Animation->GetAimPitch(),Animation->GetCrouchAlpha(),Presentation.Lower));
- WorldRifle->SetVisibility(ShowRifle);
- WorldRifle->SetCastHiddenShadow(ShowRifle);
+  WorldFirearmRoot->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(Animation->GetAimPitch(),Animation->GetCrouchAlpha(),Presentation.Lower));
+ WorldFirearmRoot->SetVisibility(ShowRifle,true);
+ for(const auto& Part:WorldFirearmParts) if(Part) Part->SetCastHiddenShadow(ShowRifle);
  MuzzleSeconds=FMath::Max(0.f,MuzzleSeconds-DeltaTime);
  if(WorldMuzzle) WorldMuzzle->SetVisibility(ShowRifle&&MuzzleSeconds>0);
+}
+void UVanthexOperatorComponent::RefreshWeaponVisual()
+{
+ if(!Character||!WorldFirearmRoot) return;
+ const FName Id=Character->GetWeapon()?Character->GetWeapon()->GetWeaponId():FName(TEXT("Pistol"));
+ if(Id==TEXT("Knife")) return;
+ if(Id==VisualWeaponId&&WorldRifle) return;
+ VisualWeaponId=Id; FVector Muzzle;
+ VanthexWeapons::BuildVisual(Character,WorldFirearmRoot,Id,false,WorldFirearmParts,Muzzle,AccentMaterial);
+ WorldRifle=WorldFirearmParts.IsEmpty()?nullptr:WorldFirearmParts[0].Get();
+ if(WorldRifle) WorldRifle->ComponentTags.AddUnique(TEXT("OperatorRifle"));
+ if(WorldMuzzle) WorldMuzzle->SetRelativeLocation(Muzzle);
 }

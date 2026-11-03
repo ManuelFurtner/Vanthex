@@ -1,0 +1,22 @@
+UE 5.8.3 / Windows Development / 2026-11-03
+EDITOR
+[9/9] WriteMetadata VanthexEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 13.63 seconds
+Output binary: H:\epic\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 16.45 seconds
+Trace written to file C:\Users\manuf\AppData\Local\UnrealBuildTool\Trace.uba with size 7.9kb
+GAME
+[8/8] WriteMetadata Vanthex.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 17.75 seconds
+Output binary: H:\Vanthex\Binaries\Win64\Vanthex.exe
+
+Result: Succeeded
+Total execution time: 20.28 seconds
+Trace written to file C:\Users\manuf\AppData\Local\UnrealBuildTool\Trace.uba with size 8.1kb
+AUDIO IMPORT
+[2026.11.03-17.59.06:106][  0]LogVanthex: Display: WEAPON_AUDIO_ASSETS PASS waves=119 weapons=10 profile=/Game/Vanthex/Audio/Weapons/DA_WeaponAudio.DA_WeaponAudio
+[2026.11.03-17.59.06:107][  0]LogInit: Display: Success - 0 error(s), 0 warning(s)

@@ -1,6 +1,9 @@
 #include "VanthexEquipmentComponent.h"
 
 #include "VanthexCharacter.h"
+#include "VanthexPlayerState.h"
+#include "VanthexWeaponProfile.h"
+#include "VanthexWeaponAudioComponent.h"
 #include "VanthexOperatorAnimInstance.h"
 #include "VanthexGameMode.h"
 #include "VanthexDamage.h"
@@ -64,7 +67,7 @@ FVanthexEquipmentPresentation UVanthexEquipmentComponent::GetPresentation() cons
 
 bool UVanthexEquipmentComponent::CanUseRifle() const
 {
-	return State.Selected == EVanthexWeaponSlot::Rifle && !IsSwitching();
+	return State.Selected != EVanthexWeaponSlot::Knife && !IsSwitching() && HasSlot(State.Selected);
 }
 
 bool UVanthexEquipmentComponent::CanAct() const
@@ -77,20 +80,86 @@ bool UVanthexEquipmentComponent::CanAct() const
 }
 
 void UVanthexEquipmentComponent::SelectRifle() { Select(EVanthexWeaponSlot::Rifle); }
+void UVanthexEquipmentComponent::SelectPistol() { Select(EVanthexWeaponSlot::Pistol); }
 void UVanthexEquipmentComponent::SelectKnife() { Select(EVanthexWeaponSlot::Knife); }
 
+FName UVanthexEquipmentComponent::GetSlotWeaponId(EVanthexWeaponSlot Slot) const
+{
+ if(Slot==EVanthexWeaponSlot::Knife) return TEXT("Knife");
+ if(Slot!=EVanthexWeaponSlot::Rifle&&Slot!=EVanthexWeaponSlot::Pistol) return NAME_None;
+ if(GetOwner()->HasAuthority()) return Slot==EVanthexWeaponSlot::Rifle?PrimaryAmmo.Id:SidearmAmmo.Id;
+ const auto* C=Character(); if(!C) return NAME_None;
+ if(State.Selected==Slot&&C->GetWeapon()&&C->GetWeapon()->GetWeaponId()==TEXT("LegacyRifle")) return TEXT("LegacyRifle");
+ // Only owners receive the private inventory; remote presentation uses the
+ // public active weapon ID and never replicates the holstered slot contents.
+ if(C->IsLocallyControlled()) if(const auto* PS=C->GetPlayerState<AVanthexPlayerState>())
+  return Slot==EVanthexWeaponSlot::Rifle?PS->GetEconomy().PrimaryWeapon:PS->GetEconomy().Sidearm;
+ return State.Selected==Slot&&C->GetWeapon()?C->GetWeapon()->GetWeaponId():NAME_None;
+}
+bool UVanthexEquipmentComponent::HasSlot(EVanthexWeaponSlot Slot) const
+{
+ return Slot==EVanthexWeaponSlot::Knife || VanthexWeapons::Find(GetSlotWeaponId(Slot))!=nullptr;
+}
+void UVanthexEquipmentComponent::CaptureAmmo()
+{
+ auto* C=Character(); auto* W=C?C->GetWeapon():nullptr;
+ if(!W||State.Selected==EVanthexWeaponSlot::Knife) return;
+ FSlotAmmo& Saved=State.Selected==EVanthexWeaponSlot::Rifle?PrimaryAmmo:SidearmAmmo;
+ if(Saved.Id==W->GetWeaponId()) { Saved.Magazine=W->GetAmmoInMagazine(); Saved.Reserve=W->GetReserveAmmo(); }
+}
+void UVanthexEquipmentComponent::ApplySelectedWeapon()
+{
+ if(!GetOwner()->HasAuthority()) return;
+ auto* C=Character(); if(!C||!C->GetWeapon()) return;
+ if(State.Selected==EVanthexWeaponSlot::Knife) { C->GetWeapon()->HolsterForKnife(); return; }
+ const FSlotAmmo& Saved=State.Selected==EVanthexWeaponSlot::Rifle?PrimaryAmmo:SidearmAmmo;
+ if(!Saved.Id.IsNone()) C->GetWeapon()->EquipProfile(Saved.Id,Saved.Magazine,Saved.Reserve);
+}
+void UVanthexEquipmentComponent::SyncLoadout(FName PrimaryId,FName SidearmId,bool Refill)
+{
+ if(!GetOwner()->HasAuthority()) return;
+ CaptureAmmo();
+ const auto* Primary=VanthexWeapons::Find(PrimaryId);
+ const auto* Sidearm=VanthexWeapons::Find(SidearmId);
+ if(!Primary||Primary->bSidearm) PrimaryId=NAME_None;
+ if(!Sidearm||!Sidearm->bSidearm) SidearmId=TEXT("Pistol");
+ auto Update=[Refill](FSlotAmmo& Saved,FName Id) {
+  const auto* Profile=VanthexWeapons::Find(Id);
+  if(Saved.Id!=Id||Refill) { Saved.Id=Id; Saved.Magazine=Profile?Profile->MagazineSize:0; Saved.Reserve=Profile?Profile->ReserveAmmo:0; }
+ };
+ Update(PrimaryAmmo,PrimaryId); Update(SidearmAmmo,SidearmId);
+ if(!HasSlot(State.Selected)) { State=FVanthexEquipmentState(); State.Previous=State.Selected=EVanthexWeaponSlot::Pistol; }
+ ApplySelectedWeapon();
+}
+void UVanthexEquipmentComponent::SelectRoundWeapon()
+{
+ if(!GetOwner()->HasAuthority()) return;
+ CaptureAmmo();
+ if(GetWorld()) { GetWorld()->GetTimerManager().ClearTimer(SwitchTimer); GetWorld()->GetTimerManager().ClearTimer(StrikeTimer); }
+ if(auto* W=Character()?Character()->GetWeapon():nullptr) { W->StopFire(); W->CancelReload(); }
+ State=FVanthexEquipmentState();
+ State.Previous=State.Selected=HasSlot(EVanthexWeaponSlot::Rifle)?EVanthexWeaponSlot::Rifle:EVanthexWeaponSlot::Pistol;
+ ApplySelectedWeapon(); GetOwner()->ForceNetUpdate(); UpdatePresentation();
+ if(CanAct()) UVanthexWeaponAudioComponent::DispatchEvent(GetOwner(),GetSlotWeaponId(State.Selected),EVanthexWeaponAudioEvent::Draw,++AudioActionSequence);
+}
+void UVanthexEquipmentComponent::CommitSwitch()
+{
+ if(!CanAct()) return;
+ ApplySelectedWeapon();
+ UVanthexWeaponAudioComponent::DispatchEvent(GetOwner(),GetSlotWeaponId(State.Selected),EVanthexWeaponAudioEvent::Draw,SwitchActionId);
+}
 void UVanthexEquipmentComponent::Select(EVanthexWeaponSlot Slot)
 {
-	if (!GetOwner()->HasAuthority()) { ServerSelect(Slot); return; }
-	if ((Slot != EVanthexWeaponSlot::Rifle && Slot != EVanthexWeaponSlot::Knife)
-		|| !CanAct() || IsSwitching() || IsSwinging() || Slot == State.Selected) return;
-	if (auto* Rifle = Character()->GetWeapon()) { Rifle->StopFire(); Rifle->CancelReload(); }
-	State.Previous = State.Selected;
-	State.Selected = Slot;
-	State.SwitchStart = ServerTime();
-	State.SwitchDuration = FMath::Max(0.1f, SwitchDuration);
-	GetOwner()->ForceNetUpdate();
-	UpdatePresentation();
+ if(!GetOwner()->HasAuthority()) { ServerSelect(Slot); return; }
+ if(!HasSlot(Slot)||!CanAct()||IsSwitching()||IsSwinging()||Slot==State.Selected) return;
+ CaptureAmmo();
+ if(auto* W=Character()->GetWeapon()) { W->StopFire(); W->CancelReload(); }
+ SwitchActionId=++AudioActionSequence;
+ UVanthexWeaponAudioComponent::DispatchEvent(GetOwner(),GetSlotWeaponId(State.Selected),EVanthexWeaponAudioEvent::Holster,SwitchActionId);
+ State.Previous=State.Selected; State.Selected=Slot; State.SwitchStart=ServerTime();
+ State.SwitchDuration=FMath::Max(.1f,SwitchDuration);
+ GetWorld()->GetTimerManager().SetTimer(SwitchTimer,this,&UVanthexEquipmentComponent::CommitSwitch,State.SwitchDuration*.5f,false);
+ GetOwner()->ForceNetUpdate(); UpdatePresentation();
 }
 
 void UVanthexEquipmentComponent::ServerSelect_Implementation(EVanthexWeaponSlot Slot) { Select(Slot); }
@@ -100,6 +169,7 @@ void UVanthexEquipmentComponent::Attack()
 	if (!CanAct() || IsSwitching() || IsSwinging() || State.Selected != EVanthexWeaponSlot::Knife) return;
 	State.SwingStart = ServerTime();
 	State.SwingDuration = FMath::Max(0.1f, SwingDuration);
+ UVanthexWeaponAudioComponent::DispatchEvent(GetOwner(),TEXT("Knife"),EVanthexWeaponAudioEvent::KnifeSwing,++AudioActionSequence);
 	GetWorld()->GetTimerManager().SetTimer(StrikeTimer, this, &UVanthexEquipmentComponent::ResolveKnifeStrike,
 		FMath::Clamp(StrikeDelay, 0.01f, State.SwingDuration * 0.9f), false);
 	GetOwner()->ForceNetUpdate();
@@ -126,6 +196,7 @@ void UVanthexEquipmentComponent::ResolveKnifeStrike()
 		Damage.InstigatorActor = OwnerCharacter;
 		Damage.InstigatorController = OwnerCharacter->GetController();
 		Damage.Damage = KnifeDamage;
+  Damage.DamageKind = EVanthexDamageKind::Melee;
 		Damage.Hit = Hit;
 		Health->ApplyDamage(Damage);
 	}
@@ -133,11 +204,8 @@ void UVanthexEquipmentComponent::ResolveKnifeStrike()
 
 void UVanthexEquipmentComponent::ResetEquipment()
 {
-	if (!GetOwner()->HasAuthority()) return;
-	GetWorld()->GetTimerManager().ClearTimer(StrikeTimer);
-	State = FVanthexEquipmentState();
-	GetOwner()->ForceNetUpdate();
-	UpdatePresentation();
+ if(!GetOwner()->HasAuthority()) return;
+ SelectRoundWeapon();
 }
 
 void UVanthexEquipmentComponent::BeginPlay()
@@ -149,7 +217,7 @@ void UVanthexEquipmentComponent::BeginPlay()
 
 void UVanthexEquipmentComponent::EndPlay(const EEndPlayReason::Type Reason)
 {
-	if (GetWorld()) GetWorld()->GetTimerManager().ClearTimer(StrikeTimer);
+	if (GetWorld()) { GetWorld()->GetTimerManager().ClearTimer(StrikeTimer); GetWorld()->GetTimerManager().ClearTimer(SwitchTimer); }
 	Super::EndPlay(Reason);
 }
 
@@ -219,7 +287,7 @@ void UVanthexEquipmentComponent::UpdatePresentation()
 	{
 		if (Rifle->GetAttachParentActor() != OwnerCharacter)
 			Rifle->AttachToComponent(OwnerCharacter->GetFirstPersonCamera(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		Rifle->SetActorHiddenInGame(!bAlive || Pose.VisibleSlot != EVanthexWeaponSlot::Rifle);
+		Rifle->SetActorHiddenInGame(!bAlive || Pose.VisibleSlot == EVanthexWeaponSlot::Knife);
 		Rifle->SetActorRelativeLocation(FVector(30.f - 12.f * Lower, 14.f, -12.f - 55.f * Lower));
 		Rifle->SetActorRelativeRotation(FRotator(-35.f * Lower, 0.f, 18.f * Lower));
 	}

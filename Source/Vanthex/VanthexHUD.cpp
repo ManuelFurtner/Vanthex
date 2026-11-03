@@ -73,7 +73,9 @@ void AVanthexHUD::DrawHUD()
 		Seconds % 60,
 		TeamLabel(Team),
 		Health ? *FString::Printf(TEXT("%.0f"), Health->GetHealth()) : TEXT("--"),
-		Weapon ? *FString::Printf(TEXT("%d/%d"), Weapon->GetAmmoInMagazine(), Weapon->GetMagazineSize()) : TEXT("--"));
+		Weapon ? *FString::Printf(TEXT("%d / %d"), Weapon->GetAmmoInMagazine(), Weapon->GetReserveAmmo()) : TEXT("--"));
+	if (PlayerState) Status += FString::Printf(TEXT("\n%d CR  |  ARMOR %.0f\nB: Ausruestung"), PlayerState->GetEconomy().Credits, PlayerState->GetArmorPoints());
+	if (Match && Match->GetPhase() == EVanthexRoundPhase::BuyPhase) Status += TEXT("\nKAUFPHASE - am Spawn vorbereiten");
 
 	if (Weapon && Weapon->IsReloading())
 	{
@@ -82,8 +84,8 @@ void AVanthexHUD::DrawHUD()
 	if (Character && Character->GetEquipment())
 	{
 		const auto* Equipment = Character->GetEquipment();
-		Status += Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife
-			? TEXT("\nKNIFE - LMB stab\n1 RIFLE / 3 KNIFE") : TEXT("\nRIFLE\n1 RIFLE / 3 KNIFE");
+		Status += Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife ? TEXT("\nKNIFE - LMB stab") : FString::Printf(TEXT("\n%s"), Weapon ? *Weapon->GetWeaponId().ToString() : TEXT("--"));
+		Status += TEXT("\n1 PRIMARY / 2 PISTOL / 3 KNIFE");
 		if (Equipment->IsSwitching()) Status += TEXT("\nSWITCHING");
 	}
 	if (bDead)

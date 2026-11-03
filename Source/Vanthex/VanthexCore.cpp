@@ -156,6 +156,7 @@ void AVanthexCore::SetHome(const FVector& InHome)
 
 void AVanthexCore::ResetToSpawn()
 {
+	bRewardEligible = false;
 	if (Carrier)
 	{
 		DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
@@ -242,6 +243,7 @@ bool AVanthexCore::TryPickup(AVanthexCharacter* Character)
 
 void AVanthexCore::Release(const FVector& WorldLocation, const FVector& NewVelocity, bool bAllowCatch)
 {
+	bRewardEligible = false;
 	AVanthexCharacter* Previous = Carrier;
  FVector SafeLocation=WorldLocation;
  if (Previous) {
@@ -264,6 +266,7 @@ void AVanthexCore::Release(const FVector& WorldLocation, const FVector& NewVeloc
 	ThrowTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 	State = EVanthexCoreState::Thrown;
 	SetActorLocation(SafeLocation);
+	LastRewardPosition = SafeLocation;
 	SetActorRotation(FRotator::ZeroRotator);
 }
 
@@ -282,7 +285,7 @@ void AVanthexCore::Drop()
 
 void AVanthexCore::Throw()
 {
-	if (!HasAuthority() || !Carrier || (State != EVanthexCoreState::Carried && State != EVanthexCoreState::Extracting))
+	if (!HasAuthority() || !IsRoundActive() || !IsLiving(Carrier) || (State != EVanthexCoreState::Carried && State != EVanthexCoreState::Extracting))
 	{
 		return;
 	}
@@ -290,6 +293,8 @@ void AVanthexCore::Throw()
 	const FVector Direction = Carrier->GetControlRotation().Vector().GetSafeNormal();
 	const FVector Origin = Carrier->GetActorLocation() + FVector(0.f, 0.f, 60.f) + Direction * 90.f;
 	Release(Origin, Direction * ThrowSpeed, true);
+	if (++RewardThrowId == 0) ++RewardThrowId;
+	bRewardEligible = true;
 	UE_LOG(LogVanthex, Display, TEXT("Core thrown speed %.0f"), Velocity.Size());
 }
 
@@ -328,6 +333,7 @@ void AVanthexCore::MarkExtracted()
 
 void AVanthexCore::EnterAtRest()
 {
+	bRewardEligible = false;
 	State = EVanthexCoreState::AtRest;
 	Velocity = FVector::ZeroVector;
 	bCatchEnabled = false;
@@ -339,7 +345,7 @@ void AVanthexCore::EnterAtRest()
 
 void AVanthexCore::TryCatch()
 {
-	if (!bCatchEnabled || State != EVanthexCoreState::Thrown || !GetWorld())
+	if (!bCatchEnabled || State != EVanthexCoreState::Thrown || !GetWorld() || !IsRoundActive())
 	{
 		return;
 	}
@@ -379,6 +385,8 @@ void AVanthexCore::TryCatch()
 
 	if (Best)
 	{
+		if (bRewardEligible) if (auto* Mode = GetWorld()->GetAuthGameMode<AVanthexGameMode>()) Mode->NotifyCoreCaught(RewardThrowId, Thrower, Best, ReleaseOrigin, GetActorLocation());
+		bRewardEligible = false;
 		AttachToCarrier(Best);
 		UE_LOG(LogVanthex, Display, TEXT("Core caught by %s"), *GetNameSafe(Best));
 	}
@@ -425,6 +433,8 @@ void AVanthexCore::Tick(float DeltaSeconds)
 
 	if (State == EVanthexCoreState::Thrown)
 	{
+		// External teleports/reset fixtures cannot turn a throw into a credit event.
+		if (!GetActorLocation().Equals(LastRewardPosition, .1f)) bRewardEligible = false;
 		float Remaining = DeltaSeconds;
 		while (Remaining > KINDA_SMALL_NUMBER && State == EVanthexCoreState::Thrown)
 		{
@@ -480,6 +490,7 @@ void AVanthexCore::Tick(float DeltaSeconds)
 	}
 
 	RecoverIfOutOfBounds(DeltaSeconds);
+	LastRewardPosition = GetActorLocation();
 	UpdatePresentation(DeltaSeconds);
 }
 

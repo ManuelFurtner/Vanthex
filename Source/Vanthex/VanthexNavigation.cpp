@@ -158,7 +158,16 @@ void BuildGrid(UWorld* World)
  }
 }
 
-int32 Anchor(UWorld* World,const FVector& Position,FVector& Projected)
+bool DynamicWalkSegment(UWorld* World,const FVector& Start,const FVector& End)
+{
+ FCollisionObjectQueryParams Objects;
+ Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
+ FCollisionQueryParams Params(SCENE_QUERY_STAT(EconomyDynamicRoute),false);
+ FHitResult Hit;
+ return !World->SweepSingleByObjectType(Hit,Start,End,FQuat::Identity,Objects,FCollisionShape::MakeCapsule(CapsuleRadius,CapsuleHalfHeight),Params);
+}
+
+int32 Anchor(UWorld* World,const FVector& Position,FVector& Projected,bool CheckDynamic=false)
 {
  // Objectives are often near the floor, characters at capsule height. Resolve
  // the nearby intended floor first, then verify the short connection to the
@@ -184,15 +193,16 @@ int32 Anchor(UWorld* World,const FVector& Position,FVector& Projected)
   Candidates.Emplace(FVector::DistSquared(P,Projected),I);
  }
  Candidates.Sort([](const TPair<float,int32>& A,const TPair<float,int32>& B){return A.Key<B.Key;});
- for(const auto& Candidate:Candidates) if(WalkSegment(World,Floor,GridCache.Nodes[Candidate.Value].Point-FVector(0,0,FloorToCenter),nullptr)) return Candidate.Value;
+ for(const auto& Candidate:Candidates) if(WalkSegment(World,Floor,GridCache.Nodes[Candidate.Value].Point-FVector(0,0,FloorToCenter),nullptr)
+  && (!CheckDynamic || DynamicWalkSegment(World,Projected,GridCache.Nodes[Candidate.Value].Point))) return Candidate.Value;
  return INDEX_NONE;
 }
 
-bool FindGridV3Route(UWorld* World,const FVector& StartPosition,const FVector& Goal,TArray<FVector>& Route)
+bool FindGridV3Route(UWorld* World,const FVector& StartPosition,const FVector& Goal,TArray<FVector>& Route,bool CheckDynamic=false)
 {
  BuildGrid(World);
  FVector ProjectedStart,ProjectedGoal;
- const int32 Start=Anchor(World,StartPosition,ProjectedStart),End=Anchor(World,Goal,ProjectedGoal);
+ const int32 Start=Anchor(World,StartPosition,ProjectedStart,CheckDynamic),End=Anchor(World,Goal,ProjectedGoal,CheckDynamic);
  if(Start==INDEX_NONE || End==INDEX_NONE) return false;
  struct FOpenNode {int32 Index;float Estimate;};
  const auto Less=[](const FOpenNode& A,const FOpenNode& B){return A.Estimate<B.Estimate;};
@@ -209,6 +219,7 @@ bool FindGridV3Route(UWorld* World,const FVector& StartPosition,const FVector& G
   Closed[A]=true;
   if(A==End) break;
   for(int32 B:GridCache.Nodes[A].Neighbours) {
+   if(CheckDynamic && !DynamicWalkSegment(World,GridCache.Nodes[A].Point,GridCache.Nodes[B].Point)) continue;
    const float NewCost=Cost[A]+FVector::Dist(GridCache.Nodes[A].Point,GridCache.Nodes[B].Point);
    if(NewCost>=Cost[B]) continue;
    Cost[B]=NewCost; Previous[B]=A;
@@ -270,6 +281,19 @@ bool VanthexNavigation::FindRoute(UWorld* World,const FVector& Start,const FVect
 bool VanthexNavigation::CheckWalkableSegment(UWorld* World,const FVector& FloorStart,const FVector& FloorEnd,FString* Failure)
 {
  return WalkSegment(World,FloorStart,FloorEnd,Failure);
+}
+
+bool VanthexNavigation::FindRouteLength(UWorld* World,const FVector& Start,const FVector& Goal,float& Length)
+{
+ Length=0.f;
+ TArray<FVector> Route;
+ const bool Grid=VanthexMap::IsGridV3(World);
+ if(Grid ? !FindGridV3Route(World,Start,Goal,Route,true) : !FindRoute(World,Start,Goal,Route)) return false;
+ FVector Previous=Start;
+ if(Grid) { if(Anchor(World,Start,Previous,true)==INDEX_NONE) return false; }
+ else Previous.Z=110.f;
+ for(const FVector& Point:Route) { if(!DynamicWalkSegment(World,Previous,Point)) return false; Length+=FVector::Dist(Previous,Point); Previous=Point; }
+ return true;
 }
 
 void VanthexNavigation::GridV3GraphStats(UWorld* World,int32& NodeCount,int32& EdgeCount,int32& ComponentCount)

@@ -11,6 +11,7 @@ class AVanthexCore;
 class AVanthexPlayerState;
 class AVanthexTestArena;
 class AVanthexTestTarget;
+struct FVanthexDamageRequest;
 
 enum class EVanthexSelfTestStage : uint8
 {
@@ -81,10 +82,22 @@ public:
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
 	virtual void Logout(AController* Exiting) override;
+	/** Transfers a departing human's live roster pawn/account before UE destroys it. */
+	bool HandOverPlayerSlot(AController* Exiting);
  void RestartTest();
 	void NotifyCombatantDied(AVanthexCharacter* Combatant);
 
 	bool IsRoundActive() const { return Phase == EVanthexRoundPhase::RoundActive; }
+	bool IsBuyPhase() const { return Phase == EVanthexRoundPhase::BuyPhase; }
+	bool UsesLegacyCombatFixture() const;
+	void RecordDamage(AVanthexCharacter* Victim, const FVanthexDamageRequest& Request, float AppliedHP, bool bKilled);
+	void ClearDamageHistory(AVanthexCharacter* Victim);
+	void NotifyCoreCaught(uint32 ThrowId, AVanthexCharacter* Thrower, AVanthexCharacter* Catcher, const FVector& Origin, const FVector& CatchPosition);
+	float ShortestExtractionRoute(const FVector& Position) const;
+	friend void VanthexRunEconomyIntegrationTest(AVanthexGameMode* Mode);
+	friend void VanthexRunWeaponProfileTest(AVanthexGameMode* Mode);
+	friend void VanthexRunCoreEconomyTest(AVanthexGameMode* Mode);
+	friend void VanthexRunEconomyShots(AVanthexGameMode* Mode);
 	bool CanDamage(const AActor* InstigatorActor, const AActor* TargetActor) const;
 	AVanthexCore* GetCore() const { return Core; }
 	void RefreshCoreReadout();
@@ -102,6 +115,11 @@ protected:
 	void RestartMatch();
 	void BeginRound();
 	void ActivateRound();
+	void TickBuyPhase();
+	void BuyForBots();
+	void SettleRoundEconomy(EVanthexTeam Winner, bool bExtraction);
+	int32 EconomySlot(const AVanthexPlayerState* State) const;
+	AVanthexPlayerState* EconomyStateForSlot(int32 Key) const;
 	void TickRoundClock();
 	void ResolveTimeout();
 	void EndRound(EVanthexTeam Winner);
@@ -155,6 +173,17 @@ protected:
 	int32 RoundIndex = 0;
 	float TimeRemaining = 0.f;
 	float RoundDuration = 180.f;
+	float BuyDuration = 25.f;
+	int32 AlphaLossStreak = 0, BravoLossStreak = 0;
+	int32 LastSettledRound = -1;
+	struct FDamageCredit { int32 Attacker = -1; float HP = 0.f; double Time = 0.; };
+	TMap<TWeakObjectPtr<AVanthexCharacter>, TArray<FDamageCredit>> DamageHistory;
+	TSet<TWeakObjectPtr<AVanthexCharacter>> RewardedDeaths;
+	TSet<uint32> ProcessedThrows;
+	TMap<int32, int32> PaidPasses;
+	TSet<int32> PaidPassPairs;
+	TSet<int32> PaidIntercepts;
+	int32 AlphaPasses = 0, BravoPasses = 0;
 	float RoundStartDelay = 0.25f;
 	float RoundEndDelay = 1.f;
 	float IntermissionDuration = 2.f;

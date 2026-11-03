@@ -24,12 +24,16 @@ public:
 	/** One shot. Input auto-fire and the self-test both call this. */
 	void FireShot();
  UFUNCTION(NetMulticast, Unreliable) void MulticastShot(FRotator ViewRotation, FHitResult Hit);
+ UFUNCTION(NetMulticast, Unreliable) void MulticastPelletImpacts(const TArray<FHitResult>& Hits);
 
 	virtual void ResetForRound() override;
 
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void FinishReload() override;
+ virtual void OnWeaponProfileChanged() override;
+ void ContinueAutomaticFire();
+ void ScheduleAutomaticFire();
 
 	bool IsHeadHit(const FHitResult& Hit) const;
 
@@ -38,6 +42,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> MuzzleFlash;
+ UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> FirearmParts;
 
 	float Recoil = 0.f;
 	float MuzzleTime = 0.f;
@@ -58,4 +63,7 @@ protected:
 
 	FTimerHandle FireTimer;
 	float NextFireTime = 0.f;
+ float LastShotTime = -100.f;
+ uint32 ShotSequence = 0;
+ int32 BurstIndex = 0;
 };

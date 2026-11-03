@@ -18,7 +18,8 @@ enum class EVanthexRoundPhase : uint8
 	RoundActive,
 	RoundEnding,
 	Intermission,
-	MatchEnded
+	MatchEnded,
+	BuyPhase
 };
 
 UENUM(BlueprintType)

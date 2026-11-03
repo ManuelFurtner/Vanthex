@@ -1,0 +1,14 @@
+PASS renderedEvents=7 expected=7
+PASS duplicate delivers no second sound
+PASS reload cancel stops current phase voice
+PASS late reload phase after cancel cannot play
+PASS missing asset is counted without fallback false shot
+PASS shared foot and gear action plays without a weapon or armor bank
+PASS movement cannot satisfy the confirmed shot network counter
+PASS concurrent source budget is enforced
+PASS opponent shot displaces own mechanics at full voice budget
+PASS equal low priority stays capped after danger preemption
+PASS server confirmed event reaches local owning listener
+PASS inaudible source does not send packet
+PASS fresh actual mixer recording exists
+Analyze waveform with AudioSource/Weapons/analyze_playback.py; stereo proves left/right only, not HRTF elevation localization.

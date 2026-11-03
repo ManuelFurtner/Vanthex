@@ -3,6 +3,10 @@
 
 #include "Vanthex.h"
 #include "VanthexPlayerController.h"
+#include "VanthexCharacter.h"
+#include "VanthexPlayerState.h"
+#include "VanthexGameMode.h"
+#include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Actor.h"
 
@@ -19,19 +23,33 @@ void UHealthComponent::ResetHealth()
 	Health = MaxHealth;
 	bDead = false;
 	LastDamage = 0.f;
+	LastAppliedHPDamage = 0.f;
 	bLastHitWasHeadshot = false;
+	if (auto* Character = Cast<AVanthexCharacter>(GetOwner()))
+	{
+		if (auto* Mode = GetWorld()->GetAuthGameMode<AVanthexGameMode>()) Mode->ClearDamageHistory(Character);
+	}
 }
 
 void UHealthComponent::ApplyDamage(const FVanthexDamageRequest& Request)
 {
  if (!GetOwner() || !GetOwner()->HasAuthority()) return;
-	if (bDead || Request.Damage <= 0.f)
+	if (bDead || !FMath::IsFinite(Request.Damage) || Request.Damage <= 0.f)
 	{
 		return;
 	}
 
-	Health = FMath::Max(0.f, Health - Request.Damage);
+	AVanthexCharacter* Character = Cast<AVanthexCharacter>(GetOwner());
+	float HPDamage = Request.Damage;
+	if (Character && Request.DamageKind == EVanthexDamageKind::Bullet)
+	{
+		if (auto* State = Character->GetPlayerState<AVanthexPlayerState>())
+			HPDamage = State->ApplyArmorDamage(Request.Damage, Request.bHeadshot, false);
+	}
+	const float PreviousHealth = Health;
+	Health = FMath::Max(0.f, Health - HPDamage);
 	LastDamage = Request.Damage;
+	LastAppliedHPDamage = PreviousHealth - Health;
  if (auto* PC=Cast<AVanthexPlayerController>(Request.InstigatorController)) PC->ClientConfirmHit(Request.bHeadshot);
 	bLastHitWasHeadshot = Request.bHeadshot;
 
@@ -47,6 +65,13 @@ void UHealthComponent::ApplyDamage(const FVanthexDamageRequest& Request)
 		*GetNameSafe(GetOwner()),
 		*Message);
 
+	// Credit accounting must precede OnDeath: its listeners may finish the round.
+	if (Character)
+	{
+		if (auto* Mode = GetWorld()->GetAuthGameMode<AVanthexGameMode>())
+			Mode->RecordDamage(Character, Request, LastAppliedHPDamage, Health <= 0.f);
+	}
+
 	if (Health <= 0.f)
 	{
 		bDead = true;
@@ -60,5 +85,6 @@ void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
  DOREPLIFETIME(UHealthComponent, Health);
  DOREPLIFETIME(UHealthComponent, bDead);
  DOREPLIFETIME(UHealthComponent, LastDamage);
+ DOREPLIFETIME(UHealthComponent, LastAppliedHPDamage);
  DOREPLIFETIME(UHealthComponent, bLastHitWasHeadshot);
 }

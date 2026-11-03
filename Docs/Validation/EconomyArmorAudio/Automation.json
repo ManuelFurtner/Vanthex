@@ -1,0 +1,239 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "MANUEL-GAMING",
+			"instance": "AF3E0A534D7C21E65F346FB2ADFB915B",
+			"instanceName": "MANUEL-GAMING-7416",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (25H2) [10.0.26200.9711] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 3070 Ti",
+			"cPUModel": "AMD Ryzen 5 7500X3D 6-Core Processor           ",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.11.03-18.00.56",
+	"succeeded": 14,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 0.013178598135709763,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "ClippedSegmentAndContinuity",
+			"fullTestPath": "Vanthex.BulletAudio.ClippedSegmentAndContinuity",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00068660080432891846,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "DistanceBands",
+			"fullTestPath": "Vanthex.BulletAudio.DistanceBands",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00062770023941993713,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "RealWallOcclusion",
+			"fullTestPath": "Vanthex.BulletAudio.RealWallOcclusion",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.0023430995643138885,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ArmorDamageBoundaries",
+			"fullTestPath": "Vanthex.Economy.ArmorDamageBoundaries",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00058390200138092041,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "ArmorPurchaseRules",
+			"fullTestPath": "Vanthex.Economy.ArmorPurchaseRules",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00066719949245452881,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "AtomicPurchases",
+			"fullTestPath": "Vanthex.Economy.AtomicPurchases",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00060779973864555359,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CatalogAndDefaults",
+			"fullTestPath": "Vanthex.Economy.CatalogAndDefaults",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00062309950590133667,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CreditCapAndDeath",
+			"fullTestPath": "Vanthex.Economy.CreditCapAndDeath",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00083469972014427185,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CompleteMonoBanks",
+			"fullTestPath": "Vanthex.WeaponAudio.CompleteMonoBanks",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00070219859480857849,
+			"dateTime": "2026.11.03-18.00.55",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "EquipmentMovementCadence",
+			"fullTestPath": "Vanthex.WeaponAudio.EquipmentMovementCadence",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00059279799461364746,
+			"dateTime": "2026.11.03-18.00.56",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "MixPriorities",
+			"fullTestPath": "Vanthex.WeaponAudio.MixPriorities",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00054189935326576233,
+			"dateTime": "2026.11.03-18.00.56",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "PhysicalPortalAndWall",
+			"fullTestPath": "Vanthex.WeaponAudio.PhysicalPortalAndWall",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.0027037002146244049,
+			"dateTime": "2026.11.03-18.00.56",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "CatalogAndHandling",
+			"fullTestPath": "Vanthex.Weapons.CatalogAndHandling",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00085429847240447998,
+			"dateTime": "2026.11.03-18.00.56",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "DeterministicSpreadAndRecoil",
+			"fullTestPath": "Vanthex.Weapons.DeterministicSpreadAndRecoil",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AF3E0A534D7C21E65F346FB2ADFB915B"
+			],
+			"duration": 0.00080960243940353394,
+			"dateTime": "2026.11.03-18.00.56",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

@@ -10,7 +10,7 @@ class UStaticMesh;
 class UStaticMeshComponent;
 
 UENUM()
-enum class EVanthexWeaponSlot : uint8 { Rifle, Knife };
+enum class EVanthexWeaponSlot : uint8 { Rifle, Knife, Pistol };
 
 /** One sampled pose drives first-person equipment, world equipment and hand IK. */
 struct FVanthexEquipmentPresentation
@@ -43,7 +43,12 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void SelectRifle();
+ void SelectPistol();
 	void SelectKnife();
+ void SelectRoundWeapon();
+ void SyncLoadout(FName PrimaryId, FName SidearmId, bool bRefillAmmo);
+ bool HasSlot(EVanthexWeaponSlot Slot) const;
+ FName GetSlotWeaponId(EVanthexWeaponSlot Slot) const;
 	void Attack();
 	void ResetEquipment();
 	bool CanUseRifle() const;
@@ -78,4 +83,11 @@ protected:
 	float ServerTime() const;
 	AVanthexCharacter* Character() const;
 	FTimerHandle StrikeTimer;
+ FTimerHandle SwitchTimer;
+ struct FSlotAmmo { FName Id; int32 Magazine=0; int32 Reserve=0; };
+ FSlotAmmo PrimaryAmmo, SidearmAmmo;
+ void CaptureAmmo();
+ void ApplySelectedWeapon();
+ void CommitSwitch();
+ uint32 AudioActionSequence=0, SwitchActionId=0;
 };

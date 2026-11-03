@@ -1,0 +1,41 @@
+{
+  "wav": "H:\\Vanthex\\Saved\\WeaponAudioPlayback.wav",
+  "sample_rate": 48000,
+  "channels": 2,
+  "frames": 428032,
+  "peak": 0.180938720703125,
+  "peak_dbfs": -14.849369692295085,
+  "clipped_samples": 0,
+  "directions": {
+    "left_AUG": {
+      "left_rms": 0.017753273399545487,
+      "right_rms": 0.0
+    },
+    "right_MP7": {
+      "left_rms": 0.0,
+      "right_rms": 0.011699431835433458
+    },
+    "front_Pistol": {
+      "left_rms": 0.007692662206770868,
+      "right_rms": 0.007692662206770868
+    },
+    "rear_AUG": {
+      "left_rms": 0.008857718149517791,
+      "right_rms": 0.008857718149517791
+    },
+    "above_AUG": {
+      "left_rms": 0.008863819932327752,
+      "right_rms": 0.008863819932327752
+    },
+    "below_AUG": {
+      "left_rms": 0.008876331241368482,
+      "right_rms": 0.008876331241368482
+    },
+    "occluded_front_AUG": {
+      "left_rms": 0.0008826384041747096,
+      "right_rms": 0.0008826384041747096
+    }
+  },
+  "result": "PASS",
+  "limit": "Above/below events are rendered, but stereo energy does not prove human HRTF elevation localization."
+}
