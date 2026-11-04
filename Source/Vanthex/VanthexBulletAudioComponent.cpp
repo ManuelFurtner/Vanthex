@@ -1,4 +1,5 @@
 #include "VanthexBulletAudioComponent.h"
+#include "VanthexLocalSettings.h"
 #include "VanthexBulletAudioProfile.h"
 #include "VanthexBulletAudioSettings.h"
 #include "VanthexPlayerController.h"
@@ -190,7 +191,8 @@ void UVanthexBulletAudioComponent::PlayEvent(FGameplayTag Event, const FVanthexB
   if (Sound) break;
  }
  if (!Sound || !FMath::IsFinite(Gain) || Gain <= 0.f) return;
- const float Volume = FMath::Clamp(Set->Volume, 0.f, 1.f) * FMath::Clamp(Gain, 0.f, 1.f);
+ const float Volume = FMath::Clamp(Set->Volume, 0.f, 1.f) * FMath::Clamp(Gain, 0.f, 1.f)
+  * UVanthexLocalSettings::SafeVolume(UVanthexLocalSettings::Get()->CombatVolume);
  const float LowPitch = FMath::Clamp(Set->PitchMin, .9f, 1.1f);
  const float HighPitch = FMath::Clamp(Set->PitchMax, LowPitch, 1.1f);
  FVector PlaybackPosition = Position;

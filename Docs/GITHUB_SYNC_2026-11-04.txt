@@ -1,0 +1,36 @@
+VANTHEX – Integration des Partnerstands vom 4. November 2026
+
+Zusammengeführt:
+- Eigener Stand / main: e319908 (Industrial Finish für 25 GRID-V4-Räume).
+- Partnerzweig origin/codex/audio-menu-polish: 5b6e84b.
+- Vier Partnercommits: 37db735, 08cae63, fa501db, 5b6e84b.
+- Audio-/Sitzungsmenü, Teamchat/Push-to-talk, Ladeanzeige und Schattensystem.
+
+Die Zusammenführung hatte keine Git-Konflikte. Der erste echte Editor-Build
+entdeckte einen ungültigen Include im Sitzungsmenü. Engine/GameUserSettings.h
+wurde auf den tatsächlich vorhandenen Pfad GameFramework/GameUserSettings.h
+korrigiert. Anschließend waren Editor- und Game-Build für Win64 Development
+erfolgreich. Vorhandene Warnungen in älteren Asset-Commandlets bleiben bestehen.
+
+Alle 33 Vanthex-Automationstests bestanden, einschließlich vier Kommunikations-
+tests mit Codec-Roundtrip, zwei Menütests, Schatten-Upgrade, Wirtschaft, Waffen,
+Gadgets, Trefferlogik und Audio. 119 WAV-Quelldateien bestanden die Quellprüfung.
+Die sechs eigenen AUG-/MP7-Schuss-SoundWaves wurden danach gezielt reimportiert;
+das Commandlet bestätigte 119 Waves und zehn Waffenbanken. Fab-Audio bleibt lokal
+und unverändert. Die synthetischen Original-SoundWaves gehören zum Git-Stand.
+
+Die Produktionsmap wurde durch den Merge nicht verändert:
+SHA256 9659a6475d6f00151fac4217985d222595f8b4ffc09e4d9484e06dab42fc1875.
+Die Schattenänderung arbeitet zur Laufzeit; die neuen RectLight-Arbeitsleuchten
+der Grafiküberarbeitung werden durch die PointLight-Suche nicht überschrieben.
+Es wurde kein neuer Map-Bake ausgeführt.
+
+Lokale Engine-Zuordnung in Vanthex.uproject und persönliche IDE-Dateien wurden
+gesichert und beibehalten, nicht in diesen Merge aufgenommen.
+Sicherung: Saved/GitSyncBackup_20261104_211351.
+Build-/Testprotokolle: Saved/GitSyncValidation.
+
+Grenzen: Kein echter Mikrofon-/Headset-Test zwischen zwei PCs, kein WAN-/Jitter-
+Test und kein vollständiger manueller Durchlauf aller Menüauflösungen. Die
+Automation bestätigt Regeln und Codec, keine fertige Voice-Qualität. Keine neue
+Dedicated-Server-/Edgegap-Bereitstellung. Fab-Abhängigkeiten bleiben lokal nötig.

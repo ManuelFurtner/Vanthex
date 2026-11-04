@@ -56,7 +56,7 @@ void AVanthexCore::BuildPresentation()
 
 	auto Part = [&](UStaticMesh* Mesh, const FVector& Location, const FVector& Scale, UMaterialInterface* Material)
 	{
-		return VanthexArt::AddMesh(this, Body, Mesh, GetActorLocation() + Location, FRotator::ZeroRotator, Scale, Material, false);
+		return VanthexArt::AddMesh(this, Body, Mesh, GetActorLocation() + Location, FRotator::ZeroRotator, Scale, Material, Material!=Energy);
 	};
 
 	// Licensed Energy geometry remains optional and local. Public checkouts use the original kit.
@@ -66,6 +66,7 @@ void AVanthexCore::BuildPresentation()
  if(Imported){
   auto* Visual=NewObject<UStaticMeshComponent>(this,TEXT("EnergyCapsule"));
   Visual->SetupAttachment(Body);Visual->SetStaticMesh(Imported);Visual->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  Visual->SetCastShadow(true);
   Visual->SetGenerateOverlapEvents(false);AddInstanceComponent(Visual);Visual->RegisterComponent();
   Visual->ComponentTags.Add(TEXT("VanthexEnergyCore"));
  }else{

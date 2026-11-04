@@ -40,6 +40,9 @@ public:
  /** One mixed foot+gear action, identical across all armor tiers and durability values. */
  UPROPERTY(EditAnywhere) FVanthexWeaponSoundSet Movement;
  UPROPERTY(EditAnywhere) TObjectPtr<USoundBase> RoomTail;
+ /** Early reflection of the selected shot; source identity remains audible. */
+ UPROPERTY(EditAnywhere, meta=(ClampMin="0",ClampMax="0.25")) float EarlyReflectionGain = .10f;
+ UPROPERTY(EditAnywhere, meta=(ClampMin="400",ClampMax="12000")) float EarlyReflectionLowPassHz = 3600.f;
  UPROPERTY(EditAnywhere) TObjectPtr<USoundAttenuation> Attenuation;
  UPROPERTY(EditAnywhere) TObjectPtr<USoundConcurrency> Concurrency;
  UPROPERTY(EditAnywhere) int32 MaxVoices = 24;

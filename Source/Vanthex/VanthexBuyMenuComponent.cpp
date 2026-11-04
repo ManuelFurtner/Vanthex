@@ -1,4 +1,5 @@
 #include "VanthexBuyMenuComponent.h"
+#include "VanthexCommunicationComponent.h"
 #include "VanthexPlayerController.h"
 #include "VanthexPlayerState.h"
 #include "VanthexGameState.h"
@@ -60,7 +61,7 @@ void UVanthexBuyMenuComponent::Open()
 {
  auto* PC = Cast<AVanthexPlayerController>(GetOwner());
  auto* Viewport = GetWorld() ? GetWorld()->GetGameViewport() : nullptr;
- if (!PC || !PC->IsLocalController() || !Viewport || IsOpen() || PC->IsSessionMenuOpen()) return;
+ if (!PC || !PC->IsLocalController() || !Viewport || IsOpen() || PC->IsSessionMenuOpen() || PC->GetCommunication()->IsChatOpen()) return;
  static const FTextBlockStyle Title = FTextBlockStyle().SetFont(FCoreStyle::GetDefaultFontStyle("Bold", 28)).SetColorAndOpacity(FLinearColor(.25f,.85f,1.f));
  static const FTextBlockStyle Text = FTextBlockStyle().SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 17)).SetColorAndOpacity(FLinearColor(.91f,.94f,1.f));
  static const FTextBlockStyle Small = FTextBlockStyle().SetFont(FCoreStyle::GetDefaultFontStyle("Regular", 13)).SetColorAndOpacity(FLinearColor(.63f,.72f,.8f));

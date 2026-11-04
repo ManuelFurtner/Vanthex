@@ -27,7 +27,8 @@ def rng_for(name):
 
 def save(name, samples):
     # Peak headroom; edge ramps prevent clicks at file boundaries.
-    fade = min(180, len(samples) // 10)
+    featured = "_Shot_" in name and ("_AUG_" in name or "_MP7_" in name)
+    fade = min(36 if featured else 180, len(samples) // 10)
     for i in range(fade):
         samples[i] *= i / fade
         samples[-i - 1] *= i / fade
@@ -46,6 +47,8 @@ def save(name, samples):
 
 
 def shot(name, frequency, decay, texture):
+    if "_AUG_" in name or "_MP7_" in name:
+        return featured_shot(name, "_MP7_" in name)
     rng = rng_for(name)
     length = min(.46, .17 + decay * 1.6)
     out, smooth = [], 0.0
@@ -60,6 +63,28 @@ def shot(name, frequency, decay, texture):
         crack = noise * math.exp(-t/.008)
         harmonic = math.sin(2*math.pi*(frequency*2.37)*t) * math.exp(-t/(decay*.45))
         out.append(.58*pressure + texture*.75*grit + .45*crack + .13*harmonic)
+    save(name, out)
+
+
+def featured_shot(name, compact):
+    """Dry, original layered signature. Room response belongs to the runtime router."""
+    rng = rng_for(name)
+    duration, decay = (.19, .028) if compact else (.31, .052)
+    low, band = 0.0, 0.0
+    frequency = (184 if compact else 92) * rng.uniform(.98, 1.02)
+    out = []
+    for i in range(int(RATE * duration)):
+        t = i / RATE
+        noise = rng.uniform(-1, 1)
+        low = .88 * low + .12 * noise
+        band = .43 * band + .57 * noise
+        transient = (noise - low) * math.exp(-t / (.0028 if compact else .0045))
+        blast = (band - low) * math.exp(-t / decay)
+        # A brief pressure body avoids a long electronic sine-wave tail.
+        pressure = math.sin(2 * math.pi * frequency * t + .7 * (1-math.exp(-t*90))) * math.exp(-t / (decay*.55))
+        age = max(0, t - (.018 if compact else .031))
+        latch = (noise - band) * math.exp(-age/.005) if age > 0 else 0
+        out.append(.72*transient + 1.25*blast + .34*pressure + .08*latch)
     save(name, out)
 
 
@@ -144,7 +169,7 @@ def main():
     save("S_WA_RoomTail", tail)
     for variant in range(1, 4):
         equipment_move(f"S_WA_EquipmentMove_{variant:02d}")
-    (ROOT/"manifest.json").write_text(json.dumps({"generator_version": 2, "source": "Original deterministic procedural synthesis; no sampled or downloaded recordings", "files": MANIFEST}, indent=2)+"\n", encoding="utf-8")
+    (ROOT/"manifest.json").write_text(json.dumps({"generator_version": 3, "source": "Original deterministic procedural synthesis; no sampled or downloaded recordings", "files": MANIFEST}, indent=2)+"\n", encoding="utf-8")
     print(f"Generated {len(MANIFEST)} mono PCM16 sources; all peaks <= -6.37 dBFS")
 
 
