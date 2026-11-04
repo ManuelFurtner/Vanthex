@@ -18,10 +18,10 @@ Im Spielmenue unter Spielen **CAPTURE THE FLAG / 5 GEGEN 5** zweimal waehlen (Si
 
 ## Karte
 
-Symmetrische Arena (52 x 88 Meter) mit farbigen Alpha-/Bravo-Basen. Die Mitte enthaelt ein Kampfareal mit mehreren Deckungsinseln. Links und rechts fuehren getrennte Flankenwege zur anderen Basis; Querverbindungen an der Mitte und den Basiseingaengen erlauben Routenwechsel. Zehn getrennte Spawnpunkte, Deckung vor den Basen und unterbrochene Sichtlinien.
+Symmetrische roemische Hofarena (52 x 88 Meter) mit Alpha-/Bravo-Basen. Travertin-Mauern, Marmorsaeulen, echte Torboegen, Tempelfassaden mit Terrakotta-Giebeln und eine Siegessaeule praegen die Architektur. Instanziertes Steinpflaster und gedimmte roemische Pigmente markieren die Basen. Zypressen stehen ausserhalb des Spielfelds. Die Mitte enthaelt ein Kampfareal mit mehreren Deckungsinseln. Links und rechts fuehren getrennte Flankenwege zur anderen Basis; Querverbindungen an der Mitte und den Basiseingaengen erlauben Routenwechsel. Zehn getrennte Spawnpunkte, Deckung vor den Basen und unterbrochene Sichtlinien.
 
 ## Technische Pruefung
 
-`VanthexBuildArt -BakeCTF` erstellt die gespeicherte Unreal-Map. `-game -CTFTest -nullrhi -unattended` auf der CTF-Karte prueft im laufenden Spiel 20 Bedingungen zu Teamgroesse, Navigation, Aufnahme, Tod, Uebergabe, Respawn, Punktestand und Zeitregeln. Bericht: `Saved/CTFTest.txt`.
+`VanthexBuildArt -BakeCTF` erstellt die gespeicherte Unreal-Map. `-game -CTFTest -nullrhi -unattended` auf der CTF-Karte prueft im laufenden Spiel 24 Bedingungen zu Teamgroesse, roemischer Architektur, Pflaster, Himmel, Sonnen-Schatten, Navigation, Aufnahme, Tod, Uebergabe, Respawn, Punktestand und Zeitregeln. Bericht: `Saved/CTFTest.txt`.
 
-Der Server entscheidet ueber Flaggenbesitz, Punkte und Respawns. Flaggenbewegung/-status, Countdown und Nachspielzeit werden repliziert. Ein separater Mehrrechner-LAN-Playtest steht noch aus. Die erste Kartenfassung verwendet vorhandene Materialien und geometrische Deckung; Balancing und Ausstattung koennen durch Playtests verfeinert werden.
+Der Server entscheidet ueber Flaggenbesitz, Punkte und Respawns. Flaggenbewegung/-status, Countdown und Nachspielzeit werden repliziert. Ein separater Mehrrechner-LAN-Playtest steht noch aus. Ein eigener mediterraner Himmel mit sichtbarer Atmosphaeren-Sonnenscheibe, warmem Nachmittagslicht, dynamischen Sonnenschatten und leichter Fernhaze beleuchtet die Aussenarena. Der Bake erhaelt auch dekorative Meshes ohne Kollision und gemeinsam verwendete Steinmaterialien. Balancing und Ausstattung koennen durch Playtests verfeinert werden.

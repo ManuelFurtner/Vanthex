@@ -31,12 +31,16 @@ bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false, bool bCTF = 
  auto* Arena=World->SpawnActor<AVanthexTestArena>(); Arena->Build();
  TArray<UStaticMeshComponent*> Parts; Arena->GetComponents(Parts);
  int32 Count=0;
+ TMap<UMaterialInterface*,UMaterialInstanceConstant*> SavedCTFMaterials;
  auto CopyMaterials=[&](UStaticMeshComponent* From,UStaticMeshComponent* To) {
   for(int32 I=0;I<From->GetNumMaterials();++I) if(auto* M=From->GetMaterial(I))
    if(bCTF) {
-    auto* Saved=NewObject<UMaterialInstanceConstant>(Package,NAME_None,RF_Public);
-    Saved->SetParentEditorOnly(M->GetMaterial());
-    Saved->CopyMaterialUniformParametersEditorOnly(M);
+    UMaterialInstanceConstant*& Saved=SavedCTFMaterials.FindOrAdd(M);
+    if(!Saved) {
+     Saved=NewObject<UMaterialInstanceConstant>(Package,NAME_None,RF_Public);
+     Saved->SetParentEditorOnly(M->GetMaterial());
+     Saved->CopyMaterialUniformParametersEditorOnly(M);
+    }
     To->SetMaterial(I,Saved);
    } else if(M->GetOutermost()->GetName().StartsWith(TEXT("/Game/Materials/"))||M->GetOutermost()->GetName().StartsWith(TEXT("/Game/Vanthex/Materials/"))) To->SetMaterial(I,M);
  };
@@ -47,16 +51,31 @@ bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false, bool bCTF = 
    auto* Actor=World->SpawnActor<AActor>(); Actor->SetActorLabel(Part->GetName()); Actor->SetFolderPath(FName(*(Folder+TEXT("/Factory Kit"))));
    auto* Component=NewObject<UInstancedStaticMeshComponent>(Actor,TEXT("KitInstances")); Actor->SetRootComponent(Component); Actor->AddInstanceComponent(Component);
    Component->SetStaticMesh(Part->GetStaticMesh()); Component->SetCollisionEnabled(ECollisionEnabled::NoCollision); Component->ComponentTags=Part->ComponentTags;
+   if(bCTF) {
+    Component->SetCollisionProfileName(Part->GetCollisionProfileName());
+    Component->SetCollisionEnabled(Part->GetCollisionEnabled());
+    Component->SetCollisionObjectType(Part->GetCollisionObjectType());
+    Component->SetCollisionResponseToChannels(Part->GetCollisionResponseToChannels());
+   }
    // Preserve emissive accents' no-shadow policy when serializing kit instances.
    Component->SetCastShadow(Part->CastShadow);
    CopyMaterials(Part,Component); Component->RegisterComponent();
    for(int32 I=0;I<Instances->GetInstanceCount();++I) { FTransform T; Instances->GetInstanceTransform(I,T,true); Component->AddInstance(T,true); }
-  } else if(Part->GetCollisionEnabled()!=ECollisionEnabled::NoCollision) {
-   auto* Actor=World->SpawnActor<AStaticMeshActor>(); Actor->SetActorLabel(FString::Printf(TEXT("Structure_%03d"),Count));
-   Actor->SetFolderPath(FName(*(Folder+(Part->IsVisible()?TEXT("/Structure"):TEXT("/Collision")))));
+  } else if(Part->GetCollisionEnabled()!=ECollisionEnabled::NoCollision || (bCTF&&Part->IsVisible())) {
+   auto* Actor=World->SpawnActor<AStaticMeshActor>(); Actor->SetActorLabel(bCTF?Part->GetName():FString::Printf(TEXT("Structure_%03d"),Count));
+   const TCHAR* Section=!Part->IsVisible()?TEXT("/Collision"):bCTF&&Part->GetCollisionEnabled()==ECollisionEnabled::NoCollision?TEXT("/Decoration"):TEXT("/Structure");
+   Actor->SetFolderPath(FName(*(Folder+Section)));
    auto* Component=Actor->GetStaticMeshComponent(); Component->SetMobility(EComponentMobility::Movable);
    Component->SetStaticMesh(Part->GetStaticMesh()); Component->SetWorldTransform(Part->GetComponentTransform());
    Component->SetCollisionProfileName(TEXT("BlockAll")); Component->SetVisibility(Part->IsVisible()); Component->SetCastShadow(Part->IsVisible());
+   if(bCTF) {
+    // Architectural trim remains decorative after the procedural owner is removed.
+    Component->SetCollisionProfileName(Part->GetCollisionProfileName());
+    Component->SetCollisionEnabled(Part->GetCollisionEnabled());
+    Component->SetCollisionObjectType(Part->GetCollisionObjectType());
+    Component->SetCollisionResponseToChannels(Part->GetCollisionResponseToChannels());
+    Component->SetCastShadow(Part->CastShadow);
+   }
    Component->ComponentTags=Part->ComponentTags;
    CopyMaterials(Part,Component); Component->SetMobility(EComponentMobility::Static);
   }

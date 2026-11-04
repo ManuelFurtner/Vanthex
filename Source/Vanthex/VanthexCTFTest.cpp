@@ -8,6 +8,11 @@
 #include "VanthexNavigation.h"
 #include "HealthComponent.h"
 #include "Engine/World.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/SkyLight.h"
+#include "Components/DirectionalLightComponent.h"
+#include "Components/SkyAtmosphereComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "EngineUtils.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -27,6 +32,28 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
  switch(Step) {
  case 0: {
   Check(Mode->Combatants.Num()==10&&Mode->TeamSize()==5,TEXT("five players on both teams"));
+  int32 ArchitectureParts=0,PavingInstances=0,SunCount=0;
+  bool bShadowedAtmosphereSun=false,bRomanSky=false,bRomanSkyLight=false;
+  for(TActorIterator<AActor> It(Mode->GetWorld());It;++It) {
+   TArray<UStaticMeshComponent*> Parts;It->GetComponents(Parts);
+   for(auto* Part:Parts) {
+    if(Part->ComponentHasTag(TEXT("CTF_Roman_Architecture")))++ArchitectureParts;
+    if(Part->ComponentHasTag(TEXT("RomanPaving")))
+     if(const auto* Instances=Cast<UInstancedStaticMeshComponent>(Part))PavingInstances+=Instances->GetInstanceCount();
+   }
+   if(It->ActorHasTag(TEXT("CTF_Roman_Sun"))) {
+    ++SunCount;
+    if(const auto* Sun=Cast<ADirectionalLight>(*It))
+     if(const auto* Light=Cast<UDirectionalLightComponent>(Sun->GetLightComponent()))
+      bShadowedAtmosphereSun=Light->bAtmosphereSunLight&&Light->CastShadows;
+   }
+   bRomanSky|=It->ActorHasTag(TEXT("CTF_Roman_Sky"))&&It->IsA<ASkyAtmosphere>();
+   bRomanSkyLight|=It->ActorHasTag(TEXT("CTF_Roman_SkyLight"))&&It->IsA<ASkyLight>();
+  }
+  Check(ArchitectureParts>0,TEXT("baked Roman architectural mesh tags are preserved"));
+  Check(PavingInstances>1000,TEXT("Roman paving contains more than one thousand stone instances"));
+  Check(SunCount==1&&bShadowedAtmosphereSun,TEXT("one Roman sun provides atmosphere disk and cast shadows"));
+  Check(bRomanSky&&bRomanSkyLight,TEXT("Roman sky atmosphere and skylight are present"));
   Mode->ActivateRound();Check(FMath::IsNearlyEqual(Mode->TimeRemaining,900.f),TEXT("fifteen-minute regulation clock"));
   for(float X:{-1850.f,0.f,1850.f}) {
    TArray<FVector> Route;

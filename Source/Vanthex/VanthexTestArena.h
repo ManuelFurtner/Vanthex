@@ -43,6 +43,7 @@ protected:
  void BuildFoundryMap();
  void BuildFoundryGameplay();
  void BuildCTF();
+ void BuildCTFAtmosphere();
  void BuildCTFGameplay();
  void BuildGridV4();
  void BuildGridV4Gameplay();
