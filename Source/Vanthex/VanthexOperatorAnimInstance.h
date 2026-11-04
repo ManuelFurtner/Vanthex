@@ -23,7 +23,7 @@ public:
 
  // Mesh faces +Y; the authored rifle faces +X. Its grip, not its origin,
  // is anchored to the same target used by the right-arm IK.
- static FTransform GetRifleTransform(float Pitch, float Crouch, float Lower = 0.f);
+ static FTransform GetRifleTransform(float Pitch, float Crouch, float Lower = 0.f, FName WeaponId = TEXT("M4"));
  static FTransform GetKnifeTransform(float Pitch, float Crouch, float Lower = 0.f, float Swing = 0.f);
 
 protected:

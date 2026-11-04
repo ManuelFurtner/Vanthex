@@ -7,6 +7,8 @@
 #include "HitscanWeapon.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "PhysicsEngine/BodyInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -72,6 +74,10 @@ void AVanthexGameMode::AdvanceEquipmentSelfTest()
 		Expect(Rifle->GetAmmoInMagazine() == 5, TEXT("SWITCH_BLOCKS_SHOT"));
 		Next(Equipment->SwitchDuration + 0.1f); return;
 	case 1:
+		// Aim at the posed torso rather than the old 150 cm-tall body box. At
+		// eye height an idle rig can legitimately leave a gap beside the neck.
+		if (auto* Torso = Enemy->GetMesh()->GetBodyInstance(TEXT("spine_02")))
+			Human->GetController()->SetControlRotation((Torso->GetCOMPosition()-Human->GetPawnViewLocation()).Rotation());
 		Expect(!Equipment->IsSwitching(), TEXT("KNIFE_DRAW_COMPLETES"));
 		Expect(WorldRifle && WorldKnife && !WorldRifle->IsVisible() && WorldKnife->IsVisible(), TEXT("ARC_WORLD_KNIFE_REPLACES_RIFLE"));
 		Rifle->StartReload(); Rifle->StartFire();

@@ -5,6 +5,36 @@
 #include "Engine/StaticMesh.h"
 #include "GameFramework/Actor.h"
 
+FVector VanthexWeaponPresentation::RightPalm(FName WeaponId)
+{
+ if(WeaponId==TEXT("Knife"))return FVector(-4,0,0);
+ if(WeaponId==TEXT("Shotgun"))return FVector(-3,0,-2.5);
+ return FVector(-1,0,-3.2);
+}
+FVector VanthexWeaponPresentation::LeftPalm(FName WeaponId,float ReloadProgress)
+{
+ const FName Id=ModelId(WeaponId);
+ FVector Support(13,0,-1.5);
+ if(Id==TEXT("Pistol")||Id==TEXT("P250"))Support=FVector(-1,-4,-6.2);
+ else if(Id==TEXT("MP7"))Support=FVector(5,0,-2.5);
+ else if(Id==TEXT("MP5"))Support=FVector(12,0,-1.8);
+ else if(Id==TEXT("AK"))Support=FVector(16,0,-1.2);
+ else if(Id==TEXT("AUG"))Support=FVector(8,0,-4);
+ else if(Id==TEXT("DMR"))Support=FVector(15,0,-1.8);
+ else if(Id==TEXT("Shotgun"))Support=FVector(14,0,-1.5);
+ if(ReloadProgress>=0&&ReloadProgress<1) {
+  const float Reach=FMath::SmoothStep(.06f,.17f,ReloadProgress)*(1-FMath::SmoothStep(.68f,.88f,ReloadProgress));
+  const float Pull=FMath::SmoothStep(.12f,.25f,ReloadProgress)*(1-FMath::SmoothStep(.48f,.65f,ReloadProgress));
+  const FVector Magazine=FVector(3,-2,-5)+FVector(-1.8,-1.5,-9)*Pull;
+  Support=FMath::Lerp(Support,Magazine,double(Reach));
+ }
+ return Support;
+}
+float VanthexWeaponPresentation::WorldScale(FName Id)
+{
+ return Id==TEXT("Pistol")||Id==TEXT("P250")||Id==TEXT("Knife")?1.f:1.35f;
+}
+
 FVanthexAimPresentation VanthexWeaponPresentation::Aim(FName WeaponId)
 {
  const FName Id=ModelId(WeaponId); FVanthexAimPresentation P;

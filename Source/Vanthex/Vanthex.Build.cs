@@ -24,6 +24,7 @@ public class Vanthex : ModuleRules
 			{
 				"MeshDescription",
 				"StaticMeshDescription",
+				"SkeletalMeshDescription",
 				"AssetRegistry", "AudioEditor", "UnrealEd", "Json"
 			});
 		}

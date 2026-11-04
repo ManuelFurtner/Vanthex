@@ -95,7 +95,28 @@ void VanthexRunExtractionRulesTest(AVanthexGameMode* Mode)
   Check(Core->GetCarrier()==Mode->FindCombatant(Other,1),Label+TEXT("enemy bot prioritizes recovery"));Mode->UpdateExtraction(0);
   Check(Mode->ExtractionTeam==Other&&Mode->ExtractionElapsed==0,Label+TEXT("recovery cancels old team countdown"));
   ++Case;Advance(Case<4?6:10);return;
- case 10:Finish();return;
+ case 10:
+  Case=0;Advance(11);return;
+ case 11:
+  Round();Check(Acquire(Pawn),Label+TEXT("friendly recovery fixture"));Place(Pawn,Zone->GetActorLocation()+FVector(-60,0,96));Mode->UpdateExtraction(3);Core->Drop();Park();Advance(12,.9);return;
+ case 12:
+  Mode->UpdateExtraction(0);Kill(Other);Mode->TimeRemaining=0;
+  Check(Mode->IsRoundActive()&&Mode->bEliminationDeferred,Label+TEXT("enemy eliminated with loose deposit and expired round clock"));
+  Place(Pawn,Core->GetActorLocation()+FVector(-50,0,76));Check(Core->TryPickup(Pawn),Label+TEXT("friendly pickup after elimination"));
+  Mode->TickRoundClock();
+  Check(Mode->IsRoundActive()&&Mode->HasPendingDepositedExtraction()&&FMath::IsNearlyEqual(Mode->ExtractionElapsed,3.1f,.01f),Label+TEXT("friendly held Core preserves countdown and timeout protection"));
+  for(int32 I=0;I<119;++I)Mode->TickRoundClock();
+  Check(!Mode->IsRoundActive()&&Mode->RoundWinner==Team&&Core->GetCoreState()==EVanthexCoreState::Extracted,Label+TEXT("friendly recovery finishes by extraction, not early elimination"));
+  ++Case;Advance(Case<4?11:13);return;
+ case 13:
+  Round();Check(Acquire(Alpha),TEXT("same tick pickup fixture"));Place(Alpha,Zone->GetActorLocation()+FVector(-60,0,96));Core->Drop();Park();Advance(14,.9);return;
+ case 14:
+  // No UpdateExtraction since release: TryPickup itself must remember the deposit.
+  Place(Alpha,Core->GetActorLocation()+FVector(-50,0,76));Check(Core->TryPickup(Alpha),TEXT("friendly pickup between extraction clock ticks"));Kill(EVanthexTeam::Bravo);Mode->TickRoundClock();
+  Check(Mode->IsRoundActive()&&Mode->HasPendingDepositedExtraction(),TEXT("between-ticks deposit is retained"));
+  Place(Alpha,FVector(50000,0,5000));Mode->TickRoundClock();Check(!Mode->IsRoundActive(),TEXT("carried Core leaving pad ends protection"));
+  Round();Check(Acquire(Alpha),TEXT("ordinary held fixture"));Place(Alpha,Zone->GetActorLocation()+FVector(-60,0,96));Mode->UpdateExtraction(1);Kill(EVanthexTeam::Bravo);
+  Check(!Mode->IsRoundActive(),TEXT("held Core without prior deposit does not bypass ordinary elimination"));Finish();return;
  }
 #endif
 }

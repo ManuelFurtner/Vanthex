@@ -1,0 +1,1 @@
+PASS role=client held=1 loose=1 countdown_advanced=1 monotonic=1 team_correct=1 victory=1 eliminated_team_extraction=1 knife_bonus=1 friendly_recovery=0

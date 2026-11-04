@@ -446,6 +446,7 @@ int32 UVanthexBuildArtCommandlet::Main(const FString& Params)
 	if(Params.Contains(TEXT("InspectStairs"))) { extern bool VanthexInspectStairs(); return VanthexInspectStairs()?0:1; }
 	if(Params.Contains(TEXT("InspectOperator"))) { extern bool VanthexInspectOperator(); return VanthexInspectOperator()?0:1; }
 	if(Params.Contains(TEXT("BuildOperatorArt"))) { extern bool VanthexBuildOperatorArt(); return VanthexBuildOperatorArt()?0:1; }
+	if(Params.Contains(TEXT("BuildOperatorArms"))) { extern bool VanthexBuildOperatorArms(); return VanthexBuildOperatorArms()?0:1; }
 	if(Params.Contains(TEXT("BakeGridV3"))) return VanthexBakeFoundry(true,false)?0:1;
 	if(Params.Contains(TEXT("BakeFoundry"))) return VanthexBakeFoundry(false,false)?0:1;
 	if(Params.Contains(TEXT("PrepareFactory"))) {

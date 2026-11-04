@@ -5,6 +5,8 @@
 #include "VanthexBotController.h"
 #include "HealthComponent.h"
 #include "HitscanWeapon.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "PhysicsEngine/BodyInstance.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -71,9 +73,14 @@ void VanthexStartCombatCollisionNetworkTest(AVanthexPlayerController* PC)
    if(!Dead&&State->LastDead) ++State->Revivals;
    if(!Dead&&State->Deaths==0) State->SawAlive=true;
    State->LastDead=Dead;
-   FHitResult Hit; const FVector P=Target->GetActorLocation();
+   // Trace the actual posed torso. The movement capsule centre can be empty
+   // between articulated bodies, especially after a disconnected client becomes a bot.
+   const auto* Body=Target->GetMesh()->GetBodyInstance(TEXT("pelvis"));
+   FHitResult Hit; const FVector P=Body?Body->GetCOMPosition():Target->GetActorLocation();
    World->LineTraceSingleByChannel(Hit,P-FVector(150,0,0),P+FVector(150,0,0),ECC_Visibility);
-   State->CollisionCorrect &= Target->GetActorEnableCollision()!=Dead && (Dead?!Hit.bBlockingHit:Hit.GetActor()==Target);
+   const bool Correct=Body&&Target->GetActorEnableCollision()!=Dead && (Dead?!Hit.bBlockingHit:Hit.GetActor()==Target&&Hit.GetComponent()==Target->GetMesh()&&!Hit.BoneName.IsNone());
+   if(!Correct&&State->CollisionCorrect)UE_LOG(LogVanthex,Error,TEXT("COMBAT_COLLISION first mismatch age=%.3f dead=%d enabled=%d hit=%s bone=%s"),Age,Dead,Target->GetActorEnableCollision(),*GetNameSafe(Hit.GetActor()),*Hit.BoneName.ToString());
+   State->CollisionCorrect &= Correct;
   }
   if(Host?Age>=12:(State->Revivals==2&&Age>=9)) Finish(false);
  }),.05f,true,.2f);

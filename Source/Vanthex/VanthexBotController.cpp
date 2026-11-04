@@ -15,6 +15,8 @@
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "PhysicsEngine/BodyInstance.h"
 
 namespace
 {
@@ -148,7 +150,8 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  if(Enemy!=CombatTarget.Get()) { CombatTarget=Enemy; TargetVisibleSince=Now; NextCombatShot=Now+1.f; BurstEnds=0; Weapon->StopFire(); }
  if(Enemy) {
   const float Phase=float(GetUniqueID()%17)*.7f;
-  const FVector Chest=Enemy->GetActorLocation()+FVector(0,0,16);
+  const auto* Torso=Enemy->GetMesh()->GetBodyInstance(TEXT("spine_02"));
+  const FVector Chest=Torso?Torso->GetCOMPosition():Enemy->GetActorLocation()+FVector(0,0,16);
   const FVector Right=FVector::CrossProduct(FVector::UpVector,(Chest-BotCharacter->GetPawnViewLocation()).GetSafeNormal()).GetSafeNormal();
   const float Error=FMath::Clamp(Best*.035f,18.f,65.f);
   TurnToward(Chest+Right*FMath::Sin(Now*1.7f+Phase)*Error+FVector(0,0,FMath::Sin(Now*1.1f+Phase)*Error*.3f),DeltaSeconds);

@@ -74,7 +74,7 @@ void AHitscanWeapon::Tick(float DeltaSeconds)
   const auto* Character=Cast<AVanthexCharacter>(GetOwner());
   const float Aim=Character?Character->GetAimBlend():0.f;
   const auto Sight=VanthexWeaponPresentation::Aim(GetWeaponId());
-  const FVector Hip(28.f-Recoil*1.4f+Kick,8.f,-6.f-Kick);
+  const FVector Hip(15.f-Recoil*1.4f+Kick,0.f,2.f-Kick);
   const FVector Aimed=Sight.CameraRelativeOrigin-FVector(30,14,-12)-FVector(Recoil*.24f,0,0);
   RiflePivot->SetRelativeLocation(FMath::Lerp(Hip,Aimed,Aim));
   const float Progress=GetReloadProgress();

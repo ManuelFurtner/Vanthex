@@ -75,6 +75,7 @@ class AVanthexGameMode : public AGameModeBase
 	friend void VanthexRunControlsTest(AVanthexGameMode*);
 	friend void VanthexRunLooseCoreExtractionTest(AVanthexGameMode*);
 	friend void VanthexRunExtractionRulesTest(AVanthexGameMode*);
+	friend void VanthexRunPoseHitTest(AVanthexGameMode*);
 	GENERATED_BODY()
 
 public:
@@ -90,6 +91,8 @@ public:
  void RestartTest();
 	void NotifyCombatantDied(AVanthexCharacter* Combatant);
 	bool HasDepositedCore() const;
+	// A friendly pickup retains an already deposited objective, but never creates one.
+	bool HasPendingDepositedExtraction();
 
 	bool IsRoundActive() const { return Phase == EVanthexRoundPhase::RoundActive; }
 	bool IsBuyPhase() const { return Phase == EVanthexRoundPhase::BuyPhase; }
@@ -141,6 +144,8 @@ protected:
 	AVanthexPlayerState* GetVanthexPlayerState(const AActor* Actor) const;
 	void EvaluateElimination();
 	bool bEliminationDeferred = false;
+	EVanthexExtractionId DepositedZone = EVanthexExtractionId::None;
+	uint32 DepositedPossessionRevision = 0;
 	void UpdateExtraction(float DeltaSeconds);
 	void AdvanceCoreSelfTest();
 

@@ -29,10 +29,12 @@ public:
  USceneComponent* GetWorldFirearmRoot() const { return WorldFirearmRoot; }
  UMaterialInstanceDynamic* GetArmorMaterial() const { return ArmorMaterial; }
  USkeletalMeshComponent* GetFirstPersonBody() const { return FirstPersonBody; }
+ USkeletalMeshComponent* GetFirstPersonArms() const { return FirstPersonArms; }
 
 private:
  UPROPERTY(Transient) TObjectPtr<AVanthexCharacter> Character;
  UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> FirstPersonBody;
+ UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> FirstPersonArms;
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> ArmorMaterial;
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> AccentMaterial;
  UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> WorldRifle;

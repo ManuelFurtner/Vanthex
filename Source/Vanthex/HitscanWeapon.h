@@ -23,6 +23,7 @@ public:
 
 	/** One shot. Input auto-fire and the self-test both call this. */
 	void FireShot();
+ USceneComponent* GetFirstPersonPivot() const { return RiflePivot; }
  UFUNCTION(NetMulticast, Unreliable) void MulticastShot(FRotator ViewRotation, FHitResult Hit);
  UFUNCTION(NetMulticast, Unreliable) void MulticastPelletImpacts(const TArray<FHitResult>& Hits);
 

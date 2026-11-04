@@ -1,0 +1,8 @@
+VANTHEX validation 2026-11-04 / Unreal Engine 5.8.3
+VanthexEditor Win64 Development: SUCCEEDED
+Vanthex Win64 Development: SUCCEEDED
+Editor command: Build.bat VanthexEditor Win64 Development -Project=H:\Vanthex\Vanthex.uproject -WaitMutex
+Game command: Build.bat Vanthex Win64 Development -Project=H:\Vanthex\Vanthex.uproject -WaitMutex -gather
+Game output: H:\Vanthex\Binaries\Win64\Vanthex.exe
+Compilation emitted pre-existing numeric-conversion warnings; no compile/link errors.
+A standalone packaged/cooked build and Dedicated Server were not built in this change.

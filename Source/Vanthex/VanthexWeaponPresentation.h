@@ -19,6 +19,10 @@ struct FVanthexAimPresentation
 
 namespace VanthexWeaponPresentation
 {
+ // Palm contact points in authored weapon centimetres, shared by ego/world IK.
+ FVector RightPalm(FName WeaponId);
+ FVector LeftPalm(FName WeaponId, float ReloadProgress = -1.f);
+ float WorldScale(FName WeaponId);
  FVanthexAimPresentation Aim(FName WeaponId);
  FName ModelId(FName WeaponId);
  FVector Muzzle(FName WeaponId);

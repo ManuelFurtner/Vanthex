@@ -1,0 +1,62 @@
+OVERALL PASS
+CHECKS 58
+FAILURES 0
+ELAPSED 25.00
+PASS normal purchase phase, not legacy combat fixture
+PASS real purchases provide two Flash inventory slots
+PASS purchase-phase throw rejected without consuming or spawning
+PASS negative slot rejected without consumption
+PASS nonliving roster participant cannot throw
+PASS active authorized throw consumes exactly one slot and creates one actor
+PASS duplicate request and throw cooldown cannot consume the other slot
+PASS thrown actor moves through actual world ticks before fuse expires
+PASS Flash fuse detonates from actor ticks without manual activation
+PASS physical thrown actor collides with diagnostic floor instead of falling through
+PASS expected-ID mismatch cannot consume another gadget
+PASS blocked spawn rejects throw atomically
+PASS second valid throw consumes final slot
+PASS real Flash applies range/facing falloff
+PASS thrower can blind self; Flash is not team-immune
+PASS solid wall blocks Flash
+PASS repeated Detonate does not reapply Flash
+PASS Flash does not deal HP damage
+PASS real armor purchases prepare explosion case
+PASS 55 explosion damage applies 40 percent heavy armor absorption
+PASS self blast applies 25 percent light armor absorption
+PASS Frag friendly fire is disabled
+PASS solid wall blocks explosion damage
+PASS repeat explosion cannot damage twice
+PASS deployed Sensor activates
+PASS Sensor reports one in-range enemy to both teammates
+PASS Sensor never publishes positions to opponents
+PASS unactivated Smoke cannot occlude
+PASS activated Smoke blocks real Sensor sightline
+PASS Sensor ticks cannot reveal enemies through smoke
+PASS wall-isolated smoke in parallel room cannot occlude an otherwise clear sightline
+PASS same smoke occludes when the separating wall is removed
+PASS Sensor ticks cannot reveal enemies through a solid wall
+PASS Sensor resumes after sightline is restored
+PASS EMP jams player electronics and clears received marks
+PASS EMP disables deployed Sensor
+PASS EMP disables powered terminal without overwriting circuit state
+PASS EMP preserves previously unpowered circuit
+PASS jammed terminal rejects hack interaction
+PASS crouch applies 60 cm collision half-height through movement ticks
+PASS crouching movement speed is 280 cm per second
+PASS crouch lowers first-person camera to 42 cm
+PASS low ceiling prevents standing without capsule penetration
+PASS clear space restores standing 96 cm capsule
+PASS standing restores first-person camera to 64 cm
+PASS old Sensor marks expire within 1.25 seconds during EMP
+PASS player EMP state expires after eight seconds
+PASS powered terminal recovers automatically with original circuit state
+PASS unpowered terminal remains unpowered after EMP expires
+PASS Sensor resumes after EMP while deployment lifetime remains
+PASS Smoke expires after eighteen seconds of world time
+PASS Sensor deployment expires after fifteen seconds
+PASS Flash exposure does not persist indefinitely
+PASS new inventory prepared for round reset
+PASS live effects exist before actual BeginRound reset
+PASS actual round transition removes actors and clears temporary effects
+PASS unused survivor gadget remains in inventory across round transition
+PASS round reset preserves request high-water mark against old packet replay

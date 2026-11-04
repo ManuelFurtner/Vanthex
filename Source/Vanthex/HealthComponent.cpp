@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Actor.h"
+#include "Components/SkeletalMeshComponent.h"
 
 UHealthComponent::UHealthComponent()
 {
@@ -77,8 +78,8 @@ void UHealthComponent::ApplyDamage(const FVanthexDamageRequest& Request)
 	if (Health <= 0.f)
 	{
 		bDead = true;
-		// The death pose moves only the visual skeleton. Disable all character
-		// collision now so upright hidden hit proxies cannot absorb the next shot.
+		// Disable the whole character immediately; corpses must never absorb the
+		// next bullet while the cosmetic collapse continues to animate.
 		OnRep_Dead();
 		GetOwner()->ForceNetUpdate();
 		UE_LOG(LogVanthex, Display, TEXT("%s died"), *GetNameSafe(GetOwner()));
@@ -91,6 +92,18 @@ void UHealthComponent::OnRep_Dead()
 	// Leave non-character targets and their individual collision policies alone.
 	if (auto* Character = Cast<AVanthexCharacter>(GetOwner()))
 	{
+		if (!bDead && !Character->GetActorEnableCollision())
+		{
+			// Revive can occur after the mesh tick. Rebuild the living pose before
+			// exposing its bodies, so same-frame shots cannot see the death pose.
+			auto* Mesh = Character->GetMesh();
+			if (Mesh && Mesh->GetAnimInstance() && Mesh->GetPhysicsAsset())
+			{
+				Mesh->HandleExistingParallelEvaluationTask(true, true);
+				Mesh->TickAnimation(0.f, false);
+				Mesh->RefreshBoneTransforms();
+			}
+		}
 		Character->SetActorEnableCollision(!bDead);
 	}
 }

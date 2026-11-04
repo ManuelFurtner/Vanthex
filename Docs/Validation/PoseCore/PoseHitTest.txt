@@ -1,0 +1,152 @@
+OVERALL PASS CHECKS 132 FAILURES 0
+PASS animated physics asset supplies query hit zones
+PASS movement capsule cannot intercept bullet traces
+BODY spine_01
+BODY spine_02
+BODY pelvis
+BODY thigh_l
+BODY calf_l
+BODY foot_l
+BODY thigh_r
+BODY calf_r
+BODY foot_r
+BODY upperarm_r
+BODY lowerarm_r
+BODY hand_r
+BODY upperarm_l
+BODY lowerarm_l
+BODY hand_l
+BODY neck_01
+BODY head
+BODY ball_r
+BODY ball_l
+PASS pose 0 bone head hits animated mesh (head)
+PASS head classified by skeletal bone
+PASS pose 0 bone spine_02 hits animated mesh (spine_02)
+PASS pose 0 bone pelvis hits animated mesh (pelvis)
+PASS pose 0 bone upperarm_l hits animated mesh (upperarm_r)
+PASS pose 0 bone lowerarm_r hits animated mesh (lowerarm_r)
+PASS pose 0 bone thigh_l hits animated mesh (thigh_l)
+PASS pose 0 bone calf_r hits animated mesh (calf_r)
+PASS empty space above posed head misses
+PASS pose 1 bone head hits animated mesh (head)
+PASS head classified by skeletal bone
+PASS pose 1 bone spine_02 hits animated mesh (spine_02)
+PASS pose 1 bone pelvis hits animated mesh (thigh_l)
+PASS pose 1 bone upperarm_l hits animated mesh (upperarm_r)
+PASS pose 1 bone lowerarm_r hits animated mesh (lowerarm_r)
+PASS pose 1 bone thigh_l hits animated mesh (thigh_l)
+PASS pose 1 bone calf_r hits animated mesh (calf_r)
+PASS empty space above posed head misses
+PASS pose 2 bone head hits animated mesh (head)
+PASS head classified by skeletal bone
+PASS pose 2 bone spine_02 hits animated mesh (spine_02)
+PASS pose 2 bone pelvis hits animated mesh (pelvis)
+PASS pose 2 bone upperarm_l hits animated mesh (upperarm_r)
+PASS pose 2 bone lowerarm_r hits animated mesh (lowerarm_r)
+PASS pose 2 bone thigh_l hits animated mesh (thigh_l)
+PASS pose 2 bone calf_r hits animated mesh (calf_r)
+PASS empty space above posed head misses
+PASS pose 3 bone head hits animated mesh (head)
+PASS head classified by skeletal bone
+PASS pose 3 bone spine_02 hits animated mesh (lowerarm_l)
+PASS pose 3 bone pelvis hits animated mesh (pelvis)
+PASS pose 3 bone upperarm_l hits animated mesh (upperarm_r)
+PASS pose 3 bone lowerarm_r hits animated mesh (lowerarm_r)
+PASS pose 3 bone thigh_l hits animated mesh (thigh_l)
+PASS pose 3 bone calf_r hits animated mesh (calf_r)
+PASS empty space above posed head misses
+PASS pose 4 bone head hits animated mesh (head)
+PASS head classified by skeletal bone
+PASS pose 4 bone spine_02 hits animated mesh (spine_02)
+PASS pose 4 bone pelvis hits animated mesh (pelvis)
+PASS pose 4 bone upperarm_l hits animated mesh (spine_02)
+PASS pose 4 bone lowerarm_r hits animated mesh (lowerarm_r)
+PASS pose 4 bone thigh_l hits animated mesh (thigh_l)
+PASS pose 4 bone calf_r hits animated mesh (calf_r)
+PASS empty space above posed head misses
+PASS real skeletal headshot applies 80 damage
+PASS real skeletal body shot applies 40 damage
+PASS death disables articulated hit zones
+PASS fixture reaches collapsed death pose
+PASS revive synchronously restores upright pose and same-frame hits
+PASS revive restores posed hit zones
+PASS owner-only first person arms exist without gameplay collision
+PASS both first person hands remain visible
+PASS dedicated arms geometry shares the original skeleton without duplicate torso or physics
+PASS Pistol ego hip right wrist tracks equipment: 0.00 cm
+PASS Pistol ego hip left wrist tracks equipment: 0.00 cm
+PASS Pistol world hip right wrist tracks equipment: 0.00 cm
+PASS Pistol world hip left wrist tracks equipment: 0.00 cm
+PASS Pistol ego ADS right wrist tracks equipment: 0.00 cm
+PASS Pistol ego ADS left wrist tracks equipment: 0.00 cm
+PASS Pistol world ADS right wrist tracks equipment: 0.00 cm
+PASS Pistol world ADS left wrist tracks equipment: 0.00 cm
+PASS P250 ego hip right wrist tracks equipment: 0.00 cm
+PASS P250 ego hip left wrist tracks equipment: 0.00 cm
+PASS P250 world hip right wrist tracks equipment: 0.00 cm
+PASS P250 world hip left wrist tracks equipment: 0.00 cm
+PASS P250 ego ADS right wrist tracks equipment: 0.00 cm
+PASS P250 ego ADS left wrist tracks equipment: 0.00 cm
+PASS P250 world ADS right wrist tracks equipment: 0.00 cm
+PASS P250 world ADS left wrist tracks equipment: 0.00 cm
+PASS MP5 ego hip right wrist tracks equipment: 0.00 cm
+PASS MP5 ego hip left wrist tracks equipment: 0.00 cm
+PASS MP5 world hip right wrist tracks equipment: 0.00 cm
+PASS MP5 world hip left wrist tracks equipment: 0.00 cm
+PASS MP5 ego ADS right wrist tracks equipment: 0.00 cm
+PASS MP5 ego ADS left wrist tracks equipment: 0.00 cm
+PASS MP5 world ADS right wrist tracks equipment: 0.00 cm
+PASS MP5 world ADS left wrist tracks equipment: 0.00 cm
+PASS MP7 ego hip right wrist tracks equipment: 0.00 cm
+PASS MP7 ego hip left wrist tracks equipment: 0.00 cm
+PASS MP7 world hip right wrist tracks equipment: 0.00 cm
+PASS MP7 world hip left wrist tracks equipment: 0.00 cm
+PASS MP7 ego ADS right wrist tracks equipment: 0.00 cm
+PASS MP7 ego ADS left wrist tracks equipment: 0.00 cm
+PASS MP7 world ADS right wrist tracks equipment: 0.00 cm
+PASS MP7 world ADS left wrist tracks equipment: 0.00 cm
+PASS M4 ego hip right wrist tracks equipment: 0.00 cm
+PASS M4 ego hip left wrist tracks equipment: 0.00 cm
+PASS M4 world hip right wrist tracks equipment: 0.00 cm
+PASS M4 world hip left wrist tracks equipment: 0.00 cm
+PASS M4 ego ADS right wrist tracks equipment: 0.00 cm
+PASS M4 ego ADS left wrist tracks equipment: 0.00 cm
+PASS M4 world ADS right wrist tracks equipment: 0.00 cm
+PASS M4 world ADS left wrist tracks equipment: 0.00 cm
+PASS AK ego hip right wrist tracks equipment: 0.00 cm
+PASS AK ego hip left wrist tracks equipment: 0.00 cm
+PASS AK world hip right wrist tracks equipment: 0.00 cm
+PASS AK world hip left wrist tracks equipment: 0.00 cm
+PASS AK ego ADS right wrist tracks equipment: 0.00 cm
+PASS AK ego ADS left wrist tracks equipment: 0.00 cm
+PASS AK world ADS right wrist tracks equipment: 0.00 cm
+PASS AK world ADS left wrist tracks equipment: 0.00 cm
+PASS AUG ego hip right wrist tracks equipment: 0.00 cm
+PASS AUG ego hip left wrist tracks equipment: 0.00 cm
+PASS AUG world hip right wrist tracks equipment: 0.00 cm
+PASS AUG world hip left wrist tracks equipment: 0.00 cm
+PASS AUG ego ADS right wrist tracks equipment: 0.00 cm
+PASS AUG ego ADS left wrist tracks equipment: 0.00 cm
+PASS AUG world ADS right wrist tracks equipment: 0.00 cm
+PASS AUG world ADS left wrist tracks equipment: 0.00 cm
+PASS DMR ego hip right wrist tracks equipment: 0.00 cm
+PASS DMR ego hip left wrist tracks equipment: 0.00 cm
+PASS DMR world hip right wrist tracks equipment: 0.00 cm
+PASS DMR world hip left wrist tracks equipment: 0.00 cm
+PASS DMR ego ADS right wrist tracks equipment: 0.00 cm
+PASS DMR ego ADS left wrist tracks equipment: 0.00 cm
+PASS DMR world ADS right wrist tracks equipment: 0.00 cm
+PASS DMR world ADS left wrist tracks equipment: 0.00 cm
+PASS Shotgun ego hip right wrist tracks equipment: 0.00 cm
+PASS Shotgun ego hip left wrist tracks equipment: 0.00 cm
+PASS Shotgun world hip right wrist tracks equipment: 0.00 cm
+PASS Shotgun world hip left wrist tracks equipment: 0.00 cm
+PASS Shotgun ego ADS right wrist tracks equipment: 0.00 cm
+PASS Shotgun ego ADS left wrist tracks equipment: 0.00 cm
+PASS Shotgun world ADS right wrist tracks equipment: 0.00 cm
+PASS Shotgun world ADS left wrist tracks equipment: 0.00 cm
+PASS M4 ego reload right wrist tracks equipment: 0.00 cm
+PASS M4 ego reload left wrist tracks equipment: 0.00 cm
+PASS M4 world reload right wrist tracks equipment: 0.00 cm
+PASS M4 world reload left wrist tracks equipment: 0.00 cm

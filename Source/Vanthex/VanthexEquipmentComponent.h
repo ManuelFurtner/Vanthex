@@ -58,6 +58,7 @@ public:
 	EVanthexWeaponSlot GetSelectedSlot() const { return State.Selected; }
 	FVanthexEquipmentPresentation GetPresentation() const;
 	USceneComponent* GetWorldKnifeRoot() const { return WorldKnifeRoot; }
+ USceneComponent* GetFirstPersonKnifeRoot() const { return KnifeRoot; }
 
 	UPROPERTY(EditDefaultsOnly, Category="Equipment", meta=(ClampMin="0.1")) float SwitchDuration = 0.55f;
 	UPROPERTY(EditDefaultsOnly, Category="Knife", meta=(ClampMin="0.1")) float SwingDuration = 0.6f;

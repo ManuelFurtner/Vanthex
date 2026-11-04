@@ -16,6 +16,10 @@
 #include "Misc/PackageName.h"
 #include "Misc/Paths.h"
 #include "UObject/SavePackage.h"
+#include "Engine/SkeletalMesh.h"
+#include "AssetCompilingManager.h"
+#include "MeshDescription.h"
+#include "SkeletalMeshAttributes.h"
 
 namespace
 {
@@ -149,6 +153,65 @@ bool VanthexBuildOperatorArt()
  Report.Add(FString::Printf(TEXT("%s material=%s normal=%s"), Saved ? TEXT("PASS") : TEXT("FAIL"), *Material->GetPathName(), *Normal->GetPathName()));
  FFileHelper::SaveStringArrayToFile(Report, *(FPaths::ProjectSavedDir() / TEXT("OperatorArt.txt")));
  for (const FString& Line : Report) UE_LOG(LogVanthex, Display, TEXT("OPERATOR_ART %s"), *Line);
+ return Saved;
+}
+// Derive an arms-only mesh without round-tripping the skeleton through FBX.
+// Bone names, bind transforms, skin weights and animation compatibility stay exact.
+bool VanthexBuildOperatorArms()
+{
+ auto* Source=LoadObject<USkeletalMesh>(nullptr,TEXT("/Game/Meshes/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin"));
+ if(!Source)return false;
+ const TCHAR* Path=TEXT("/Game/Vanthex/Operators/ARC/SK_ARC_FirstPersonArms");
+ UPackage* Package=CreatePackage(Path);
+ Package->FullyLoad();
+ if(auto* Previous=FindObject<USkeletalMesh>(Package,TEXT("SK_ARC_FirstPersonArms"))) {
+  Previous->Rename(nullptr,GetTransientPackage(),REN_DontCreateRedirectors|REN_NonTransactional);
+  Previous->ClearFlags(RF_Public|RF_Standalone);
+ }
+ auto* Arms=CastChecked<USkeletalMesh>(StaticDuplicateObject(Source,Package,TEXT("SK_ARC_FirstPersonArms")));
+ Arms->SetFlags(RF_Public|RF_Standalone);
+ Arms->PreEditChange(nullptr);
+ const auto& Skeleton=Arms->GetRefSkeleton();
+ TSet<int32> ArmBones;
+ for(int32 I=0;I<Skeleton.GetNum();++I) {
+  const FName Name=Skeleton.GetBoneName(I);
+  if(Name==TEXT("upperarm_l")||Name==TEXT("upperarm_r")||ArmBones.Contains(Skeleton.GetParentIndex(I)))ArmBones.Add(I);
+ }
+ TArray<FString> Report;
+ for(int32 Lod=0;Lod<Arms->GetLODNum();++Lod) {
+  FMeshDescription* Description=Arms->GetMeshDescription(Lod);
+  if(!Description){UE_LOG(LogVanthex,Error,TEXT("OPERATOR_ARMS missing source description LOD %d"),Lod);return false;}
+  const auto Weights=FSkeletalMeshConstAttributes(*Description).GetVertexSkinWeights();
+  TArray<FPolygonID> Remove;
+  const int32 Before=Description->Polygons().Num();
+  for(const FPolygonID Polygon:Description->Polygons().GetElementIDs()) {
+   bool Keep=true;
+   for(const FVertexID Vertex:Description->GetPolygonVertices(Polygon)) {
+    float ArmWeight=0;
+    for(const auto& Weight:Weights.Get(Vertex))if(ArmBones.Contains(Weight.GetBoneIndex()))ArmWeight+=Weight.GetWeight();
+    Keep &= ArmWeight>.5f;
+   }
+   if(!Keep)Remove.Add(Polygon);
+  }
+  Description->DeletePolygons(Remove);
+  FElementIDRemappings Remap;Description->Compact(Remap);
+  const int32 Kept=Description->Polygons().Num();
+  if(Kept<100||Kept>=Before){UE_LOG(LogVanthex,Error,TEXT("OPERATOR_ARMS invalid filtered geometry"));return false;}
+  Report.Add(FString::Printf(TEXT("LOD %d polygons %d -> %d; retained arm-dominant vertices only"),Lod,Before,Kept));
+  Arms->CommitMeshDescription(Lod);
+ }
+ Arms->SetPhysicsAsset(nullptr);
+ Arms->InvalidateDeriveDataCacheGUID();
+ Arms->PostEditChange();
+ FAssetCompilingManager::Get().FinishAllCompilation();
+ Package->MarkPackageDirty();
+ const FString Filename=FPackageName::LongPackageNameToFilename(Path,FPackageName::GetAssetPackageExtension());
+ IFileManager::Get().MakeDirectory(*FPaths::GetPath(Filename),true);
+ FSavePackageArgs Args;Args.TopLevelFlags=RF_Public|RF_Standalone;
+ const bool Saved=UPackage::SavePackage(Package,Arms,*Filename,Args);
+ Report.Insert(Saved?TEXT("OVERALL PASS: dedicated arms mesh; original full-body mesh untouched"):TEXT("OVERALL FAIL"),0);
+ FFileHelper::SaveStringArrayToFile(Report,*(FPaths::ProjectSavedDir()/TEXT("OperatorArmsBuild.txt")));
+ for(const FString& Line:Report)UE_LOG(LogVanthex,Display,TEXT("OPERATOR_ARMS %s"),*Line);
  return Saved;
 }
 #endif

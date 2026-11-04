@@ -2,6 +2,9 @@
 
 #include "VanthexCharacter.h"
 #include "VanthexEquipmentComponent.h"
+#include "HitscanWeapon.h"
+#include "VanthexWeaponPresentation.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "HealthComponent.h"
 #include "Animation/AnimInstanceProxy.h"
 #include "Animation/AnimNode_SequencePlayer.h"
@@ -47,7 +50,15 @@ void SolveLimb(FCSPose<FCompactPose>& Pose, const TCHAR* UpperName, const TCHAR*
  FTransform B = Pose.GetComponentSpaceTransform(Lower);
  FTransform C = Pose.GetComponentSpaceTransform(End);
  AnimationCore::SolveTwoBoneIK(A, B, C, Pole, Target, false, 1., 1.);
- if (EndRotation) C.SetRotation(*EndRotation);
+ if (EndRotation)
+ {
+  // Match forearm roll to the wrist's reference orientation. Keeping the idle
+  // forearm roll while rotating the hand produces a pinched, twisted wrist.
+  const FQuat WristReference=Pose.GetPose().GetBoneContainer().GetRefPoseTransform(End).GetRotation();
+  const FQuat ForearmReference=*EndRotation*WristReference.Inverse();
+  B.SetRotation(FRotationMatrix::MakeFromXY(B.GetRotation().GetAxisX(),ForearmReference.GetAxisY()).ToQuat());
+  C.SetRotation(*EndRotation);
+ }
  TArray<FBoneTransform, TInlineAllocator<3>> Changes;
  Changes.Emplace(Upper, A); Changes.Emplace(Lower, B); Changes.Emplace(End, C);
  Pose.SafeSetCSBoneTransforms(Changes);
@@ -73,6 +84,10 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
  float AirTime = 0.f, LandingTime = 1.f, AuthoredRunSpeed = 375.f;
  bool WasFalling = false, Falling = false, Dead = false, SpeedOnX = false;
  bool Knife = false, Sidearm = false;
+ bool FirstPerson = false, HaveFirstPersonMount = false;
+ FName WeaponId=TEXT("M4");
+ FTransform FirstPersonMount;
+ FVector PalmRight, PalmLeft;
 
  virtual FAnimNode_Base* GetCustomRootNode() override { return &GroundAir; }
  virtual void GetCustomNodes(TArray<FAnimNode_Base*>& Nodes) override
@@ -118,9 +133,21 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
    Lower = FMath::Clamp(Presentation.Lower, 0.f, 1.f);
    Swing = FMath::Clamp(Presentation.Swing, 0.f, 1.f);
   }
+  const auto* Weapon=Character->GetWeapon();
+  WeaponId=Knife?FName(TEXT("Knife")):Weapon?Weapon->GetWeaponId():FName(TEXT("Pistol"));
+  PalmRight=VanthexWeaponPresentation::RightPalm(WeaponId);
+  PalmLeft=VanthexWeaponPresentation::LeftPalm(WeaponId,Weapon?Weapon->GetReloadProgress():-1.f);
+  const auto* PoseMesh=Instance->GetSkelMeshComponent();
+  FirstPerson=PoseMesh&&PoseMesh->ComponentHasTag(TEXT("VanthexFirstPersonArms"));
+  HaveFirstPersonMount=false;
+  if(FirstPerson) {
+   const auto* Mount=Knife?Character->GetEquipment()->GetFirstPersonKnifeRoot():Weapon?Weapon->GetFirstPersonPivot():nullptr;
+   if(Mount){FirstPersonMount=Mount->GetComponentTransform().GetRelativeTransform(PoseMesh->GetComponentTransform());HaveFirstPersonMount=true;}
+   Crouch=0;Speed=0;Falling=false;
+  }
   // Round restart clears the death pose immediately; falling into death eases in.
   Death = Dead ? FMath::Min(1.f, Death + DeltaSeconds * 2.2f) : 0.f;
-  Falling = Movement && Movement->IsFalling() && !Dead;
+  Falling = !FirstPerson && Movement && Movement->IsFalling() && !Dead;
   if (Falling) { AirTime = WasFalling ? AirTime + DeltaSeconds : 0.f; LandingTime = 0.f; }
   else LandingTime = WasFalling ? 0.f : LandingTime + DeltaSeconds;
   WasFalling = Falling;
@@ -173,27 +200,29 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
 
   if (Death < .2f)
   {
-   const FTransform Mount = Knife ? UVanthexOperatorAnimInstance::GetKnifeTransform(Pitch, Crouch, Lower, Swing)
-    : UVanthexOperatorAnimInstance::GetRifleTransform(Pitch, Crouch, Lower);
-   const FVector NativeGrip = Knife ? FVector(-4., 0., 0.) : FVector(-1., 0., -3.2);
-   const FVector Grip = Mount.TransformPosition(NativeGrip);
+   const FTransform Mount = FirstPerson&&HaveFirstPersonMount?FirstPersonMount:Knife ? UVanthexOperatorAnimInstance::GetKnifeTransform(Pitch, Crouch, Lower, Swing)
+    : UVanthexOperatorAnimInstance::GetRifleTransform(Pitch, Crouch, Lower,WeaponId);
+   const FVector Grip = Mount.TransformPosition(PalmRight);
    const FVector Forward = Mount.GetRotation().GetAxisX();
    const FVector Up = Mount.GetRotation().GetAxisZ();
-   // The hand bone is the wrist: put the palm about 9 cm ahead onto each
-   // grip. Targeting the palm with the wrist made the left arm overextend.
-   const FVector RightWrist = Grip - Forward * 9.;
-   const FVector LeftSupport = Grip + Forward * (Sidearm ? 10. * Lower : 10.) + FVector(4., 0., 0.);
+   const FVector Side = Mount.GetRotation().GetAxisY();
+   // Wrist targets leave room for the palm. A support hand crosses the fore-end:
+   // its fingers wrap around the barrel rather than pointing along it.
+   const FVector RightWrist = Grip - Forward * 11.;
+   const FVector LeftDirection = Sidearm ? Forward : Side;
+   const FVector LeftSupport = Mount.TransformPosition(PalmLeft) - LeftDirection*10. - (Sidearm?FVector::ZeroVector:Up*2.);
    const FVector LeftGuard(23. + 5. * Swing, 13. - 6. * Swing, 124. - 32. * Crouch - 4. * Swing);
    // The free hand guards the chest during knife use. Both poses converge at
    // full holster, where VisibleSlot changes, avoiding a discontinuous wrist.
-   const FVector LeftWrist = Knife ? FMath::Lerp(LeftGuard, LeftSupport, double(Lower)) : LeftSupport;
+   const FVector EgoGuard(17,38,127);
+   const FVector LeftWrist = Knife ? FMath::Lerp(FirstPerson?EgoGuard:LeftGuard, LeftSupport, double(Lower)) : LeftSupport;
    // This skeleton mirrors hand translations: fingers extend along -X on
    // the right hand and +X on the left. Palm normals are their local Y axes.
-   const FQuat RightHand = FRotationMatrix::MakeFromXY(-Forward, FVector::ForwardVector).ToQuat();
-   const FQuat LeftHand = FRotationMatrix::MakeFromXY(Forward, Up).ToQuat();
+   const FQuat RightHand = FRotationMatrix::MakeFromXY(-Forward, -Mount.GetRotation().GetAxisY()).ToQuat();
+   const FQuat LeftHand = FRotationMatrix::MakeFromXY(LeftDirection, Sidearm?Side:Up).ToQuat();
    const float Thrust = Knife ? Swing * (1.f - Lower) : 0.f;
-   SolveLimb(ComponentPose, TEXT("upperarm_r"), TEXT("lowerarm_r"), TEXT("hand_r"), RightWrist, FVector(-65. + 10. * Thrust, 10. + 12. * Thrust, 105. - 32. * Crouch + 8. * Thrust), &RightHand);
-   SolveLimb(ComponentPose, TEXT("upperarm_l"), TEXT("lowerarm_l"), TEXT("hand_l"), LeftWrist, FVector(65., 15., 105. - 32. * Crouch), &LeftHand);
+   SolveLimb(ComponentPose, TEXT("upperarm_r"), TEXT("lowerarm_r"), TEXT("hand_r"), RightWrist, FirstPerson?FVector(-35,40,85):FVector(-65. + 10. * Thrust, 10. + 12. * Thrust, 105. - 32. * Crouch + 8. * Thrust), &RightHand);
+   SolveLimb(ComponentPose, TEXT("upperarm_l"), TEXT("lowerarm_l"), TEXT("hand_l"), LeftWrist, FirstPerson?FVector(35,40,85):FVector(65., 15., 105. - 32. * Crouch), &LeftHand);
   }
   FCSPose<FCompactPose>::ConvertComponentPosesToLocalPoses(MoveTemp(ComponentPose), Output.Pose);
 
@@ -207,13 +236,21 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
       const auto Index = Bone(Output.Pose, *Name);
       if (Index.GetInt() == INDEX_NONE) continue;
       const bool Right = Side[0] == TCHAR('r');
-      const float Curl = Right ? (Segment == 1 ? -25.f : Segment == 2 ? -55.f : -35.f) : (Segment == 3 ? 30.f : 55.f);
+      const float Curl = Right ? (Segment == 1 ? -15.f : Segment == 2 ? -83.f : -99.f) : (Segment == 1 ? 65.f : Segment == 2 ? 107.f : 81.f);
       const bool TriggerFinger = Right && FCString::Strcmp(Finger, TEXT("index")) == 0;
       const float TriggerScale = TriggerFinger ? (Knife ? FMath::Lerp(1.f, .55f, Lower) : .55f) : 1.f;
       const float GuardScale = Knife && !Right ? FMath::Lerp(.45f, 1.f, Lower) : 1.f;
       FTransform& Transform = Output.Pose[Index];
-      Transform.SetRotation(Transform.GetRotation() * FQuat(FVector::UpVector, FMath::DegreesToRadians(Curl * TriggerScale * GuardScale)));
+      // Author from the reference fingers, not a locomotion clip's arbitrary hand
+      // curl. Otherwise adding a grip rotation can straighten or reverse a fist.
+      Transform.SetRotation(Output.Pose.GetBoneContainer().GetRefPoseTransform(Index).GetRotation() * FQuat(FVector::UpVector, FMath::DegreesToRadians(Curl * TriggerScale * GuardScale)));
      }
+   for(const TCHAR* Side:{TEXT("l"),TEXT("r")})for(int32 Segment=1;Segment<=3;++Segment){
+    const auto Index=Bone(Output.Pose,*FString::Printf(TEXT("thumb_%02d_%s"),Segment,Side));
+    if(Index.GetInt()==INDEX_NONE)continue;
+    const float Curl=(Side[0]==TCHAR('r')?-1.f:1.f)*(Segment==1?25.f:35.f);
+    Output.Pose[Index].SetRotation(Output.Pose.GetBoneContainer().GetRefPoseTransform(Index).GetRotation()*FQuat(FVector::UpVector,FMath::DegreesToRadians(Curl)));
+   }
   }
 
   if (Death > .001f)
@@ -240,11 +277,11 @@ UVanthexOperatorAnimInstance::UVanthexOperatorAnimInstance()
 
 bool UVanthexOperatorAnimInstance::HasLocomotionAssets() const { return Locomotion && JumpStart && JumpLoop && JumpEnd; }
 
-FTransform UVanthexOperatorAnimInstance::GetRifleTransform(float Pitch, float Crouch, float Lower)
+FTransform UVanthexOperatorAnimInstance::GetRifleTransform(float Pitch, float Crouch, float Lower,FName WeaponId)
 {
  const FQuat Rotation = RifleAim(Pitch, Lower) * FRotator(0., 90., 0.).Quaternion();
- constexpr double Scale = 1.7;
- const FVector NativeGrip(-1., 0., -3.2);
+ const double Scale = VanthexWeaponPresentation::WorldScale(WeaponId);
+ const FVector NativeGrip=VanthexWeaponPresentation::RightPalm(WeaponId);
  return FTransform(Rotation, RightGrip(Pitch, Crouch, Lower) - Rotation.RotateVector(NativeGrip * Scale), FVector(Scale));
 }
 

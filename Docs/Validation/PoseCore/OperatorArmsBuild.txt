@@ -1,0 +1,2 @@
+OVERALL PASS: dedicated arms mesh; original full-body mesh untouched
+LOD 0 polygons 41052 -> 20032; retained arm-dominant vertices only

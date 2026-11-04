@@ -253,6 +253,8 @@ bool AVanthexCore::TryPickup(AVanthexCharacter* Character)
 	FHitResult PickupHit;
 	if (GetWorld()->LineTraceSingleByObjectType(PickupHit,Character->GetActorLocation(),GetActorLocation(),PickupObjects,PickupQuery)) return false;
 
+	// Record a valid deposit before clearing the loose state, even between clock ticks.
+	if (auto* Mode = GetWorld()->GetAuthGameMode<AVanthexGameMode>()) Mode->HasPendingDepositedExtraction();
 	AttachToCarrier(Character);
 	return true;
 }

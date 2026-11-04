@@ -3,6 +3,12 @@ Stand: 4. November 2026, Europe/Vienna
 Untersuchtes Projekt: H:\Vanthex\Vanthex.uproject
 Untersuchter Gameplay-Commit: eb7286d (auf Basis von 5fcb47d)
 
+NACHTRAG vom selben Abend: Die unten beschriebenen vereinfachten Trefferwürfel,
+der Randfall bei freundlicher Core-Wiederaufnahme und die fehlenden Ego-Hände
+wurden anschließend überarbeitet. Änderungen, neue Prüfnachweise und Grenzen:
+Docs/Validation/PoseCore/README.txt. Der ursprüngliche Audittext bleibt als
+datierte Bestandsaufnahme des oben genannten Commits erhalten.
+
 METHODIK UND GRENZEN
 Dieser Bericht beruht auf dem lokalen Quellcode, Projekt- und Konfigurationsdateien,
 Git-Historie, Map-Dateien sowie vorhandenen Build-, Gameplay-, Netzwerk- und

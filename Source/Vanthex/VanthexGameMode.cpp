@@ -167,6 +167,9 @@ void AVanthexGameMode::PerformSessionReset()
 void AVanthexGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+ if(FParse::Param(FCommandLine::Get(),TEXT("PoseHitTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunPoseHitTest(AVanthexGameMode*); VanthexRunPoseHitTest(this); }),.05f,true,1.f);
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("ExtractionRulesTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunExtractionRulesTest(AVanthexGameMode*); VanthexRunExtractionRulesTest(this); }),.05f,true,1.f);
  }
@@ -454,6 +457,23 @@ bool AVanthexGameMode::HasDepositedCore() const
 	return false;
 }
 
+bool AVanthexGameMode::HasPendingDepositedExtraction()
+{
+	if (Phase == EVanthexRoundPhase::RoundActive && Core && Arena
+		&& Core->GetExtractionTeam() != EVanthexTeam::None && Core->GetCoreState() != EVanthexCoreState::Extracted)
+	{
+		for (const auto Id : {EVanthexExtractionId::A, EVanthexExtractionId::B})
+			if (const auto* Zone = Arena->GetExtractionZone(Id); Zone && Zone->Contains(Core->GetActorLocation()))
+			{
+				if (!Core->GetCarrier()) { DepositedZone=Id; DepositedPossessionRevision=Core->GetPossessionRevision(); return true; }
+				if (DepositedZone==Id && DepositedPossessionRevision==Core->GetPossessionRevision()) return true;
+			}
+	}
+	DepositedZone=EVanthexExtractionId::None;
+	DepositedPossessionRevision=0;
+	return false;
+}
+
 void AVanthexGameMode::EvaluateElimination()
 {
 	if (Phase != EVanthexRoundPhase::RoundActive)
@@ -467,7 +487,7 @@ void AVanthexGameMode::EvaluateElimination()
 	const bool bBravoOut = BravoAlive == 0;
 	// Inspect the real Core position, including a death drop before the next clock tick.
 	// A deposited objective gets its full countdown even when nobody remains alive.
-	bEliminationDeferred = (bAlphaOut || bBravoOut) && HasDepositedCore();
+	bEliminationDeferred = (bAlphaOut || bBravoOut) && HasPendingDepositedExtraction();
 	if (bEliminationDeferred) return;
 	if (bAlphaOut && bBravoOut)
 	{
@@ -620,7 +640,7 @@ void AVanthexGameMode::TickRoundClock()
 
 	TimeRemaining = FMath::Max(0.f, TimeRemaining - 0.1f);
 	PublishMatch();
-	if (TimeRemaining <= 0.f && !HasDepositedCore())
+	if (TimeRemaining <= 0.f && !HasPendingDepositedExtraction())
 	{
 		if (UWorld* World = GetWorld())
 		{
@@ -632,7 +652,7 @@ void AVanthexGameMode::TickRoundClock()
 
 void AVanthexGameMode::ResolveTimeout()
 {
-	if (Phase != EVanthexRoundPhase::RoundActive || HasDepositedCore())
+	if (Phase != EVanthexRoundPhase::RoundActive || HasPendingDepositedExtraction())
 	{
 		return;
 	}
@@ -753,6 +773,8 @@ void AVanthexGameMode::ResetCombatants()
 	ExtractionTeam = EVanthexTeam::None;
 	ExtractionPossessionRevision = 0;
 	bEliminationDeferred = false;
+	DepositedZone = EVanthexExtractionId::None;
+	DepositedPossessionRevision = 0;
 	RefreshCoreReadout();
 }
 
@@ -812,6 +834,7 @@ void AVanthexGameMode::RefreshCoreReadout()
 
 void AVanthexGameMode::UpdateExtraction(float DeltaSeconds)
 {
+	HasPendingDepositedExtraction();
 	if (!Core || Phase != EVanthexRoundPhase::RoundActive)
 	{
 		ExtractionElapsed = 0.f;

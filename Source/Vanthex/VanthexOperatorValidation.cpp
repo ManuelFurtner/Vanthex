@@ -12,6 +12,7 @@
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "PhysicsEngine/BodyInstance.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -65,19 +66,16 @@ void FreezeBot(AVanthexCharacter* Character)
 
 void CheckHitProxy(FOperatorTest& Test,AVanthexCharacter* Target,const FName Tag)
 {
- TInlineComponentArray<UStaticMeshComponent*> Components;
- Target->GetComponents(Components);
- UStaticMeshComponent* Proxy=nullptr;
- for(auto* Component:Components) if(Component->ComponentHasTag(Tag)) { Proxy=Component; break; }
- if(!Proxy) { Test.Check(false,FString::Printf(TEXT("%s hit proxy exists"),*Tag.ToString())); return; }
- FVector Point=Proxy->Bounds.Origin;
- // The old body/head proxies overlap at neck height; sample the upper head.
- if(Tag==TEXT("Head")) Point.Z+=Proxy->Bounds.BoxExtent.Z*.6f;
+ auto* Mesh=Target->GetMesh();
+ const FName Bone=Tag==TEXT("Head")?FName(TEXT("head")):FName(TEXT("pelvis"));
+ auto* Body=Mesh->GetBodyInstance(Bone);
+ if(!Body){Test.Check(false,TEXT("articulated hit body exists: ")+Bone.ToString());return;}
+ const FVector Point=Body->GetCOMPosition()+(Tag==TEXT("Head")?FVector(0,0,8):FVector::ZeroVector);
  FHitResult Hit;
  FCollisionQueryParams Params(SCENE_QUERY_STAT(OperatorHitProxy),false);
  const bool Blocked=Target->GetWorld()->LineTraceSingleByChannel(Hit,Point-FVector(300,0,0),Point+FVector(300,0,0),ECC_Visibility,Params);
- Test.Check(!Proxy->IsVisible() && Proxy->GetCollisionEnabled()==ECollisionEnabled::QueryOnly && Blocked && Hit.GetActor()==Target && Hit.GetComponent()==Proxy,
-  FString::Printf(TEXT("hidden %s proxy still receives actual visibility hits"),*Tag.ToString()));
+ Test.Check(Mesh->GetCollisionEnabled()==ECollisionEnabled::QueryOnly && Blocked && Hit.GetActor()==Target && Hit.GetComponent()==Mesh && (Tag!=TEXT("Head")||Hit.BoneName==TEXT("head")),
+  FString::Printf(TEXT("animated %s skeletal body receives visibility hits"),*Tag.ToString()));
 }
 }
 #endif
@@ -133,8 +131,8 @@ void VanthexRunOperatorTest(AVanthexGameMode* Mode)
    FLinearColor TeamColor=FLinearColor::Black;
    const bool HasColor=Operator->GetArmorMaterial() && Operator->GetArmorMaterial()->GetVectorParameterValue(FMaterialParameterInfo(TEXT("TeamColor")),TeamColor);
    const bool ColorMatches=PS && HasColor && (PS->GetTeam()==EVanthexTeam::Alpha ? TeamColor.B>TeamColor.R : TeamColor.R>TeamColor.B);
-   Test.Check(Operator->GetOperatorId()==TEXT("ARC") && Mesh->GetSkeletalMeshAsset() && Mesh->GetNumBones()>30 && Mesh->IsVisible() && Mesh->bOwnerNoSee && Mesh->GetCollisionEnabled()==ECollisionEnabled::NoCollision && Mesh->GetAnimInstance(),
-    FString::Printf(TEXT("%s has animated ARC mesh, owner hiding and separate collision"),*Character->GetName()));
+   Test.Check(Operator->GetOperatorId()==TEXT("ARC") && Mesh->GetSkeletalMeshAsset() && Mesh->GetNumBones()>30 && Mesh->IsVisible() && Mesh->bOwnerNoSee && Mesh->GetCollisionEnabled()==ECollisionEnabled::QueryOnly && Mesh->GetPhysicsAsset() && Mesh->GetAnimInstance(),
+    FString::Printf(TEXT("%s has animated ARC mesh, owner hiding and skeletal hit collision"),*Character->GetName()));
    Test.Check(ColorMatches,FString::Printf(TEXT("%s team material follows replicated roster team (%s)"),*Character->GetName(),*TeamColor.ToString()));
    Test.Check(Rifle && Rifle->GetStaticMesh() && Rifle->IsVisible() && Rifle->bOwnerNoSee && Rifle->GetCollisionEnabled()==ECollisionEnabled::NoCollision && Operator->GetWorldFirearmRoot() && Operator->GetWorldFirearmRoot()->GetAttachParent()==Mesh,
     FString::Printf(TEXT("%s has visible third-person rifle attached to skeleton"),*Character->GetName()));

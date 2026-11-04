@@ -7,6 +7,9 @@
 #include "VanthexEquipmentComponent.h"
 #include "VanthexArt.h"
 #include "HealthComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "PhysicsEngine/PhysicsAsset.h"
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -30,18 +33,31 @@ void UVanthexOperatorComponent::BeginPlay()
  if(!Asset) return;
  Mesh->SetSkeletalMesh(Asset);
  Mesh->SetRelativeLocationAndRotation(FVector(0,0,-96),FRotator(0,-90,0));
- Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ // The imported rig's articulated bodies follow the final animation pose. The
+ // movement capsule and old coarse boxes must not steal hits from those bodies.
+ auto* HitAsset=LoadObject<UPhysicsAsset>(nullptr,TEXT("/Game/Meshes/Mannequin/Character/Mesh/SK_Mannequin_PhysicsAsset.SK_Mannequin_PhysicsAsset"));
+ if(HitAsset) {
+  Mesh->SetPhysicsAsset(HitAsset);
+  Mesh->SetCollisionObjectType(ECC_Pawn);
+  Mesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+  Mesh->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
+  Mesh->SetGenerateOverlapEvents(false);
+  Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+  Mesh->SetAllBodiesSimulatePhysics(false);
+  Character->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility,ECR_Ignore);
+ }
  Mesh->SetOwnerNoSee(true);
  Mesh->SetCastHiddenShadow(true);
  Mesh->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
  Mesh->SetAnimInstanceClass(UVanthexOperatorAnimInstance::StaticClass());
  Mesh->SetVisibility(true);
  Mesh->ComponentTags.AddUnique(TEXT("VanthexOperator"));
- // The existing tagged proxies remain authoritative for body/head hit detection.
+ // Keep coarse proxies only as a fallback when the rig's physics asset is absent.
  TInlineComponentArray<UStaticMeshComponent*> OldParts;
  Character->GetComponents(OldParts);
  for(auto* Part:OldParts) if(Part->ComponentHasTag(TEXT("Body"))||Part->ComponentHasTag(TEXT("Head"))) {
   Part->SetVisibility(false); Part->SetCastShadow(false);
+  if(HitAsset)Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  }
 
  auto* ArmorBase=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Vanthex/Operators/ARC/M_ARC_Armor.M_ARC_Armor"));
@@ -70,6 +86,25 @@ void UVanthexOperatorComponent::BeginPlay()
  for(const FName Bone:{FName(TEXT("neck_01")),FName(TEXT("upperarm_l")),FName(TEXT("upperarm_r"))})
   FirstPersonBody->HideBoneByName(Bone,PBO_None);
  FirstPersonBody->ComponentTags.Add(TEXT("VanthexFirstPersonBody"));
+
+ // Camera-relative arms use the actual first-person equipment transform, including
+ // ADS, recoil and reload. The separate body below the camera keeps its locomotion.
+ FirstPersonArms=NewObject<USkeletalMeshComponent>(Character,TEXT("ARC_FirstPersonArms"));
+ FirstPersonArms->SetupAttachment(Character->GetFirstPersonCamera());
+ FirstPersonArms->SetRelativeLocationAndRotation(FVector(8,0,-160),FRotator(0,-90,0));
+ auto* ArmsAsset=LoadObject<USkeletalMesh>(nullptr,TEXT("/Game/Vanthex/Operators/ARC/SK_ARC_FirstPersonArms.SK_ARC_FirstPersonArms"));
+ FirstPersonArms->SetSkeletalMesh(ArmsAsset?ArmsAsset:Asset);
+ FirstPersonArms->ComponentTags.Add(TEXT("VanthexFirstPersonArms"));
+ FirstPersonArms->SetAnimInstanceClass(UVanthexOperatorAnimInstance::StaticClass());
+ FirstPersonArms->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ FirstPersonArms->SetGenerateOverlapEvents(false);
+ FirstPersonArms->SetOnlyOwnerSee(true); FirstPersonArms->SetCastShadow(false);
+ FirstPersonArms->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+ FirstPersonArms->SetMaterial(0,ArmorMaterial); if(Mesh->GetNumMaterials()>1)FirstPersonArms->SetMaterial(1,Dark);
+ Character->AddInstanceComponent(FirstPersonArms);FirstPersonArms->RegisterComponent();
+ for(const FName Bone:{FName(TEXT("neck_01")),FName(TEXT("thigh_l")),FName(TEXT("thigh_r"))})FirstPersonArms->HideBoneByName(Bone,PBO_None);
+ FirstPersonArms->PrimaryComponentTick.TickGroup=TG_PostUpdateWork;
+ FirstPersonArms->AddTickPrerequisiteComponent(this);
 
  const FReferenceSkeleton& Skeleton=Asset->GetRefSkeleton();
  TArray<FTransform> RefCS=Skeleton.GetRefBonePose();
@@ -145,12 +180,13 @@ void UVanthexOperatorComponent::TickComponent(float DeltaTime,ELevelTick TickTyp
   const bool OwnView=Character->IsPlayerControlled()&&Character->IsLocallyControlled()&&!Dead&&!Character->IsHidden();
   FirstPersonBody->SetVisibility(OwnView);
   FirstPersonBody->SetComponentTickEnabled(OwnView);
+  if(FirstPersonArms){FirstPersonArms->SetVisibility(OwnView);FirstPersonArms->SetComponentTickEnabled(OwnView);}
  }
  const auto* Equipment=Character->GetEquipment();
  const auto Presentation=Equipment?Equipment->GetPresentation():FVanthexEquipmentPresentation{};
  const bool ShowRifle=!Dead&&!Character->IsHidden()&&Presentation.VisibleSlot!=EVanthexWeaponSlot::Knife;
  if(auto* Animation=Cast<UVanthexOperatorAnimInstance>(Character->GetMesh()->GetAnimInstance()))
-  WorldFirearmRoot->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(Animation->GetAimPitch(),Animation->GetCrouchAlpha(),Presentation.Lower));
+  WorldFirearmRoot->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(Animation->GetAimPitch(),Animation->GetCrouchAlpha(),Presentation.Lower,VisualWeaponId));
  WorldFirearmRoot->SetVisibility(ShowRifle,true);
  for(const auto& Part:WorldFirearmParts) if(Part) Part->SetCastHiddenShadow(ShowRifle);
  if(const auto* Weapon=Character->GetWeapon()) VanthexWeaponPresentation::Animate(WorldFirearmParts,Weapon->GetWeaponId(),Weapon->GetReloadProgress(),FMath::Clamp(MuzzleSeconds/.06f,0.f,1.f));
