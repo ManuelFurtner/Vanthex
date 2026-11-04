@@ -61,7 +61,7 @@ The first map is **GRID**.
 
 M3 adds the Energy Core on top of the M2 round. The rifle loop is unchanged. There is still no Shift, operator, or online matchmaking.
 
-A neutral core spawns off the center shot lane. Either team can pick it up with E, carry it, drop it with G, or throw it with Q. A thrown core can be caught by a teammate or intercepted by an enemy. Holding either extraction zone for 5 seconds wins the round through the existing round score. Eliminating a team still wins the round as well. The carrier keeps normal movement and the rifle for this prototype.
+A neutral core spawns off the center shot lane. Either team can pick it up with E, carry it, drop it with G, or throw it with Q. A thrown core can be caught by a teammate or intercepted by an enemy. Holding either extraction zone for 15 seconds wins the round through the existing round score. Eliminating a team still wins the round as well. The carrier keeps normal movement and the rifle for this prototype.
 
 A match is first to 7 rounds. Each round lasts 180 seconds. Players do not respawn while the round is active. If both teams are wiped by the same resolution, the round is a draw and the score does not change. If the timer expires, the team with more living players wins. Equal numbers of living players is a draw. F5 restarts the whole match, including the core. It does not respawn one player inside an active round.
 
@@ -80,4 +80,4 @@ The local roster is one human on Alpha and five standing bots so the 3v3 rules c
 - Teams: Alpha and Bravo, 3 players each. Friendly fire is off.
 - Round length 180 seconds. Round-end banner 1 second. Intermission 2 seconds. First to 7 rounds.
 - Timeout: more living players wins; a tie is a draw and does not change the score.
-- Core home (220, 0, 50). Pickup 200 cm. Throw 2000 cm/s. Catch 180 cm. Extraction hold 5 seconds. See `Docs/CORE_SYSTEM.md`.
+- Core home (220, 0, 50). Pickup 200 cm. Throw 2000 cm/s. Catch 180 cm. Extraction hold 15 seconds. See `Docs/CORE_SYSTEM.md`.

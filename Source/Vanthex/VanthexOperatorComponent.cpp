@@ -53,6 +53,24 @@ void UVanthexOperatorComponent::BeginPlay()
  // Replace the template chest logo; ARC receives its own physical nameplate.
  if(Mesh->GetNumMaterials()>1) Mesh->SetMaterial(1,Dark);
 
+ // An owner-only body keeps the authoritative world mesh and its complete shadow
+ // intact. A separate pose permits hiding the camera-intersecting head/arms only
+ // in first person, including when a roster pawn changes from bot to human.
+ FirstPersonBody=NewObject<USkeletalMeshComponent>(Character,TEXT("ARC_FirstPersonBody"));
+ FirstPersonBody->SetupAttachment(Mesh);
+ FirstPersonBody->SetRelativeLocation(FVector(0,-32,0));
+ FirstPersonBody->SetSkeletalMesh(Asset);
+ FirstPersonBody->SetAnimInstanceClass(UVanthexOperatorAnimInstance::StaticClass());
+ FirstPersonBody->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ FirstPersonBody->SetGenerateOverlapEvents(false);
+ FirstPersonBody->SetOnlyOwnerSee(true); FirstPersonBody->SetCastShadow(false);
+ FirstPersonBody->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+ FirstPersonBody->SetMaterial(0,ArmorMaterial); if(Mesh->GetNumMaterials()>1) FirstPersonBody->SetMaterial(1,Dark);
+ Character->AddInstanceComponent(FirstPersonBody); FirstPersonBody->RegisterComponent();
+ for(const FName Bone:{FName(TEXT("neck_01")),FName(TEXT("upperarm_l")),FName(TEXT("upperarm_r"))})
+  FirstPersonBody->HideBoneByName(Bone,PBO_None);
+ FirstPersonBody->ComponentTags.Add(TEXT("VanthexFirstPersonBody"));
+
  const FReferenceSkeleton& Skeleton=Asset->GetRefSkeleton();
  TArray<FTransform> RefCS=Skeleton.GetRefBonePose();
  for(int32 Index=0;Index<RefCS.Num();++Index) if(Skeleton.GetParentIndex(Index)!=INDEX_NONE) RefCS[Index]*=RefCS[ Skeleton.GetParentIndex(Index) ];
@@ -123,6 +141,11 @@ void UVanthexOperatorComponent::TickComponent(float DeltaTime,ELevelTick TickTyp
  if(!Character||!WorldFirearmRoot) return;
  RefreshWeaponVisual();
  const bool Dead=Character->GetHealthComponent()->IsDead();
+ if(FirstPersonBody) {
+  const bool OwnView=Character->IsPlayerControlled()&&Character->IsLocallyControlled()&&!Dead&&!Character->IsHidden();
+  FirstPersonBody->SetVisibility(OwnView);
+  FirstPersonBody->SetComponentTickEnabled(OwnView);
+ }
  const auto* Equipment=Character->GetEquipment();
  const auto Presentation=Equipment?Equipment->GetPresentation():FVanthexEquipmentPresentation{};
  const bool ShowRifle=!Dead&&!Character->IsHidden()&&Presentation.VisibleSlot!=EVanthexWeaponSlot::Knife;

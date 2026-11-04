@@ -14,6 +14,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/Controller.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/PackageName.h"
 
 AVanthexCore::AVanthexCore()
 {
@@ -58,7 +59,17 @@ void AVanthexCore::BuildPresentation()
 		return VanthexArt::AddMesh(this, Body, Mesh, GetActorLocation() + Location, FRotator::ZeroRotator, Scale, Material, false);
 	};
 
-	if (UStaticMesh* Device = VanthexArt::LoadKit(TEXT("SM_CoreDevice")))
+	// Licensed Energy geometry remains optional and local. Public checkouts use the original kit.
+ UStaticMesh* Imported=nullptr;
+ const TCHAR* EnergyPath=TEXT("/Game/Vanthex/Imported/Core/SM_EnergyCore");
+ if(!FParse::Param(FCommandLine::Get(),TEXT("VanthexOwnCoreModel"))&&FPackageName::DoesPackageExist(EnergyPath))Imported=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Vanthex/Imported/Core/SM_EnergyCore.SM_EnergyCore"));
+ if(Imported){
+  auto* Visual=NewObject<UStaticMeshComponent>(this,TEXT("EnergyCapsule"));
+  Visual->SetupAttachment(Body);Visual->SetStaticMesh(Imported);Visual->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  Visual->SetGenerateOverlapEvents(false);AddInstanceComponent(Visual);Visual->RegisterComponent();
+  Visual->ComponentTags.Add(TEXT("VanthexEnergyCore"));
+ }else{
+ if (UStaticMesh* Device = VanthexArt::LoadKit(TEXT("SM_CoreDevice")))
 	{
 		if (UStaticMeshComponent* Frame = Part(Device, FVector::ZeroVector, FVector(1.15f), Metal))
 		{
@@ -79,7 +90,8 @@ void AVanthexCore::BuildPresentation()
 	EnergyChamber = Part(Sphere, FVector::ZeroVector, FVector(0.32f), Energy);
 	EnergyRing = Part(Cylinder, FVector::ZeroVector, FVector(0.46f, 0.46f, 0.012f), Energy);
 
-	UMaterialInstanceDynamic* TrailMaterial = VanthexArt::MakeEnergy(this, FLinearColor(0.45f, 0.95f, 1.f), 2.2f);
+	}
+ UMaterialInstanceDynamic* TrailMaterial = VanthexArt::MakeEnergy(this, Imported?FLinearColor(1.f,.32f,.055f):FLinearColor(0.45f, 0.95f, 1.f), 2.2f);
 	for (int32 Index = 0; Index < 8; ++Index)
 	{
 		UStaticMeshComponent* Segment = VanthexArt::AddMesh(this, Body, Sphere, GetActorLocation(), FRotator::ZeroRotator, FVector(0.08f), TrailMaterial, false);

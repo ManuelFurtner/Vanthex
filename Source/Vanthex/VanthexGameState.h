@@ -21,7 +21,7 @@ public:
 		EVanthexTeam NewRoundWinner,
 		EVanthexTeam NewMatchWinner);
 
-	void PublishCore(EVanthexCoreReadout NewReadout, float NewExtractionRemaining);
+	void PublishCore(EVanthexCoreReadout NewReadout, float NewExtractionRemaining, float NewExtractionDuration = 15.f);
 
 	EVanthexRoundPhase GetPhase() const { return Phase; }
 	int32 GetAlphaScore() const { return AlphaScore; }
@@ -32,6 +32,7 @@ public:
 	EVanthexTeam GetMatchWinner() const { return MatchWinner; }
 	EVanthexCoreReadout GetCoreReadout() const { return CoreReadout; }
 	float GetExtractionRemaining() const { return ExtractionRemaining; }
+ float GetExtractionDuration() const { return ExtractionDuration; }
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -62,4 +63,5 @@ private:
 
 	UPROPERTY(Replicated)
 	float ExtractionRemaining = 0.f;
+ UPROPERTY(Replicated) float ExtractionDuration = 15.f;
 };

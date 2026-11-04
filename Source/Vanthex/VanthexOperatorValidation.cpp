@@ -34,6 +34,7 @@ struct FOperatorTest
  float MaxFootMotion=0.f;
  int32 Phase=0, Checks=0, Failures=0;
  bool bFinished=false, bNoEarlyFire=true, bSampledReaction=false;
+ bool SawTurn=false,SawBurstPause=false;
 
  void Check(bool Passed,const FString& Detail)
  {
@@ -122,6 +123,13 @@ void VanthexRunOperatorTest(AVanthexGameMode* Mode)
    const auto* Operator=Character->FindComponentByClass<UVanthexOperatorComponent>();
    const auto* Mesh=Character->GetMesh();
    const auto* Rifle=Operator->GetWorldRifle();
+   if(Character->IsPlayerControlled()&&Character->IsLocallyControlled()) {
+    auto* Own=Operator->GetFirstPersonBody();
+    Test.Check(Own&&Own->IsVisible()&&Own->bOnlyOwnerSee&&Own->GetCollisionEnabled()==ECollisionEnabled::NoCollision,
+     TEXT("local player has a visible owner-only body without duplicate hit collision"));
+    Test.Check(Own&&Own->IsBoneHiddenByName(TEXT("neck_01"))&&!Own->IsBoneHiddenByName(TEXT("thigh_l")),
+     TEXT("first-person camera hides head while retaining legs"));
+   }
    FLinearColor TeamColor=FLinearColor::Black;
    const bool HasColor=Operator->GetArmorMaterial() && Operator->GetArmorMaterial()->GetVectorParameterValue(FMaterialParameterInfo(TEXT("TeamColor")),TeamColor);
    const bool ColorMatches=PS && HasColor && (PS->GetTeam()==EVanthexTeam::Alpha ? TeamColor.B>TeamColor.R : TeamColor.R>TeamColor.B);
@@ -165,8 +173,9 @@ void VanthexRunOperatorTest(AVanthexGameMode* Mode)
   int32 Index=0;
   for(auto Weak:Test.Characters) if(auto* Character=Weak.Get()) { FreezeBot(Character); Character->SetActorLocation(FVector(60000,10000+Index++*500,5000),false,nullptr,ETeleportType::TeleportPhysics); }
   Runner->SetActorLocation(FVector(50000,0,5000));
+  Runner->SetActorRotation(FRotator::ZeroRotator); Runner->GetController()->SetControlRotation(FRotator::ZeroRotator);
   Test.Ally->SetActorLocation(FVector(51000,350,5000));
-  Enemy->SetActorLocation(FVector(55000,0,5000));
+  Enemy->SetActorLocation(FVector(49000,0,5000));
   CheckHitProxy(Test,Enemy,TEXT("Body")); CheckHitProxy(Test,Enemy,TEXT("Head"));
   Test.Check(!Mode->CanDamage(Runner,Test.Ally.Get()) && Mode->CanDamage(Runner,Enemy),TEXT("bot target rules distinguish friendly and opposing operators"));
   Runner->GetWeapon()->ResetForRound();
@@ -177,17 +186,23 @@ void VanthexRunOperatorTest(AVanthexGameMode* Mode)
  {
   if(Age<.9) return;
   Test.Check(Runner->GetWeapon()->GetAmmoInMagazine()==Runner->GetWeapon()->GetMagazineSize() && FMath::IsNearlyEqual(Test.Ally->GetHealthComponent()->GetHealth(),100.f),TEXT("live bot does not shoot visible teammate"));
+  Test.Check(FMath::IsNearlyEqual(Enemy->GetHealthComponent()->GetHealth(),100.f),TEXT("enemy behind bot is not acquired through 360-degree vision"));
   Enemy->GetHealthComponent()->ResetHealth();
   Enemy->SetActorLocation(FVector(51000,0,5000));
+  Runner->SetActorRotation(FRotator(0,45,0)); Runner->GetController()->SetControlRotation(FRotator(0,45,0));
   Test.PhaseStarted=Now; Test.Phase=3; return;
  }
  if(Test.Phase==3)
  {
-  if(Age<.4) { Test.bNoEarlyFire &= Runner->GetWeapon()->GetAmmoInMagazine()==Runner->GetWeapon()->GetMagazineSize(); Test.bSampledReaction |= Age>.15; }
-  if(Age<1.2) return;
+  if(Age<.8) { Test.bNoEarlyFire &= Runner->GetWeapon()->GetAmmoInMagazine()==Runner->GetWeapon()->GetMagazineSize(); Test.bSampledReaction |= Age>.3; }
+  Test.SawTurn|=FMath::Abs(FRotator::NormalizeAxis(Runner->GetActorRotation().Yaw))<10.f;
+  Test.SawBurstPause|=Runner->GetWeapon()->GetAmmoInMagazine()<Runner->GetWeapon()->GetMagazineSize()&&!Runner->GetWeapon()->IsTriggerHeld();
+  if(Age<3.2) return;
   Test.Check(Test.bSampledReaction && Test.bNoEarlyFire,TEXT("new visible enemy receives the bot reaction delay"));
   Test.Check(Runner->GetWeapon()->GetAmmoInMagazine()<Runner->GetWeapon()->GetMagazineSize() && Enemy->GetHealthComponent()->GetHealth()<100.f,TEXT("live bot aims, fires and damages opposing operator"));
   Test.Check(FMath::IsNearlyEqual(Test.Ally->GetHealthComponent()->GetHealth(),100.f),TEXT("nearby friendly operator remains undamaged"));
+  Test.Check(Test.SawTurn,TEXT("live bot physically turns its actor toward the opponent"));
+  Test.Check(Test.SawBurstPause&&Runner->GetWeapon()->GetAmmoInMagazine()>=Runner->GetWeapon()->GetMagazineSize()-9,TEXT("bot uses short bursts and pauses rather than sustained automatic fire"));
   FreezeBot(Runner);
   Enemy->PrepareForRound(Enemy->GetActorTransform());
   FVanthexDamageRequest Fatal; Fatal.Damage=1000.f; Fatal.InstigatorActor=Runner; Fatal.InstigatorController=Runner->GetController();

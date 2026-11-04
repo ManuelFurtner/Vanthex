@@ -53,7 +53,7 @@ Done when:
 - The core spawns at center at the start of every round.
 - Either team can carry it, and only one player can hold it.
 - Death drops it. A throw can be caught by a teammate or intercepted by an enemy.
-- Holding extraction A or B for 5 seconds scores the round.
+- Holding extraction A or B for 15 seconds scores the round.
 - The full M1 and M2 checks still pass.
 
 ## Visual Prototype Pass 01 — GRID presentation

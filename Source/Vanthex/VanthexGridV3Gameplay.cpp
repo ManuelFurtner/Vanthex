@@ -29,5 +29,5 @@ void AVanthexTestArena::BuildGridV3Gameplay()
   Audio->SetSound(Sound); Audio->SetVolumeMultiplier(0.12f); Audio->bAllowSpatialization=false;
   Audio->RegisterComponent(); Audio->Play();
  }
- UE_LOG(LogTemp,Display,TEXT("GRID V3: six deployment points, neutral Core, two shared five-second extraction zones"));
+ UE_LOG(LogTemp,Display,TEXT("GRID V3: six deployment points, neutral Core, two shared fifteen-second extraction zones"));
 }

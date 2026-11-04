@@ -10,7 +10,9 @@ class AVanthexHUD : public AHUD
 	GENERATED_BODY()
 
 public:
-	virtual void DrawHUD() override;
+	AVanthexHUD();
+ virtual void DrawHUD() override;
+ UPROPERTY() TObjectPtr<UFont> DisplayFont;
  float PreviousHealth=100.f;
  float DamageFlashUntil=0.f;
 };

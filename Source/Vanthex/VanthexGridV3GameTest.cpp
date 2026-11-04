@@ -60,7 +60,7 @@ void AVanthexGameMode::AdvanceGridV3GameTest()
  switch(CoreTestMark) {
  case 0:
   Park();
-  if(!Expect(Combatants.Num()==6 && Core->IsAtHome() && FMath::IsNearlyEqual(ExtractionDuration,5.f),TEXT("ROSTER_CORE_RULES"),TEXT("six players, neutral Core, five seconds"))) return;
+  if(!Expect(Combatants.Num()==6 && Core->IsAtHome() && FMath::IsNearlyEqual(ExtractionDuration,15.f),TEXT("ROSTER_CORE_RULES"),TEXT("six players, neutral Core, fifteen seconds"))) return;
   if(!Expect(Acquire(Human),TEXT("PICKUP_ALPHA"),Core->GetActorLocation().ToString())) return;
   Human->DropCarriedCore(); Park(); Next(1); return;
  case 1:
@@ -153,10 +153,10 @@ void AVanthexGameMode::AdvanceGridV3GameTest()
   const int32 Score=bAlpha?AlphaScore:BravoScore;
   if(Score>CoreScoreBefore) {
    const float Seconds=Now-MoveStartTime;
-   if(!Expect(Seconds>=4.8f && Seconds<=5.5f,TEXT("FIVE_SECOND_EXTRACTION"),FString::Printf(TEXT("case %d team %s zone %s measured %.2fs"),VisualShotIndex,bAlpha?TEXT("Alpha"):TEXT("Bravo"),VisualShotIndex%2?TEXT("B"):TEXT("A"),Seconds))) return;
+   if(!Expect(Seconds>=14.8f && Seconds<=15.5f,TEXT("FIFTEEN_SECOND_EXTRACTION"),FString::Printf(TEXT("case %d team %s zone %s measured %.2fs"),VisualShotIndex,bAlpha?TEXT("Alpha"):TEXT("Bravo"),VisualShotIndex%2?TEXT("B"):TEXT("A"),Seconds))) return;
    ++VisualShotIndex;
    if(VisualShotIndex<4) Next(8); else { VisualShotIndex=0; Next(10); }
-  } else if(SelfTestTicks>170) Expect(false,TEXT("FIVE_SECOND_EXTRACTION"),FString::Printf(TEXT("case %d failed"),VisualShotIndex));
+  } else if(SelfTestTicks>370) Expect(false,TEXT("FIFTEEN_SECOND_EXTRACTION"),FString::Printf(TEXT("case %d failed"),VisualShotIndex));
   return;
  }
  case 10: {

@@ -125,7 +125,7 @@ Visual Pass 03 keeps that rule. The hitscan debug line is not drawn. New dress i
 
 Input actions and the mapping context are created in C++ at runtime. Defaults: walk 600, sprint 900, crouch 280, jump Z 520, FOV 90, magazine 30 with an infinite reserve, fire interval 0.15 s, reload 1.6 s, body damage 40, headshot multiplier 2, max health 100. Controls: WASD, mouse, Shift sprint, Ctrl crouch (crouch wins), Space jump, left mouse fire, R reload, E pickup, G drop, Q throw, F5 match restart.
 
-`-VanthexSelfTest` runs the M1 combat checks, the M2 roster, friendly fire, enemy damage, timeout, elimination, reset, score, and match checks, and the M3 core checks: spawn, pickup, single carrier, drop, death drop, throw, teammate catch, enemy intercept, settle, both extractions, extraction cancel, round reset, and F5. It writes `Saved/VanthexSelfTest.txt` and exits. The self-test shortens the round-end and intermission waits. It does not shorten the 180 second rule or the 5 second extraction hold. The timeout check calls the same timeout resolution the clock uses.
+`-VanthexSelfTest` runs the M1 combat checks, the M2 roster, friendly fire, enemy damage, timeout, elimination, reset, score, and match checks, and the M3 core checks: spawn, pickup, single carrier, drop, death drop, throw, teammate catch, enemy intercept, settle, both extractions, extraction cancel, round reset, and F5. It writes `Saved/VanthexSelfTest.txt` and exits. The self-test shortens the round-end and intermission waits. It does not shorten the 180 second rule or the 15 second extraction hold. The timeout check calls the same timeout resolution the clock uses.
 
 ## Explicit non-goals
 

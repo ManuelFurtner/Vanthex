@@ -55,7 +55,7 @@ These are separate circulation links, not elevators required for navigation. Upp
 
 ## Gameplay anchors and rotation intent
 
-Alpha three-player positions are(-3700,-2500,110),(-3600,-2500,110),(-3500,-2500,110); Bravo positions are(3750,2200,110),(3850,2200,110),(3950,2200,110). Core is(300,-300,80); extraction centers are(-3200,2200,20) and(3800,-2200,20). Existing pickup, carry, drop, throw, catch, interception, death-drop and five-second extraction remain gameplay-owned. The Bravo wing was moved700cm toward the objective following a preliminary topology route comparison; the deployment positions were then moved150cm west following actual baked collision validation.
+Alpha three-player positions are(-3700,-2500,110),(-3600,-2500,110),(-3500,-2500,110); Bravo positions are(3750,2200,110),(3850,2200,110),(3950,2200,110). Core is(300,-300,80); extraction centers are(-3200,2200,20) and(3800,-2200,20). Existing pickup, carry, drop, throw, catch, interception, death-drop and fifteen-second extraction remain gameplay-owned. The Bravo wing was moved700cm toward the objective following a preliminary topology route comparison; the deployment positions were then moved150cm west following actual baked collision validation.
 
 The first collision pass reached every floor and all four stairs, but exposed a catwalk anchor on the stairwell wall, a medical route endpoint on the Core well guardrail, and an electrical cabinet across the Power entrance. These were corrected by moving the catwalk landing route north around the stairwell, keeping medical route waypoints west of the well, and moving the electrical bank to the east perimeter. The subsequent report records the final results.
 

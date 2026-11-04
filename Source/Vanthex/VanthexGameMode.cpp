@@ -182,7 +182,7 @@ void AVanthexGameMode::BeginPlay()
  if(FParse::Param(FCommandLine::Get(),TEXT("AimTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunAimTest(AVanthexGameMode*); VanthexRunAimTest(this); }),.05f,true,2.f);
  }
- if(FParse::Param(FCommandLine::Get(),TEXT("AimShots"))) {
+ if(FParse::Param(FCommandLine::Get(),TEXT("AimShots"))||FParse::Param(FCommandLine::Get(),TEXT("BodyViewShots"))||FParse::Param(FCommandLine::Get(),TEXT("HUDShots"))||FParse::Param(FCommandLine::Get(),TEXT("CoreShots"))) {
   GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunAimShots(AVanthexGameMode*); VanthexRunAimShots(this); }),.05f,true,2.f);
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("EconomyShots"))) {
@@ -772,7 +772,7 @@ void AVanthexGameMode::RefreshCoreReadout()
 
 	if (AVanthexGameState* Match = GetGameState<AVanthexGameState>())
 	{
-		Match->PublishCore(Readout, Remaining);
+		Match->PublishCore(Readout, Remaining, ExtractionDuration);
 	}
 }
 
@@ -1341,7 +1341,7 @@ void AVanthexGameMode::AdvanceCoreSelfTest()
 		{
 			Pass(TEXT("EXTRACTION_A"), FString::Printf(TEXT("score %d-%d"), Match->GetAlphaScore(), Match->GetBravoScore()), EVanthexCoreTest::RoundReset);
 		}
-		else if (++SelfTestTicks > 160)
+		else if (++SelfTestTicks > 360)
 		{
 			Fail(TEXT("EXTRACTION_A"), TEXT("zone hold did not win the round"));
 		}
@@ -1388,7 +1388,7 @@ void AVanthexGameMode::AdvanceCoreSelfTest()
 		{
 			Pass(TEXT("EXTRACTION_B"), FString::Printf(TEXT("score %d-%d"), Match->GetAlphaScore(), Match->GetBravoScore()), EVanthexCoreTest::F5Reset);
 		}
-		else if (++SelfTestTicks > 160)
+		else if (++SelfTestTicks > 360)
 		{
 			Fail(TEXT("EXTRACTION_B"), TEXT("zone hold did not win the round"));
 		}

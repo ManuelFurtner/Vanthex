@@ -1,0 +1,35 @@
+OVERALL PASS
+PASS ROSTER_CORE_RULES six players, neutral Core, fifteen seconds
+PASS PICKUP_ALPHA X=300.000 Y=-300.000 Z=80.000
+PASS DROP_SETTLES_MAIN X=480.988 Y=-300.000 Z=20.500
+PASS PICKUP_BRAVO shared neutral objective
+PASS DEATH_DROP carrier ownership cleared
+PASS THROW_SETUP Core picked up
+PASS TEAMMATE_CATCH_THROUGH_DOOR server-to-containment pass caught by Alpha
+PASS ENEMY_INTERCEPT Bravo intercepted live throw
+PASS UPPER_PASS_SETUP carry to observation
+PASS UPPER_TO_MAIN_CATCH jump pass over observation rail caught on containment floor
+PASS APERTURE_PASS_SETUP carry to containment opening
+PASS MAIN_TO_LOWER_INTERCEPT pass through Core aperture intercepted below
+PASS LOWER_DROP_SETUP carry to lower floor
+PASS LOWER_DROP_SETTLES X=-3433.514 Y=-1600.000 Z=-579.500
+PASS LOWER_PICKUP Core remains recoverable in maintenance
+PASS VOID_RECOVERY Core recovers below the facility
+PASS EXTRACTION_CANCEL_SETUP Alpha carries
+PASS EXTRACTION_CANCEL_LEAVE leaving A resets progress
+PASS EXTRACTION_PICKUP case 0
+PASS FIFTEEN_SECOND_EXTRACTION case 0 team Alpha zone A measured 14.95s
+PASS EXTRACTION_PICKUP case 1
+PASS FIFTEEN_SECOND_EXTRACTION case 1 team Alpha zone B measured 15.00s
+PASS EXTRACTION_PICKUP case 2
+PASS FIFTEEN_SECOND_EXTRACTION case 2 team Bravo zone A measured 15.00s
+PASS EXTRACTION_PICKUP case 3
+PASS FIFTEEN_SECOND_EXTRACTION case 3 team Bravo zone B measured 15.00s
+PASS WALK_VERTICAL link 0 up 3.65s X=-4700.000 Y=407.060 Z=98.047
+PASS WALK_VERTICAL link 0 down 3.65s X=-4700.000 Y=-1607.062 Z=-501.850
+PASS WALK_VERTICAL link 1 up 3.65s X=4700.000 Y=1007.062 Z=98.150
+PASS WALK_VERTICAL link 1 down 3.65s X=4700.000 Y=-1007.058 Z=-501.850
+PASS WALK_VERTICAL link 2 up 3.65s X=-600.000 Y=3207.072 Z=698.048
+PASS WALK_VERTICAL link 2 down 3.65s X=-600.000 Y=1192.926 Z=98.150
+PASS WALK_VERTICAL link 3 up 3.65s X=1200.000 Y=-192.935 Z=698.150
+PASS WALK_VERTICAL link 3 down 3.65s X=1200.000 Y=-2207.058 Z=98.150

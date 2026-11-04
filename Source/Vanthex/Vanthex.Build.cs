@@ -5,6 +5,9 @@ public class Vanthex : ModuleRules
 	public Vanthex(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        // Keep commandlet-local helpers isolated in clean checkouts as well as
+        // adaptive editor builds; unity amalgamation merges anonymous namespaces.
+        bUseUnity = false;
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
@@ -21,7 +24,7 @@ public class Vanthex : ModuleRules
 			{
 				"MeshDescription",
 				"StaticMeshDescription",
-				"AssetRegistry", "AudioEditor", "UnrealEd"
+				"AssetRegistry", "AudioEditor", "UnrealEd", "Json"
 			});
 		}
 	}

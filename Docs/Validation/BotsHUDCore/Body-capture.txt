@@ -1,0 +1,9 @@
+PASS 4 actual owner-body views: standing, crouching, walking and forward
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+../../../../../Vanthex/Saved/BodyViewShots/01_M4_body.png
+../../../../../Vanthex/Saved/BodyViewShots/02_M4_body.png
+../../../../../Vanthex/Saved/BodyViewShots/03_M4_body.png
+../../../../../Vanthex/Saved/BodyViewShots/04_M4_body.png

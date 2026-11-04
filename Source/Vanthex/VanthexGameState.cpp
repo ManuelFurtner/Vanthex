@@ -25,7 +25,7 @@ void AVanthexGameState::PublishRound(
 	MatchWinner = NewMatchWinner;
 }
 
-void AVanthexGameState::PublishCore(EVanthexCoreReadout NewReadout, float NewExtractionRemaining)
+void AVanthexGameState::PublishCore(EVanthexCoreReadout NewReadout, float NewExtractionRemaining, float NewExtractionDuration)
 {
 	if (!HasAuthority())
 	{
@@ -34,6 +34,7 @@ void AVanthexGameState::PublishCore(EVanthexCoreReadout NewReadout, float NewExt
 
 	CoreReadout = NewReadout;
 	ExtractionRemaining = NewExtractionRemaining;
+ ExtractionDuration = FMath::Max(.01f,NewExtractionDuration);
 }
 
 void AVanthexGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -48,6 +49,7 @@ void AVanthexGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AVanthexGameState, MatchWinner);
 	DOREPLIFETIME(AVanthexGameState, CoreReadout);
 	DOREPLIFETIME(AVanthexGameState, ExtractionRemaining);
+ DOREPLIFETIME(AVanthexGameState, ExtractionDuration);
 }
 
 

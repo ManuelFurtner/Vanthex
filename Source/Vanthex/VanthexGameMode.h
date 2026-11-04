@@ -192,7 +192,7 @@ protected:
 	float RoundStartDelay = 0.25f;
 	float RoundEndDelay = 1.f;
 	float IntermissionDuration = 2.f;
-	float ExtractionDuration = 5.f;
+ float ExtractionDuration = 15.f;
 	float ExtractionElapsed = 0.f;
 	EVanthexExtractionId ActiveExtraction = EVanthexExtractionId::None;
 	bool bAllowFriendlyFire = false;

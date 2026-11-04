@@ -50,7 +50,7 @@ The thrower is ignored until the core has traveled 250 cm from the release point
 
 Two zones, A and B, sit in different parts of the greybox. Both teams may use either zone. There is no attacker and no defender.
 
-When a living carrier is inside a zone during `RoundActive`, the game mode starts a 5 second hold. The carrier must stay inside and keep the core. Leaving, dying, dropping, or throwing cancels the hold and clears the timer. The HUD shows `EXTRACTING A` or `EXTRACTING B` and the remaining seconds.
+When a living carrier is inside a zone during `RoundActive`, the game mode starts a 15 second hold. The carrier must stay inside and keep the core. Leaving, dying, dropping, or throwing cancels the hold and clears the timer. The HUD shows `EXTRACTING A` or `EXTRACTING B` and the remaining seconds.
 
 When the hold completes, the core becomes `Extracted` and the game mode calls the existing `EndRound` for the carrier's team. Score, round reset, and first-to-7 are unchanged. Eliminating a team still wins the round as well. Extraction is an additional victory condition.
 

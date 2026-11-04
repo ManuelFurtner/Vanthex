@@ -1,0 +1,65 @@
+OVERALL PASS
+PASS spawn V(Y=-1400.00, Z=165.81)
+PASS sprint speed 900.0
+PASS crouch crouched
+PASS uncrouch standing
+PASS move distance 147.1 speed 600
+PASS hitscan_body hp 60 last 40 head no
+PASS hitscan_head_kill dead yes last 80 head yes
+PASS reload 30/30
+PASS jump left the ground
+PASS player_death dead
+PASS restart hp 100 ammo 30/30 target 100 at V(Y=-1400.00, Z=105.15)
+PASS team alpha 3 bravo 3 slots ok
+PASS friendly_fire saw 1 hp 100 ammo 29
+PASS enemy_damage hp 60 last 40
+PASS timeout draw score 0-0 round 2
+PASS elimination score 1-0 bravo alive 0
+PASS round_reset alive 6 at spawns round 3
+PASS score 1-0
+PASS CORE_SPAWN center at rest
+PASS CORE_PICKUP_ALPHA alpha carries
+PASS CORE_SINGLE_CARRIER bravo rejected
+PASS CORE_MANUAL_DROP ownership cleared
+PASS CORE_PICKUP_BRAVO bravo carries
+PASS CORE_DROP_ON_DEATH dropped near carrier
+PASS CORE_THROW speed 2000
+PASS CORE_TEAMMATE_CATCH alpha caught the throw
+PASS CORE_ENEMY_INTERCEPT bravo intercepted
+PASS CORE_SETTLE at rest and pickup enabled
+PASS EXTRACTION_CANCEL_LEAVE left the zone
+PASS EXTRACTION_CANCEL_DROP drop cleared extraction
+PASS EXTRACTION_CANCEL_DEATH death dropped core and cancelled
+PASS EXTRACTION_A score 2-0
+PASS ROUND_CORE_RESET core restored at center
+PASS EXTRACTION_B score 2-1
+PASS F5_CORE_RESET match and core restored
+PASS M1_REGRESSION walk 600 body shot 40
+PASS M2_REGRESSION 3v3 friendly fire off round active
+PASS match alpha 7 bravo 0
+PASS SWITCH_CANCELS_RELOAD equipment integration
+PASS SWITCH_SPAM_REJECTED equipment integration
+PASS SWITCH_BLOCKS_SHOT equipment integration
+PASS KNIFE_DRAW_COMPLETES equipment integration
+PASS ARC_WORLD_KNIFE_REPLACES_RIFLE equipment integration
+PASS HOLSTERED_RIFLE_DISABLED equipment integration
+PASS KNIFE_WINDUP_NO_INSTANT_DAMAGE equipment integration
+PASS KNIFE_SINGLE_STRIKE equipment integration
+PASS SWING_CANNOT_CANCEL_RECOVERY equipment integration
+PASS KNIFE_SPAM_COOLDOWN equipment integration
+PASS KNIFE_FRIENDLY_FIRE_OFF equipment integration
+PASS KNIFE_WALL_BLOCKS_DAMAGE equipment integration
+PASS KNIFE_RANGE_LIMIT equipment integration
+PASS DEATH_CANCELS_PENDING_STRIKE equipment integration
+PASS DEATH_HIDES_WORLD_WEAPONS equipment integration
+PASS ROUND_RESETS_EQUIPMENT equipment integration
+PASS ROUND_END_REJECTS_SELECTION equipment integration
+PASS RIFLE_DRAW_LOCKOUT equipment integration
+PASS RIFLE_DRAW_COMPLETES equipment integration
+PASS ARC_WORLD_RIFLE_REPLACES_KNIFE equipment integration
+PASS WORLD_WEAPONS_NEVER_OVERLAP_DURING_SWITCH equipment integration
+PASS CORE_FOREIGN_INPUT_REJECTED non-carrier cannot drop or throw
+PASS DEATH_CANCELS_RELOAD ammo preserved
+PASS CORE_WALL_COLLISION X=1959.500 Y=0.000 Z=40.000
+PASS SHIFT_USE_COOLDOWN first use accepted, immediate repeat rejected
+PASS SHIFT_RESET round state restored

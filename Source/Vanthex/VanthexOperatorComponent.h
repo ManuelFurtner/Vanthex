@@ -9,6 +9,7 @@ class UMaterialInstanceDynamic;
 class UStaticMeshComponent;
 class USceneComponent;
 class AVanthexCharacter;
+class USkeletalMeshComponent;
 
 /** Shared ARC presentation for human players and server-controlled bots. */
 UCLASS(ClassGroup=(Vanthex), meta=(BlueprintSpawnableComponent))
@@ -27,9 +28,11 @@ public:
  UStaticMeshComponent* GetWorldRifle() const { return WorldRifle; }
  USceneComponent* GetWorldFirearmRoot() const { return WorldFirearmRoot; }
  UMaterialInstanceDynamic* GetArmorMaterial() const { return ArmorMaterial; }
+ USkeletalMeshComponent* GetFirstPersonBody() const { return FirstPersonBody; }
 
 private:
  UPROPERTY(Transient) TObjectPtr<AVanthexCharacter> Character;
+ UPROPERTY(Transient) TObjectPtr<USkeletalMeshComponent> FirstPersonBody;
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> ArmorMaterial;
  UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> AccentMaterial;
  UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> WorldRifle;

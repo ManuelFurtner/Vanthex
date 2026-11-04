@@ -15,6 +15,9 @@
 #include "HitscanWeapon.h"
 #include "VanthexWeaponPresentation.h"
 #include "Engine/Canvas.h"
+#include "Engine/Engine.h"
+#include "Engine/Font.h"
+#include "VanthexCore.h"
 #include "GameFramework/PlayerController.h"
 
 namespace
@@ -30,10 +33,16 @@ const TCHAR* TeamLabel(EVanthexTeam Team)
 }
 }
 
+AVanthexHUD::AVanthexHUD()
+{
+ static ConstructorHelpers::FObjectFinder<UFont> FontAsset(TEXT("/Engine/EngineFonts/RobotoDistanceField.RobotoDistanceField"));
+ DisplayFont=FontAsset.Object;
+}
+
 void AVanthexHUD::DrawHUD()
 {
 	Super::DrawHUD();
-	if (!Canvas)
+	if (!Canvas || !bShowHUD)
 	{
 		return;
 	}
@@ -50,7 +59,16 @@ void AVanthexHUD::DrawHUD()
 	const UHealthComponent* Health = Character ? Character->GetHealthComponent() : nullptr;
 	const AHitscanWeapon* Weapon = Character ? Character->GetWeapon() : nullptr;
  const float AimBlend=Character?Character->GetAimBlend():0.f;
- if(AimBlend<.08f) {
+ if(Character&&Health&&!Health->IsDead()){
+  const FVector Eye=Character->GetPawnViewLocation();
+  for(TActorIterator<AVanthexGadgetActor> It(GetWorld());It;++It)if(It->IsSmokeActive()){
+   const FVector Center=It->GetActorLocation()+FVector(0,0,140);
+   if(FVector::DistSquared(Eye,Center)>=FMath::Square(It->GetEffectRadius()))continue;
+   FHitResult SmokeHit;FCollisionQueryParams Q(SCENE_QUERY_STAT(SmokeInterior),false,Character);Q.AddIgnoredActor(*It);
+   if(!GetWorld()->LineTraceSingleByChannel(SmokeHit,Eye,Center,ECC_Visibility,Q)){DrawRect(FLinearColor(.19f,.22f,.24f,.985f),0,0,Canvas->SizeX,Canvas->SizeY);break;}
+  }
+ }
+ if(AimBlend<.08f&&Health&&!Health->IsDead()) {
   DrawLine(CenterX-8,CenterY,CenterX+8,CenterY,FLinearColor::White,1.5f);
   DrawLine(CenterX,CenterY-8,CenterX,CenterY+8,FLinearColor::White,1.5f);
  } else if(Weapon) {
@@ -107,80 +125,151 @@ void AVanthexHUD::DrawHUD()
  }
 
 
-	FString Status = FString::Printf(
-		TEXT("ALPHA %d - %d BRAVO\nROUND %d\nTIME %d:%02d\nTEAM %s\nHP %s\nAMMO %s"),
-		AlphaScore,
-		BravoScore,
-		RoundIndex,
-		Seconds / 60,
-		Seconds % 60,
-		TeamLabel(Team),
-		Health ? *FString::Printf(TEXT("%.0f"), Health->GetHealth()) : TEXT("--"),
-		Weapon ? *FString::Printf(TEXT("%d / %d"), Weapon->GetAmmoInMagazine(), Weapon->GetReserveAmmo()) : TEXT("--"));
-	if (PlayerState) Status += FString::Printf(TEXT("\n%d CR  |  ARMOR %.0f\nB: Ausruestung"), PlayerState->GetEconomy().Credits, PlayerState->GetArmorPoints());
- if(PlayerState){const auto& Slots=PlayerState->GetEconomy().Gadgets;Status+=FString::Printf(TEXT("\n4 %s / 5 %s"),Slots.IsValidIndex(0)?*Slots[0].ToString():TEXT("--"),Slots.IsValidIndex(1)?*Slots[1].ToString():TEXT("--"));}
- if(Character&&Character->bIsCrouched)Status+=TEXT("\nGEDUCKT - Strg loslassen zum Aufstehen");
- if(Character&&Character->GetGadgets()->IsJammed())Status+=TEXT("\nEMP - Elektronik gestoert");
-	if (Match && Match->GetPhase() == EVanthexRoundPhase::BuyPhase) Status += TEXT("\nKAUFPHASE - am Spawn vorbereiten");
+ // Layout uses a 1280 x 720 reference and keeps every panel inside the safe area.
+ const float UI=FMath::Min(Canvas->SizeX/1280.f,Canvas->SizeY/720.f);
+ const float W=Canvas->SizeX/UI,H=Canvas->SizeY/UI,CX=W*.5f;
+ const FLinearColor Ink(.012f,.021f,.03f,.88f),Edge(.22f,.32f,.39f,.5f);
+ const FLinearColor White(.94f,.97f,1.f),Muted(.53f,.64f,.70f),Cyan(.12f,.87f,.96f),Amber(1.f,.64f,.24f),Red(1.f,.23f,.26f);
+ const FLinearColor Accent=Team==EVanthexTeam::Bravo?Amber:Cyan;
+ UFont* Font=DisplayFont?DisplayFont.Get():GEngine->GetMediumFont();
+ auto Rect=[&](float X,float Y,float Width,float Height,FLinearColor Color){DrawRect(Color,X*UI,Y*UI,Width*UI,Height*UI);};
+ auto Text=[&](const FString& Value,float X,float Y,float Size,FLinearColor Color,bool Center=false){
+  const float Scale=Size/FMath::Max(1,Font->GetMaxCharHeight());
+  float TW=0,TH=0;GetTextSize(Value,TW,TH,Font,Scale*UI);
+  DrawText(Value,Color,X*UI-(Center?TW*.5f:0),Y*UI,Font,Scale*UI);
+ };
+ auto Panel=[&](float X,float Y,float Width,float Height,FLinearColor Stripe){
+  Rect(X,Y,Width,Height,Ink);Rect(X,Y,Width,1,Edge);Rect(X,Y,3,Height,Stripe);
+ };
+ auto Bar=[&](float X,float Y,float Width,float Height,float Fraction,FLinearColor Color){
+  Rect(X,Y,Width,Height,FLinearColor(.14f,.20f,.24f,.8f));
+  Rect(X,Y,Width*FMath::Clamp(Fraction,0.f,1.f),Height,Color);
+ };
+ const bool Buy=Match&&Match->GetPhase()==EVanthexRoundPhase::BuyPhase;
+ const auto* Equipment=Character?Character->GetEquipment():nullptr;
+ const bool Knife=Equipment&&Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife;
 
-	if (Weapon && Weapon->IsReloading())
-	{
-		Status += TEXT("\nRELOADING");
-	}
-	if (Character && Character->GetEquipment())
-	{
-		const auto* Equipment = Character->GetEquipment();
-		Status += Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife ? TEXT("\nKNIFE - LMB stab") : FString::Printf(TEXT("\n%s"), Weapon ? *Weapon->GetWeaponId().ToString() : TEXT("--"));
-		Status += TEXT("\n1 PRIMARY / 2 PISTOL / 3 KNIFE");
-		if (Equipment->IsSwitching()) Status += TEXT("\nSWITCHING");
-	}
-	if (bDead)
-	{
-		Status += TEXT("\nELIMINATED - watching team until next round");
-	}
+ // Scoreboard: fixed widths prevent the clock and scores from jumping as they change.
+ Panel(CX-224,24,448,65,Accent);
+ Rect(CX-62,24,124,65,FLinearColor(.025f,.045f,.06f,.9f));
+ Text(TEXT("ALPHA"),CX-184,34,13,Cyan);
+ Text(FString::FromInt(AlphaScore),CX-88,37,31,White,true);
+ Text(TEXT("BRAVO"),CX+137,34,13,Amber);
+ Text(FString::FromInt(BravoScore),CX+88,37,31,White,true);
+ Text(FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60),CX,43,28,Seconds<=15&&!Buy?Red:White,true);
+ Text(Buy?TEXT("KAUFPHASE"):FString::Printf(TEXT("RUNDE %02d"),RoundIndex),CX,29,11,Buy?Amber:Muted,true);
+ int32 AliveA=0,AliveB=0,CountA=0,CountB=0;
+ if(Match)for(const auto& Entry:Match->PlayerArray)if(const auto* P=Cast<AVanthexPlayerState>(Entry)){
+  if(P->GetTeam()==EVanthexTeam::Alpha){++CountA;if(P->IsAlive())++AliveA;}
+  if(P->GetTeam()==EVanthexTeam::Bravo){++CountB;if(P->IsAlive())++AliveB;}
+ }
+ for(int32 I=0;I<FMath::Min(CountA,6);++I)Rect(CX-184+I*15,65,10,4,I<AliveA?Cyan:Edge);
+ for(int32 I=0;I<FMath::Min(CountB,6);++I)Rect(CX+137+I*15,65,10,4,I<AliveB?Amber:Edge);
+ Text(TEXT("V A N T H E X"),28,26,18,White);
+ Text(FString::Printf(TEXT("%s  /  ARC"),TeamLabel(Team)),28,51,11,Accent);
+ Text(TEXT("ESC  MENUE"),W-111,28,11,Muted);
 
-	const TCHAR* CoreLabel = TEXT("CORE: CENTER");
-	if (Match)
-	{
-		switch (Match->GetCoreReadout())
-		{
-		case EVanthexCoreReadout::Alpha: CoreLabel = TEXT("CORE: ALPHA"); break;
-		case EVanthexCoreReadout::Bravo: CoreLabel = TEXT("CORE: BRAVO"); break;
-		case EVanthexCoreReadout::Dropped: CoreLabel = TEXT("CORE: DROPPED"); break;
-		case EVanthexCoreReadout::Thrown: CoreLabel = TEXT("CORE: THROWN"); break;
-		case EVanthexCoreReadout::ExtractingA: CoreLabel = TEXT("EXTRACTING A"); break;
-		case EVanthexCoreReadout::ExtractingB: CoreLabel = TEXT("EXTRACTING B"); break;
-		case EVanthexCoreReadout::Extracted: CoreLabel = TEXT("CORE: EXTRACTED"); break;
-		case EVanthexCoreReadout::Center:
-		default: CoreLabel = TEXT("CORE: CENTER"); break;
-		}
-	}
-	Status += FString::Printf(TEXT("\nOPERATOR: ARC\n%s"), CoreLabel);
-	if (Match && (Match->GetCoreReadout() == EVanthexCoreReadout::ExtractingA || Match->GetCoreReadout() == EVanthexCoreReadout::ExtractingB))
-	{
-		Status += FString::Printf(TEXT("\n%d"), FMath::Max(1, FMath::CeilToInt(Match->GetExtractionRemaining())));
-	}
-	if (Character && Character->IsCarryingCore())
-	{
-		Status += TEXT("\nYOU HAVE THE CORE");
-		Status += FString::Printf(TEXT("\nCORE CARRIED\n%s"), TeamLabel(Team));
-	}
+ FString Objective=TEXT("CORE SICHERN");
+ bool Extracting=false;
+ if(Match)switch(Match->GetCoreReadout()){
+  case EVanthexCoreReadout::Alpha:Objective=TEXT("CORE  /  ALPHA");break;
+  case EVanthexCoreReadout::Bravo:Objective=TEXT("CORE  /  BRAVO");break;
+  case EVanthexCoreReadout::Dropped:Objective=TEXT("CORE FALLENGELASSEN");break;
+  case EVanthexCoreReadout::Thrown:Objective=TEXT("CORE IM FLUG");break;
+  case EVanthexCoreReadout::ExtractingA:Objective=TEXT("EXTRAKTION  /  A");Extracting=true;break;
+  case EVanthexCoreReadout::ExtractingB:Objective=TEXT("EXTRAKTION  /  B");Extracting=true;break;
+  case EVanthexCoreReadout::Extracted:Objective=TEXT("CORE EXTRAHIERT");break;
+  default:break;
+ }
+ if(Character&&Character->IsCarryingCore()&&!Extracting)Objective=TEXT("DU TRAEGST DEN CORE");
+ Rect(CX-150,95,300,Extracting?65:28,Ink);
+ Text(Objective,CX,102,12,Extracting?Amber:Accent,true);
+ if(Extracting){
+  Text(FString::Printf(TEXT("%.1f s"),Match->GetExtractionRemaining()),CX,120,18,White,true);
+  Bar(CX-130,148,260,4,1.f-Match->GetExtractionRemaining()/FMath::Max(.01f,Match->GetExtractionDuration()),Amber);
+ }
 
-	if (!VanthexMap::IsGridV3(GetWorld())) Status += FString::Printf(TEXT("\nF: SHIFT  C: ARC remote hack (%.0fs)"), Character && Match ? FMath::Max(0.f, Character->AbilityReadyTime-Match->GetServerWorldTimeSeconds()) : 0.f);
- Status += TEXT("\nEsc: Session menu");
- Status += TEXT("\nWASD  Mouse  Shift sprint  Ctrl crouch  Space jump\nLMB fire  RMB hold: sights  R reload\nE pickup  G drop  Q throw  F5 match restart");
+ // Vitals: numbers, labels and bars all remain readable without relying on colour alone.
+ Panel(28,H-135,236,107,Accent);
+ const float HP=Health?Health->GetHealth():0.f;
+ const auto HPColor=HP<=30?Red:White;
+ Text(TEXT("LEBEN"),44,H-125,11,Muted);
+ Text(Health?FString::Printf(TEXT("%03d"),FMath::CeilToInt(HP)):TEXT("---"),44,H-111,38,HPColor);
+ Text(bDead?TEXT("GEFALLEN"):HP<=30?TEXT("KRITISCH"):TEXT("ARC"),137,H-95,12,HP<=30?Red:Muted);
+ Bar(44,H-66,204,6,Health?HP/FMath::Max(1.f,Health->GetMaxHealth()):0.f,HP<=30?Red:Accent);
+ const float Armor=PlayerState?PlayerState->GetArmorPoints():0.f;
+ const float MaxArmor=PlayerState?VanthexEconomy::MaximumArmor(PlayerState->GetEconomy().ArmorTier):0.f;
+ Text(FString::Printf(TEXT("RUESTUNG  %03d"),FMath::CeilToInt(Armor)),44,H-51,11,Muted);
+ Bar(167,H-47,81,3,MaxArmor>0?Armor/MaxArmor:0,Accent);
+ if(PlayerState){
+  Rect(28,H-169,236,28,Ink);
+  Text(FString::Printf(TEXT("%d CR"),PlayerState->GetEconomy().Credits),44,H-163,14,Amber);
+  Text(Buy?TEXT("B  AUSRUESTEN"):TEXT("B  AUSRUESTUNG"),140,H-160,10,Buy?White:Muted);
+ }
 
- if(Character) {
-  for(TActorIterator<AVanthexShiftDevice> It(GetWorld());It;++It) {
-   if(It->Kind==3) Status+=FString::Printf(TEXT("\nGRID %d: %s"),It->Circuit+1,It->bPowered?TEXT("ONLINE"):TEXT("OFFLINE"));
-   if(FVector::Dist(Character->GetActorLocation(),It->InteractionPoint(Character->GetActorLocation()))<300) {
-    FString Prompt=It->Kind==3 ? FString::Printf(TEXT("F: %s power | Stay nearby 4 seconds | Hack %.0f%%"),It->bPowered?TEXT("DISABLE"):TEXT("RESTORE"),It->HackProgress*100) : It->Kind==2 ? (It->bPowered?TEXT("F: Call / operate lift"):TEXT("LIFT OFFLINE - restore sector power")) : TEXT("F: Interact");
-    if(It->IsEMPDisabled())Prompt=TEXT("EMP - Geraet voruebergehend gestoert");
-    DrawText(Prompt,FLinearColor::Yellow,CenterX-250,CenterY+65,nullptr,1.15f);
-   }
+ // Active weapon and ammunition. Knife selection never shows a stale rifle magazine.
+ Panel(W-276,H-135,248,107,Accent);
+ const FString WeaponName=Knife?TEXT("KAMPFMESSER"):Weapon?Weapon->GetWeaponId().ToString().ToUpper():TEXT("KEINE WAFFE");
+ Text(WeaponName,W-260,H-123,16,White);
+ Text(Knife?TEXT("NAHKAMPF"):Weapon&&Weapon->IsAutomatic()?TEXT("AUTO"):TEXT("SEMI"),W-92,H-120,10,Muted);
+ if(!Knife&&Weapon){
+  const int32 Ammo=Weapon->GetAmmoInMagazine();
+  Text(FString::Printf(TEXT("%02d"),Ammo),W-260,H-101,40,Ammo<=FMath::Max(1,Weapon->GetMagazineSize()/5)?Amber:White);
+  Text(FString::Printf(TEXT("/ %03d"),Weapon->GetReserveAmmo()),W-186,H-81,18,Muted);
+  const bool Reload=Weapon->IsReloading();
+  Bar(W-260,H-52,216,3,Reload?Weapon->GetReloadProgress():float(Ammo)/FMath::Max(1,Weapon->GetMagazineSize()),Reload?Amber:Accent);
+  Text(Reload?TEXT("WIRD NACHGELADEN"):Equipment&&Equipment->IsSwitching()?TEXT("WAFFENWECHSEL"):Ammo==0?TEXT("R  NACHLADEN"):TEXT("R  LADEN   /   RMB  VISIER"),W-260,H-44,9,Reload||Ammo==0?Amber:Muted);
+ }else Text(TEXT("LMB  ANGRIFF"),W-260,H-79,15,Muted);
+
+ // Compact inventory; slot names come from the actual owned loadout.
+ const EVanthexWeaponSlot WeaponSlots[]={EVanthexWeaponSlot::Rifle,EVanthexWeaponSlot::Pistol,EVanthexWeaponSlot::Knife};
+ for(int32 I=0;I<5;++I){
+  const float X=CX-217+I*88;
+  bool Selected=I<3&&Equipment&&Equipment->GetSelectedSlot()==WeaponSlots[I];
+  FString Name=TEXT("LEER");
+  if(I<3&&Equipment&&Equipment->HasSlot(WeaponSlots[I]))Name=I==2?TEXT("MESSER"):Equipment->GetSlotWeaponId(WeaponSlots[I]).ToString().ToUpper();
+  if(I>=3&&PlayerState&&PlayerState->GetEconomy().Gadgets.IsValidIndex(I-3))Name=PlayerState->GetEconomy().Gadgets[I-3].ToString().ToUpper();
+  Rect(X,H-79,82,51,Selected?FLinearColor(.035f,.11f,.14f,.94f):Ink);
+  Rect(X,H-30,82,2,Selected?Accent:Edge);
+  Text(FString::FromInt(I+1),X+8,H-74,11,Selected?Accent:Muted);
+  Text(Name,X+8,H-53,10,Name==TEXT("LEER")?Muted:White);
+ }
+ FString Condition;
+ if(Character&&Character->bIsCrouched)Condition=TEXT("GEDUCKT");
+ if(Character&&Character->GetGadgets()->IsJammed())Condition+=Condition.IsEmpty()?TEXT("EMP  /  GESTOERT"):TEXT("   |   EMP  /  GESTOERT");
+ if(!Condition.IsEmpty())Text(Condition,CX,H-101,12,Amber,true);
+ if(Buy){
+  Rect(CX-180,162,360,43,Ink);
+  Text(TEXT("AUSRUESTEN UND VORBEREITEN"),CX,169,14,White,true);
+  Text(TEXT("B  KAUFMENUE"),CX,188,10,Amber,true);
+ }
+
+ // One contextual prompt at a time, including a progress bar for power hacking.
+ FString Prompt;float Interaction=-1.f;
+ if(Character&&!bDead){
+  float Nearest=300.f;
+  for(TActorIterator<AVanthexShiftDevice> It(GetWorld());It;++It){
+   const float D=FVector::Dist(Character->GetActorLocation(),It->InteractionPoint(Character->GetActorLocation()));
+   if(D>=Nearest)continue;Nearest=D;
+   Prompt=It->Kind==3?(It->bPowered?TEXT("F  STROM ABSCHALTEN"):TEXT("F  STROM WIEDERHERSTELLEN")):It->Kind==2?(It->bPowered?TEXT("F  FAHRSTUHL BEDIENEN"):TEXT("FAHRSTUHL OHNE STROM")):TEXT("F  INTERAGIEREN");
+   Interaction=It->Kind==3?It->HackProgress:-1.f;
+   if(It->IsEMPDisabled()){Prompt=TEXT("EMP  /  GERAET GESTOERT");Interaction=-1.f;}
+  }
+  if(Prompt.IsEmpty()){
+   if(Character->IsCarryingCore())Prompt=TEXT("G  ABLEGEN     Q  WERFEN");
+   else for(TActorIterator<AVanthexCore> It(GetWorld());It;++It)if(It->GetCoreState()==EVanthexCoreState::AtRest&&FVector::Dist(Character->GetActorLocation(),It->GetActorLocation())<180){Prompt=TEXT("E  CORE AUFNEHMEN");break;}
   }
  }
-	DrawText(Status, bDead ? FLinearColor::Red : FLinearColor::White, 40.f, 40.f, nullptr, 1.2f);
+ if(!Prompt.IsEmpty()){
+  Rect(CX-195,H*.5f+64,390,Interaction>=0?44:30,Ink);
+  Text(Prompt,CX,H*.5f+72,13,White,true);
+  if(Interaction>=0)Bar(CX-175,H*.5f+99,350,3,Interaction,Accent);
+ }
+ if(bDead){
+  Panel(CX-225,H*.5f-101,450,61,Red);
+  Text(TEXT("ELIMINIERT"),CX,H*.5f-94,23,White,true);
+  Text(TEXT("Du steigst in der naechsten Runde wieder ein."),CX,H*.5f-62,12,Muted,true);
+ }
 
 	if (!Match)
 	{
@@ -188,27 +277,28 @@ void AVanthexHUD::DrawHUD()
 	}
 
 	FString Banner;
-	FLinearColor BannerColor = FLinearColor::Yellow;
+
 	if (Match->GetPhase() == EVanthexRoundPhase::MatchEnded)
 	{
-		Banner = FString::Printf(TEXT("%s WINS MATCH"), TeamLabel(Match->GetMatchWinner()));
-		BannerColor = FLinearColor(1.f, 0.85f, 0.2f);
+		Banner = FString::Printf(TEXT("%s GEWINNT DAS MATCH"), TeamLabel(Match->GetMatchWinner()));
+
 	}
 	else if (Match->GetPhase() == EVanthexRoundPhase::RoundEnding || Match->GetPhase() == EVanthexRoundPhase::Intermission)
 	{
 		if (Match->GetRoundWinner() == EVanthexTeam::None)
 		{
-			Banner = TEXT("ROUND DRAW");
+			Banner = TEXT("UNENTSCHIEDEN");
 		}
 		else
 		{
-			Banner = FString::Printf(TEXT("%s WINS ROUND"), TeamLabel(Match->GetRoundWinner()));
+			Banner = FString::Printf(TEXT("%s GEWINNT DIE RUNDE"), TeamLabel(Match->GetRoundWinner()));
 		}
 	}
 
 	if (!Banner.IsEmpty())
 	{
-		DrawText(Banner, BannerColor, CenterX - 140.f, CenterY - 80.f, nullptr, 1.6f);
+		Panel(CX-225,H*.5f-178,450,62,Accent);
+  Text(Banner,CX,H*.5f-161,25,White,true);
 	}
  if(Character&&!bDead){
   const auto* Gadgets=Character->GetGadgets();
@@ -220,13 +310,6 @@ void AVanthexHUD::DrawHUD()
     DrawLine(Screen.X+9,Screen.Y,Screen.X,Screen.Y+9,Tint,2);DrawLine(Screen.X,Screen.Y+9,Screen.X-9,Screen.Y,Tint,2);
     DrawText(TEXT("SENSOR"),Tint,Screen.X+12,Screen.Y-6,nullptr,.8f);
    }
-  }
-  const FVector Eye=Character->GetPawnViewLocation();
-  for(TActorIterator<AVanthexGadgetActor> It(GetWorld());It;++It)if(It->IsSmokeActive()){
-   const FVector Center=It->GetActorLocation()+FVector(0,0,140);
-   if(FVector::DistSquared(Eye,Center)>=FMath::Square(It->GetEffectRadius()))continue;
-   FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(SmokeInterior),false,Character);Q.AddIgnoredActor(*It);
-   if(!GetWorld()->LineTraceSingleByChannel(H,Eye,Center,ECC_Visibility,Q)){DrawRect(FLinearColor(.19f,.22f,.24f,.985f),0,0,Canvas->SizeX,Canvas->SizeY);break;}
   }
   const float Flash=Gadgets->GetFlashOpacity();
   if(Flash>0.f)DrawRect(FLinearColor(.94f,.96f,1.f,Flash),0,0,Canvas->SizeX,Canvas->SizeY);

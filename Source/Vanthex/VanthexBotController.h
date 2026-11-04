@@ -19,6 +19,9 @@ private:
  float TargetVisibleSince = 0.f;
  float NextCombatShot = 0.f;
  float NextGadgetUse=0.f;
+ float BurstEnds=0.f;
+ void TurnToward(const FVector& Point,float DeltaSeconds);
+ void MoveSafely(const FVector& Direction,float Strength);
  TWeakObjectPtr<APawn> CombatTarget;
  void PlanRoute(const FVector& Goal);
 };

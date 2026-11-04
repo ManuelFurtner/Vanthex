@@ -1,0 +1,7 @@
+PASS 3 Energy Core views: pickup, carry, drop
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+../../../../../Vanthex/Saved/CoreShots/01_M4_core.png
+../../../../../Vanthex/Saved/CoreShots/02_M4_core.png
+../../../../../Vanthex/Saved/CoreShots/03_M4_core.png

@@ -1,0 +1,42 @@
+OVERALL PASS
+CHECKS 39
+FAILURES 0
+PASS VanthexCharacter_0 has animated ARC mesh, owner hiding and separate collision
+PASS VanthexCharacter_0 team material follows replicated roster team ((R=0.025000,G=0.320000,B=0.850000,A=1.000000))
+PASS VanthexCharacter_0 has visible third-person rifle attached to skeleton
+PASS VanthexCharacter_1 has animated ARC mesh, owner hiding and separate collision
+PASS VanthexCharacter_1 team material follows replicated roster team ((R=0.025000,G=0.320000,B=0.850000,A=1.000000))
+PASS VanthexCharacter_1 has visible third-person rifle attached to skeleton
+PASS VanthexCharacter_2 has animated ARC mesh, owner hiding and separate collision
+PASS VanthexCharacter_2 team material follows replicated roster team ((R=0.900000,G=0.220000,B=0.035000,A=1.000000))
+PASS VanthexCharacter_2 has visible third-person rifle attached to skeleton
+PASS VanthexCharacter_3 has animated ARC mesh, owner hiding and separate collision
+PASS VanthexCharacter_3 team material follows replicated roster team ((R=0.900000,G=0.220000,B=0.035000,A=1.000000))
+PASS VanthexCharacter_3 has visible third-person rifle attached to skeleton
+PASS VanthexCharacter_4 has animated ARC mesh, owner hiding and separate collision
+PASS VanthexCharacter_4 team material follows replicated roster team ((R=0.900000,G=0.220000,B=0.035000,A=1.000000))
+PASS VanthexCharacter_4 has visible third-person rifle attached to skeleton
+PASS local player has a visible owner-only body without duplicate hit collision
+PASS first-person camera hides head while retaining legs
+PASS VanthexCharacter_5 has animated ARC mesh, owner hiding and separate collision
+PASS VanthexCharacter_5 team material follows replicated roster team ((R=0.025000,G=0.320000,B=0.850000,A=1.000000))
+PASS VanthexCharacter_5 has visible third-person rifle attached to skeleton
+PASS offline roster is one human and five bots, three operators per team
+PASS locomotion bones available for actual pose measurement
+PASS live bot navigation moved 1026.1 cm toward Core; start=X=-2975.628 Y=-2362.913 Z=98.150 end=X=-1977.843 Y=-2123.517 Z=98.150 speed=450.0
+PASS locomotion changes foot pose in component space by 84.95 cm
+PASS hidden Body proxy still receives actual visibility hits
+PASS hidden Head proxy still receives actual visibility hits
+PASS bot target rules distinguish friendly and opposing operators
+PASS live bot does not shoot visible teammate
+PASS enemy behind bot is not acquired through 360-degree vision
+PASS new visible enemy receives the bot reaction delay
+PASS live bot aims, fires and damages opposing operator
+PASS nearby friendly operator remains undamaged
+PASS live bot physically turns its actor toward the opponent
+PASS bot uses short bursts and pauses rather than sustained automatic fire
+PASS eliminated operator stops movement and weapon fire
+PASS eliminated operator hides third-person rifle
+PASS round reset restores healthy, visible, animated operator and rifle
+PASS bot takeover fixture starts with a drawn knife
+PASS live bot returns inherited knife equipment to a usable rifle

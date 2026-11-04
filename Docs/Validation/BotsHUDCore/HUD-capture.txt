@@ -1,0 +1,13 @@
+PASS 6 HUD states: live, injured, reload, extraction, buy, eliminated
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+../../../../../Vanthex/Saved/HUDShots/01_M4_hud.png
+../../../../../Vanthex/Saved/HUDShots/02_M4_hud.png
+../../../../../Vanthex/Saved/HUDShots/03_M4_hud.png
+../../../../../Vanthex/Saved/HUDShots/04_M4_hud.png
+../../../../../Vanthex/Saved/HUDShots/05_M4_hud.png
+../../../../../Vanthex/Saved/HUDShots/06_M4_hud.png

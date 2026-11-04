@@ -80,7 +80,7 @@ A thrown core leaves a short trail of small glowing segments. The trail is there
 
 ## Extraction
 
-Each station is a transfer machine: `SM_TransferBase`, four `SM_Pylon` posts, a cable between the posts, a spinning charge ring, and a TRANSFER sign beside the plate. During the existing five-second hold the energy strength rises. Timing and the zone volume do not change.
+Each station is a transfer machine: `SM_TransferBase`, four `SM_Pylon` posts, a cable between the posts, a spinning charge ring, and a TRANSFER sign beside the plate. During the existing fifteen-second hold the energy strength rises. Timing and the zone volume do not change.
 
 - A is cyan.
 - B is amber.
