@@ -63,6 +63,7 @@ int32 UVanthexBuildWeaponAudioCommandlet::Main(const FString& Params)
 {
 #if WITH_EDITOR
  const bool Replace=FParse::Param(*Params,TEXT("ReplacePrototypeAssets")); bool Created=false;
+ const bool RefreshFeatured=FParse::Param(*Params,TEXT("RefreshFeaturedShots"));
  auto* Profile=Asset<UVanthexWeaponAudioProfile>(TEXT("DA_WeaponAudio"),Created);
  const bool UpdateProfile=Created || Replace;
  auto* Attenuation=Asset<USoundAttenuation>(TEXT("SA_WeaponSpatial"),Created);
@@ -100,7 +101,9 @@ int32 UVanthexBuildWeaponAudioCommandlet::Main(const FString& Params)
    Set.Volume=Event==EVanthexWeaponAudioEvent::Shot?.72f:(Event==EVanthexWeaponAudioEvent::Mechanic?.13f:.24f);
    for(int32 I=1; I<=(Event==EVanthexWeaponAudioEvent::Shot?3:1); ++I) {
     const FString Name=FString::Printf(TEXT("S_WA_%s_%s"),Weapon,*EventName)+(Event==EVanthexWeaponAudioEvent::Shot?FString::Printf(TEXT("_%02d"),I):FString());
-    auto* Sound=Wave(Name,Replace); if(!Sound) return 1;
+    const bool FeaturedShot=RefreshFeatured && Event==EVanthexWeaponAudioEvent::Shot
+     && (FCString::Strcmp(Weapon,TEXT("AUG"))==0 || FCString::Strcmp(Weapon,TEXT("MP7"))==0);
+    auto* Sound=Wave(Name,Replace || FeaturedShot); if(!Sound) return 1;
     Set.Variants.Add(Sound); ++Count;
    }
    Bank.Events.Add(Event,Set);

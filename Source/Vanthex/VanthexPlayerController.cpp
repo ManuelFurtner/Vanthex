@@ -1,4 +1,6 @@
 #include "VanthexPlayerController.h"
+#include "SVanthexSessionMenu.h"
+#include "VanthexLocalSettings.h"
 
 #include "Vanthex.h"
 #include "VanthexCharacter.h"
@@ -41,6 +43,7 @@ AVanthexPlayerController::AVanthexPlayerController()
 void AVanthexPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+ if(IsLocalController()) UVanthexLocalSettings::Get()->ApplyAudio(GetWorld());
  if(FParse::Param(FCommandLine::Get(),TEXT("LooseCoreNetworkTest"))) {
   extern void VanthexStartLooseCoreNetworkTest(AVanthexPlayerController* PC);VanthexStartLooseCoreNetworkTest(this);
  }
@@ -118,7 +121,7 @@ void AVanthexPlayerController::PawnLeavingGame()
 
 #include "Kismet/GameplayStatics.h"
 void AVanthexPlayerController::HostGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::CurrentMap(GetWorld())), true, "listen"); }
-void AVanthexPlayerController::JoinGame(const FString& Address) { if (IsLocalController() && !Address.IsEmpty() && !Address.Contains(TEXT("?"))) ClientTravel(Address, TRAVEL_Absolute); }
+void AVanthexPlayerController::JoinGame(const FString& Address) { FString Validated, Error; if (IsLocalController() && UVanthexLocalSettings::ValidateAddress(Address,Validated,Error)) ClientTravel(Validated, TRAVEL_Absolute); }
 void AVanthexPlayerController::LeaveGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::CurrentMap(GetWorld()))); }
 
 
@@ -137,34 +140,32 @@ void AVanthexPlayerController::SetupInputComponent() {
  InputComponent->BindKey(EKeys::Tab,IE_Pressed,this,&AVanthexPlayerController::ShowScoreboard);
  InputComponent->BindKey(EKeys::Tab,IE_Released,this,&AVanthexPlayerController::HideScoreboard);
 }
-void AVanthexPlayerController::CloseSessionMenu() {
- if(SessionMenu.IsValid() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(SessionMenu.ToSharedRef());
- SessionMenu.Reset(); AddressBox.Reset(); bShowMouseCursor=false; SetInputMode(FInputModeGameOnly()); SetIgnoreMoveInput(false); SetIgnoreLookInput(false);
+void AVanthexPlayerController::CloseSessionMenu()
+{
+ if(!SessionMenu.IsValid()) return;
+ if(GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(SessionMenu.ToSharedRef());
+ SessionMenu.Reset(); UVanthexLocalSettings::Get()->Persist();
+ bShowMouseCursor=false; SetInputMode(FInputModeGameOnly());
+ SetIgnoreMoveInput(false); SetIgnoreLookInput(false);
 }
 void AVanthexPlayerController::EndPlay(const EEndPlayReason::Type Reason) {
  if(ScoreboardKeyRelease&&FSlateApplication::IsInitialized()) FSlateApplication::Get().UnregisterInputPreProcessor(ScoreboardKeyRelease);
  ScoreboardKeyRelease.Reset();HideScoreboard();
  if(IsLocalController()) CloseSessionMenu(); Super::EndPlay(Reason);
 }
-void AVanthexPlayerController::ToggleSessionMenu() {
+void AVanthexPlayerController::ToggleSessionMenu()
+{
  HideScoreboard();
- if(BuyMenu) BuyMenu->Close();
- if(!IsLocalController() || !GetWorld()->GetGameViewport()) return;
+ if(!IsLocalController() || !GetWorld() || !GetWorld()->GetGameViewport()) return;
  if(SessionMenu.IsValid()) { CloseSessionMenu(); return; }
- if (auto* OwnPawn=Cast<AVanthexCharacter>(GetPawn())) OwnPawn->ServerAction(1,false);
- static const FTextBlockStyle MenuText = FTextBlockStyle().SetFont(FCoreStyle::GetDefaultFontStyle("Regular",22)).SetColorAndOpacity(FLinearColor::White);
- SessionMenu=SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(0.012f,0.022f,0.035f,1.f)).HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(SBox).WidthOverride(760)[
- SNew(SVerticalBox)
- +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(STextBlock).TextStyle(&MenuText).Text(FText::FromString(TEXT("VANTHEX - Sitzung")))]
- +SVerticalBox::Slot().AutoHeight().Padding(8)[SNew(SButton).TextStyle(&MenuText).ContentPadding(FMargin(16)).Text(FText::FromString(TEXT("Weiterspielen"))).OnClicked_Lambda([this](){CloseSessionMenu();return FReply::Handled();})]
- +SVerticalBox::Slot().AutoHeight().Padding(8)[SNew(SButton).TextStyle(&MenuText).ContentPadding(FMargin(16)).Text(FText::FromString(TEXT("Spiel hosten (LAN / direkte Verbindung)"))).OnClicked_Lambda([this](){CloseSessionMenu();HostGame();return FReply::Handled();})]
- +SVerticalBox::Slot().AutoHeight().Padding(8)[SAssignNew(AddressBox,SEditableTextBox).Font(FCoreStyle::GetDefaultFontStyle("Regular",22)).HintText(FText::FromString(TEXT("Host-IP, z. B. 192.168.1.10:7777")))]
- +SVerticalBox::Slot().AutoHeight().Padding(8)[SNew(SButton).TextStyle(&MenuText).ContentPadding(FMargin(16)).Text(FText::FromString(TEXT("Beitreten"))).OnClicked_Lambda([this](){const FString Address=AddressBox->GetText().ToString().TrimStartAndEnd();if(!Address.IsEmpty()){CloseSessionMenu();JoinGame(Address);}return FReply::Handled();})]
- +SVerticalBox::Slot().AutoHeight().Padding(8)[SNew(SButton).TextStyle(&MenuText).ContentPadding(FMargin(16)).Text(FText::FromString(TEXT("Verlassen / lokales Spiel"))).OnClicked_Lambda([this](){CloseSessionMenu();LeaveGame();return FReply::Handled();})]
- +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(STextBlock).TextStyle(&MenuText).Text(FText::FromString(VanthexMap::IsFacility(GetWorld())?TEXT("E: Core aufnehmen | G: Ablegen | Q: Werfen\nOnline laeuft die Runde bei offenem Menue weiter."):TEXT("F: Shift bedienen | C: ARC-Fernsteuerung\nOnline laeuft die Runde bei offenem Menue weiter.")))]
- ]];
+ if(BuyMenu) BuyMenu->Close();
+ if(auto* OwnPawn=Cast<AVanthexCharacter>(GetPawn())) {
+  OwnPawn->ServerAction(1,false); OwnPawn->SetSprinting(false); OwnPawn->SetAiming(false);
+ }
+ SessionMenu=SNew(SVanthexSessionMenu).Controller(this).OnResume(FSimpleDelegate::CreateUObject(this,&AVanthexPlayerController::CloseSessionMenu));
  GetWorld()->GetGameViewport()->AddViewportWidgetContent(SessionMenu.ToSharedRef(),100);
- bShowMouseCursor=true; SetIgnoreMoveInput(true); SetIgnoreLookInput(true); FInputModeGameAndUI Mode; Mode.SetWidgetToFocus(SessionMenu); SetInputMode(Mode);
+ bShowMouseCursor=true; SetIgnoreMoveInput(true); SetIgnoreLookInput(true);
+ FInputModeUIOnly Mode; Mode.SetWidgetToFocus(SessionMenu); Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock); SetInputMode(Mode);
 }
 
 

@@ -55,5 +55,4 @@ protected:
  FVector ProbeOrigin;
  void CloseSessionMenu();
  TSharedPtr<class SWidget> SessionMenu;
- TSharedPtr<class SEditableTextBox> AddressBox;
 };

@@ -1,5 +1,11 @@
 # Vanthex weapon audio sources
 
+Generator v3 refreshes the six AUG/MP7 shot variants with shorter layered transients
+and reduced tonal decay. After building the editor, `-run=VanthexBuildWeaponAudio
+-RefreshFeaturedShots` reimports only these existing shot assets, preserving bank
+settings and other existing sounds. `Scripts/verify_weapon_sources.py` checks all
+119 sources and writes the source-level QA report. See `Docs/AUDIO_MENU_UPDATE.md`.
+
 The current bank contains 119 mono source files. Three shared `EquipmentMove` variants combine a foot contact with quiet cloth/strap motion in the same short action. Their selection and timbre do not read armor tier, armor points or inventory. Authoritative grounded distance drives cadence; idle, airborne, dead, inactive-round and teleport samples reset it. Crouching reduces gain to 32%. Movement ranks below gunshots and above mechanics, using the same spatial routing and voice budget.
 
 All WAVs in this directory are original, deterministic procedural synthesis generated for this project. No downloaded recordings, third-party samples, or library assets are included. The sounds are designed game signatures rather than claims of authentic firearm recordings. They may be edited and redistributed with Vanthex.

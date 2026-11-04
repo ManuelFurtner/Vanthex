@@ -1,4 +1,5 @@
 #include "VanthexWeaponAudioComponent.h"
+#include "VanthexLocalSettings.h"
 #include "VanthexWeaponAudioAcoustics.h"
 #include "VanthexPlayerController.h"
 #include "Components/AudioComponent.h"
@@ -116,6 +117,9 @@ int32 UVanthexWeaponAudioComponent::EventPriority(EVanthexWeaponAudioEvent Event
 
 void UVanthexWeaponAudioComponent::Play(const FVanthexWeaponAudioPacket& P,USoundBase* Sound,float Volume,bool bUI,bool bRoomTail)
 {
+ const auto* Mix=UVanthexLocalSettings::Get();
+ Volume*=UVanthexLocalSettings::SafeVolume(bUI?Mix->UIVolume:Mix->CombatVolume);
+ if(bRoomTail) Volume*=UVanthexLocalSettings::SafeVolume(Mix->RoomVolume);
  if(!Sound || !Profile || (!bUI && (!Profile->Attenuation || !Profile->Concurrency))) { ++MissingAssets; return; }
  if(!FMath::IsFinite(Volume) || Volume<=0.f) return;
  const int32 Priority=EventPriority(P.Event,P.bOwnSource,bRoomTail);
@@ -190,12 +194,17 @@ void UVanthexWeaponAudioComponent::Receive(const FVanthexWeaponAudioPacket& P)
  FRandomStream Random(int32(P.ActionId^P.SourceId^uint32(P.Event)));
  USoundBase* Sound=Set->Variants[Random.RandRange(0,Set->Variants.Num()-1)];
  Play(P,Sound,Set->Volume*FMath::Clamp(P.Gain,0.f,1.f));
- if(P.Event==EVanthexWeaponAudioEvent::Shot && P.ReflectionDelay>0.f && FMath::IsFinite(P.ReflectionDelay) && Profile->RoomTail) {
+ if(P.Event==EVanthexWeaponAudioEvent::Shot && P.ReflectionDelay>0.f && FMath::IsFinite(P.ReflectionDelay)) {
   ReflectionTimers.RemoveAll([this](const FTimerHandle& H){return !GetWorld()->GetTimerManager().IsTimerActive(H);});
   if(ReflectionTimers.Num()<16) {
    FTimerHandle Timer;
-   GetWorld()->GetTimerManager().SetTimer(Timer,FTimerDelegate::CreateWeakLambda(this,[this,P](){
-    if(Profile) Play(P,Profile->RoomTail,P.Gain*.065f,false,true);
+   // Early reflection retains the weapon signature instead of adding the same noise burst to every gun.
+   const TWeakObjectPtr<USoundBase> ReflectedSound=Sound;
+   const float ReflectionVolume=Set->Volume*P.Gain*FMath::Clamp(Profile->EarlyReflectionGain,0.f,.25f);
+   GetWorld()->GetTimerManager().SetTimer(Timer,FTimerDelegate::CreateWeakLambda(this,[this,P,ReflectedSound,ReflectionVolume](){
+    FVanthexWeaponAudioPacket Reflection=P;
+    Reflection.LowPassHz=FMath::Min(Reflection.LowPassHz,Profile?FMath::Clamp(Profile->EarlyReflectionLowPassHz,400.f,12000.f):3600.f);
+    if(Profile && ReflectedSound.IsValid()) Play(Reflection,ReflectedSound.Get(),ReflectionVolume,false,true);
    }),FMath::Clamp(P.ReflectionDelay,.012f,.045f),false);
    ReflectionTimers.Add(Timer);
   }

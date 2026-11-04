@@ -1,0 +1,721 @@
+{
+  "status": "PASS",
+  "checked": 119,
+  "failures": [],
+  "audio": [
+    {
+      "file": "S_WA_Pistol_Shot_01.wav",
+      "duration": 0.282,
+      "peak_dbfs": -6.376,
+      "rms": 0.071483
+    },
+    {
+      "file": "S_WA_Pistol_Shot_02.wav",
+      "duration": 0.282,
+      "peak_dbfs": -6.376,
+      "rms": 0.067714
+    },
+    {
+      "file": "S_WA_Pistol_Shot_03.wav",
+      "duration": 0.282,
+      "peak_dbfs": -6.376,
+      "rms": 0.069794
+    },
+    {
+      "file": "S_WA_Pistol_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.060582
+    },
+    {
+      "file": "S_WA_Pistol_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.066249
+    },
+    {
+      "file": "S_WA_Pistol_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.049666
+    },
+    {
+      "file": "S_WA_Pistol_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.055404
+    },
+    {
+      "file": "S_WA_Pistol_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.044658
+    },
+    {
+      "file": "S_WA_Pistol_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.063807
+    },
+    {
+      "file": "S_WA_Pistol_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.070117
+    },
+    {
+      "file": "S_WA_Pistol_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.047282
+    },
+    {
+      "file": "S_WA_Pistol_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.047682
+    },
+    {
+      "file": "S_WA_P250_Shot_01.wav",
+      "duration": 0.30119,
+      "peak_dbfs": -6.376,
+      "rms": 0.070487
+    },
+    {
+      "file": "S_WA_P250_Shot_02.wav",
+      "duration": 0.30119,
+      "peak_dbfs": -6.376,
+      "rms": 0.069901
+    },
+    {
+      "file": "S_WA_P250_Shot_03.wav",
+      "duration": 0.30119,
+      "peak_dbfs": -6.376,
+      "rms": 0.071701
+    },
+    {
+      "file": "S_WA_P250_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.05877
+    },
+    {
+      "file": "S_WA_P250_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.064306
+    },
+    {
+      "file": "S_WA_P250_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.052233
+    },
+    {
+      "file": "S_WA_P250_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.053066
+    },
+    {
+      "file": "S_WA_P250_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.0476
+    },
+    {
+      "file": "S_WA_P250_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.065077
+    },
+    {
+      "file": "S_WA_P250_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.063439
+    },
+    {
+      "file": "S_WA_P250_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.046458
+    },
+    {
+      "file": "S_WA_P250_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.05081
+    },
+    {
+      "file": "S_WA_MP5_Shot_01.wav",
+      "duration": 0.266,
+      "peak_dbfs": -6.376,
+      "rms": 0.062464
+    },
+    {
+      "file": "S_WA_MP5_Shot_02.wav",
+      "duration": 0.266,
+      "peak_dbfs": -6.376,
+      "rms": 0.06445
+    },
+    {
+      "file": "S_WA_MP5_Shot_03.wav",
+      "duration": 0.266,
+      "peak_dbfs": -6.376,
+      "rms": 0.06601
+    },
+    {
+      "file": "S_WA_MP5_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.059045
+    },
+    {
+      "file": "S_WA_MP5_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.062926
+    },
+    {
+      "file": "S_WA_MP5_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.049166
+    },
+    {
+      "file": "S_WA_MP5_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.055986
+    },
+    {
+      "file": "S_WA_MP5_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.049428
+    },
+    {
+      "file": "S_WA_MP5_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.068423
+    },
+    {
+      "file": "S_WA_MP5_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.059619
+    },
+    {
+      "file": "S_WA_MP5_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.046072
+    },
+    {
+      "file": "S_WA_MP5_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.0495
+    },
+    {
+      "file": "S_WA_MP7_Shot_01.wav",
+      "duration": 0.19,
+      "peak_dbfs": -6.376,
+      "rms": 0.043704
+    },
+    {
+      "file": "S_WA_MP7_Shot_02.wav",
+      "duration": 0.19,
+      "peak_dbfs": -6.376,
+      "rms": 0.044073
+    },
+    {
+      "file": "S_WA_MP7_Shot_03.wav",
+      "duration": 0.19,
+      "peak_dbfs": -6.376,
+      "rms": 0.043007
+    },
+    {
+      "file": "S_WA_MP7_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.057369
+    },
+    {
+      "file": "S_WA_MP7_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.062364
+    },
+    {
+      "file": "S_WA_MP7_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.048041
+    },
+    {
+      "file": "S_WA_MP7_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.052496
+    },
+    {
+      "file": "S_WA_MP7_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.048966
+    },
+    {
+      "file": "S_WA_MP7_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.065254
+    },
+    {
+      "file": "S_WA_MP7_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.061065
+    },
+    {
+      "file": "S_WA_MP7_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.04497
+    },
+    {
+      "file": "S_WA_MP7_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.051099
+    },
+    {
+      "file": "S_WA_M4_Shot_01.wav",
+      "duration": 0.30119,
+      "peak_dbfs": -6.376,
+      "rms": 0.073185
+    },
+    {
+      "file": "S_WA_M4_Shot_02.wav",
+      "duration": 0.30119,
+      "peak_dbfs": -6.376,
+      "rms": 0.073624
+    },
+    {
+      "file": "S_WA_M4_Shot_03.wav",
+      "duration": 0.30119,
+      "peak_dbfs": -6.376,
+      "rms": 0.073584
+    },
+    {
+      "file": "S_WA_M4_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.059334
+    },
+    {
+      "file": "S_WA_M4_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.059371
+    },
+    {
+      "file": "S_WA_M4_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.057097
+    },
+    {
+      "file": "S_WA_M4_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.05019
+    },
+    {
+      "file": "S_WA_M4_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.045303
+    },
+    {
+      "file": "S_WA_M4_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.064416
+    },
+    {
+      "file": "S_WA_M4_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.062832
+    },
+    {
+      "file": "S_WA_M4_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.045805
+    },
+    {
+      "file": "S_WA_M4_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.053607
+    },
+    {
+      "file": "S_WA_AK_Shot_01.wav",
+      "duration": 0.33,
+      "peak_dbfs": -6.376,
+      "rms": 0.072748
+    },
+    {
+      "file": "S_WA_AK_Shot_02.wav",
+      "duration": 0.33,
+      "peak_dbfs": -6.376,
+      "rms": 0.07726
+    },
+    {
+      "file": "S_WA_AK_Shot_03.wav",
+      "duration": 0.33,
+      "peak_dbfs": -6.376,
+      "rms": 0.076
+    },
+    {
+      "file": "S_WA_AK_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.058895
+    },
+    {
+      "file": "S_WA_AK_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.064834
+    },
+    {
+      "file": "S_WA_AK_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.048611
+    },
+    {
+      "file": "S_WA_AK_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.051168
+    },
+    {
+      "file": "S_WA_AK_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.051476
+    },
+    {
+      "file": "S_WA_AK_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.06457
+    },
+    {
+      "file": "S_WA_AK_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.067975
+    },
+    {
+      "file": "S_WA_AK_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.047404
+    },
+    {
+      "file": "S_WA_AK_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.050713
+    },
+    {
+      "file": "S_WA_AUG_Shot_01.wav",
+      "duration": 0.31,
+      "peak_dbfs": -6.376,
+      "rms": 0.051285
+    },
+    {
+      "file": "S_WA_AUG_Shot_02.wav",
+      "duration": 0.31,
+      "peak_dbfs": -6.376,
+      "rms": 0.045359
+    },
+    {
+      "file": "S_WA_AUG_Shot_03.wav",
+      "duration": 0.31,
+      "peak_dbfs": -6.376,
+      "rms": 0.045605
+    },
+    {
+      "file": "S_WA_AUG_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.061504
+    },
+    {
+      "file": "S_WA_AUG_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.062894
+    },
+    {
+      "file": "S_WA_AUG_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.049523
+    },
+    {
+      "file": "S_WA_AUG_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.050496
+    },
+    {
+      "file": "S_WA_AUG_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.048512
+    },
+    {
+      "file": "S_WA_AUG_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.061966
+    },
+    {
+      "file": "S_WA_AUG_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.067479
+    },
+    {
+      "file": "S_WA_AUG_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.048017
+    },
+    {
+      "file": "S_WA_AUG_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.050301
+    },
+    {
+      "file": "S_WA_DMR_Shot_01.wav",
+      "duration": 0.37,
+      "peak_dbfs": -6.376,
+      "rms": 0.080202
+    },
+    {
+      "file": "S_WA_DMR_Shot_02.wav",
+      "duration": 0.37,
+      "peak_dbfs": -6.376,
+      "rms": 0.077292
+    },
+    {
+      "file": "S_WA_DMR_Shot_03.wav",
+      "duration": 0.37,
+      "peak_dbfs": -6.376,
+      "rms": 0.079196
+    },
+    {
+      "file": "S_WA_DMR_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.066661
+    },
+    {
+      "file": "S_WA_DMR_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.063588
+    },
+    {
+      "file": "S_WA_DMR_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.047562
+    },
+    {
+      "file": "S_WA_DMR_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.056608
+    },
+    {
+      "file": "S_WA_DMR_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.045024
+    },
+    {
+      "file": "S_WA_DMR_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.066857
+    },
+    {
+      "file": "S_WA_DMR_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.065753
+    },
+    {
+      "file": "S_WA_DMR_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.044106
+    },
+    {
+      "file": "S_WA_DMR_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.047885
+    },
+    {
+      "file": "S_WA_Shotgun_Shot_01.wav",
+      "duration": 0.402,
+      "peak_dbfs": -6.376,
+      "rms": 0.080298
+    },
+    {
+      "file": "S_WA_Shotgun_Shot_02.wav",
+      "duration": 0.402,
+      "peak_dbfs": -6.376,
+      "rms": 0.077692
+    },
+    {
+      "file": "S_WA_Shotgun_Shot_03.wav",
+      "duration": 0.402,
+      "peak_dbfs": -6.376,
+      "rms": 0.082502
+    },
+    {
+      "file": "S_WA_Shotgun_Mechanic.wav",
+      "duration": 0.075,
+      "peak_dbfs": -6.376,
+      "rms": 0.061537
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadStart.wav",
+      "duration": 0.13,
+      "peak_dbfs": -6.376,
+      "rms": 0.066537
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadMagazineOut.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.051068
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadMagazineIn.wav",
+      "duration": 0.2,
+      "peak_dbfs": -6.376,
+      "rms": 0.053981
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadBolt.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.047845
+    },
+    {
+      "file": "S_WA_Shotgun_ReloadEnd.wav",
+      "duration": 0.12,
+      "peak_dbfs": -6.376,
+      "rms": 0.064868
+    },
+    {
+      "file": "S_WA_Shotgun_DryFire.wav",
+      "duration": 0.065,
+      "peak_dbfs": -6.376,
+      "rms": 0.069685
+    },
+    {
+      "file": "S_WA_Shotgun_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.044323
+    },
+    {
+      "file": "S_WA_Shotgun_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.049476
+    },
+    {
+      "file": "S_WA_Knife_Draw.wav",
+      "duration": 0.26,
+      "peak_dbfs": -6.376,
+      "rms": 0.047678
+    },
+    {
+      "file": "S_WA_Knife_Holster.wav",
+      "duration": 0.22,
+      "peak_dbfs": -6.376,
+      "rms": 0.046183
+    },
+    {
+      "file": "S_WA_Knife_KnifeSwing.wav",
+      "duration": 0.27,
+      "peak_dbfs": -6.376,
+      "rms": 0.129888
+    },
+    {
+      "file": "S_WA_UI_PurchaseAccepted.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.139341
+    },
+    {
+      "file": "S_WA_UI_PurchaseRejected.wav",
+      "duration": 0.24,
+      "peak_dbfs": -6.376,
+      "rms": 0.141204
+    },
+    {
+      "file": "S_WA_UI_BuyPhaseStart.wav",
+      "duration": 0.36,
+      "peak_dbfs": -6.376,
+      "rms": 0.139559
+    },
+    {
+      "file": "S_WA_UI_RoundStart.wav",
+      "duration": 0.36,
+      "peak_dbfs": -6.376,
+      "rms": 0.139578
+    },
+    {
+      "file": "S_WA_RoomTail.wav",
+      "duration": 0.18,
+      "peak_dbfs": -6.376,
+      "rms": 0.066694
+    },
+    {
+      "file": "S_WA_EquipmentMove_01.wav",
+      "duration": 0.23,
+      "peak_dbfs": -6.376,
+      "rms": 0.073256
+    },
+    {
+      "file": "S_WA_EquipmentMove_02.wav",
+      "duration": 0.23,
+      "peak_dbfs": -6.376,
+      "rms": 0.073525
+    },
+    {
+      "file": "S_WA_EquipmentMove_03.wav",
+      "duration": 0.23,
+      "peak_dbfs": -6.376,
+      "rms": 0.070479
+    }
+  ]
+}

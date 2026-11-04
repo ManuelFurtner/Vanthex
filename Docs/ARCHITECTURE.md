@@ -1,3 +1,13 @@
+# Audio/menu addition — 2026-11-04
+
+`SVanthexSessionMenu` owns presentation and input focus for the Escape menu;
+the controller retains session travel and viewport lifecycle. Local audio
+preferences live in `UVanthexLocalSettings` (GameUserSettings config), never in
+replicated match state. Device master gain covers all audio; weapon/bullet/UI
+gains are applied in the existing cosmetic routers. Early shot reflections reuse
+the actual selected variant at low gain and filtered bandwidth. Source WAV refresh
+is explicit and limited to AUG/MP7. Validation limits: AUDIO_MENU_UPDATE.md.
+
 # Equipment addition — 2026-11-02
 
 `UVanthexEquipmentComponent` owns rifle/knife selection, the replicated server

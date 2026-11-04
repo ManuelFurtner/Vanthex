@@ -45,6 +45,8 @@ Ein Match beginnt mit **800 CR**, Standardpistole und Messer. Vor jeder 180-Seku
 
 ## Dokumentation und Prüfungen
 
+- [Audio und Menü: neue Bedienung, Einstellungen und Prüfstand](Docs/AUDIO_MENU_UPDATE.md)
+
 - [Wirtschaft, Rüstung und Waffen-Audio: Implementierung und offene Punkte](Docs/ECONOMY_IMPLEMENTATION.md)
 - [Waffen- und Wirtschaftsregeln](Docs/ECONOMY_AND_WEAPONS.md)
 - [Gadgetwirkungen und Ducken](Docs/GADGETS.md)

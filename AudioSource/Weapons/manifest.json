@@ -1,5 +1,5 @@
 {
-  "generator_version": 2,
+  "generator_version": 3,
   "source": "Original deterministic procedural synthesis; no sampled or downloaded recordings",
   "files": [
     {
@@ -292,26 +292,26 @@
     },
     {
       "file": "S_WA_MP7_Shot_01.wav",
-      "sha256": "7b8ac0d818b74bcc2078ae292a1eb0994f83307b7518e3025001e3c856a6ca2c",
+      "sha256": "6566337a08bdbee74721d3565970cc7a04b505cfbff0e23b7a71c110da0e2fb4",
       "channels": 1,
       "sample_rate": 48000,
-      "duration": 0.23879166666666668,
+      "duration": 0.19,
       "peak_dbfs": -6.375
     },
     {
       "file": "S_WA_MP7_Shot_02.wav",
-      "sha256": "1acb113c5260380af36e59755c80841d782f2c67d0ddef74ee0a7ab5874dc390",
+      "sha256": "81fb3d194dfd5389e9abba9967edc77012b8413f81507463a09fc9d13d0a26a3",
       "channels": 1,
       "sample_rate": 48000,
-      "duration": 0.23879166666666668,
+      "duration": 0.19,
       "peak_dbfs": -6.375
     },
     {
       "file": "S_WA_MP7_Shot_03.wav",
-      "sha256": "8d60cd34a0846b11caeecbd09e5d24eba972733df291feae8d0dcc7bea285637",
+      "sha256": "fc51c47b703a7808ebc85e65871fdcc246408525451587475eb5adf8b815c81d",
       "channels": 1,
       "sample_rate": 48000,
-      "duration": 0.23879166666666668,
+      "duration": 0.19,
       "peak_dbfs": -6.375
     },
     {
@@ -580,26 +580,26 @@
     },
     {
       "file": "S_WA_AUG_Shot_01.wav",
-      "sha256": "4ca4f4af28b21af798023ea3abf76bd67ed4d191adc7fdb9533b295b892d0850",
+      "sha256": "0a5d7ea4a70fa711b991d395e87a1f3904f0da434c654762d0ee207f4be8a4af",
       "channels": 1,
       "sample_rate": 48000,
-      "duration": 0.3155833333333333,
+      "duration": 0.31,
       "peak_dbfs": -6.375
     },
     {
       "file": "S_WA_AUG_Shot_02.wav",
-      "sha256": "51beab5457d0562b300d65e27136e7aaccbda3b0f322b41d07af969d23bc1226",
+      "sha256": "4172e5c4b34bacedbca26c92d63cb195718d80afe02ca2cebb3ef6b11e75b959",
       "channels": 1,
       "sample_rate": 48000,
-      "duration": 0.3155833333333333,
+      "duration": 0.31,
       "peak_dbfs": -6.375
     },
     {
       "file": "S_WA_AUG_Shot_03.wav",
-      "sha256": "781f84faa2c8e10bf7a0fc3df735a02499f1530b6045e0d508436559b5251411",
+      "sha256": "c810f0575173986e118408821c28406cfdd3b7681fa25f651838414c042c4a33",
       "channels": 1,
       "sample_rate": 48000,
-      "duration": 0.3155833333333333,
+      "duration": 0.31,
       "peak_dbfs": -6.375
     },
     {
