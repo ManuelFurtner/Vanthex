@@ -1,4 +1,5 @@
 #include "VanthexBotController.h"
+#include "VanthexFlag.h"
 #include "VanthexCharacter.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexGadgetComponent.h"
@@ -112,6 +113,7 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexEnergyTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexNetworkProbe")) || FParse::Param(FCommandLine::Get(),TEXT("VanthexMapTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexMapShots"))) return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("CTFTest")))return;
  if(!HasAuthority() || FParse::Param(FCommandLine::Get(),TEXT("VanthexSelfTest")) || FParse::Param(FCommandLine::Get(),TEXT("VanthexVisualShots"))) return;
  auto* BotCharacter=Cast<AVanthexCharacter>(GetPawn()); auto* Mode=GetWorld()->GetAuthGameMode<AVanthexGameMode>();
  if(!BotCharacter || !Mode || !BotCharacter->GetWeapon()) return;
@@ -123,12 +125,12 @@ void AVanthexBotController::Tick(float DeltaSeconds)
   if(Equipment->HasSlot(EVanthexWeaponSlot::Rifle)) Equipment->SelectRifle(); else Equipment->SelectPistol();
  }
  const float Now=GetWorld()->GetTimeSeconds();
- auto* Core=Mode->GetCore(); if(!Core)return;
+ auto* Core=Mode->GetCore(); if(!Core&&!Mode->IsCTF())return;
  const auto* State=BotCharacter->GetPlayerState<AVanthexPlayerState>();
  const bool Deposited=Mode->HasDepositedCore();
  const bool FriendlyDeposit=Deposited&&State&&Core->GetExtractionTeam()==State->GetTeam();
  AVanthexExtractionZone* DeliveryZone=nullptr; float DeliveryDistance=TNumericLimits<float>::Max();
- if(Core->GetCarrier()==BotCharacter)for(TActorIterator<AVanthexExtractionZone> It(GetWorld());It;++It) {
+ if(Core&&Core->GetCarrier()==BotCharacter)for(TActorIterator<AVanthexExtractionZone> It(GetWorld());It;++It) {
   const float Distance=FVector::DistSquared(BotCharacter->GetActorLocation(),It->GetActorLocation());
   if(Distance<DeliveryDistance){DeliveryDistance=Distance;DeliveryZone=*It;}
  }
@@ -180,6 +182,24 @@ void AVanthexBotController::Tick(float DeltaSeconds)
   MoveSafely(Travel,.45f);
   return;
  } else Weapon->StopFire();
+ if(Mode->IsCTF()) {
+  auto* Own=State?AVanthexFlag::Find(GetWorld(),State->GetTeam()):nullptr;
+  auto* EnemyFlag=State?AVanthexFlag::Find(GetWorld(),State->GetTeam()==EVanthexTeam::Alpha?EVanthexTeam::Bravo:EVanthexTeam::Alpha):nullptr;
+  if(!Own||!EnemyFlag)return;
+  FVector Goal=EnemyFlag->GetActorLocation();
+  if(EnemyFlag->GetCarrier()==BotCharacter) Goal=Own->IsHome()?Own->Base():Own->GetActorLocation();
+  else if(!Own->IsHome()&&State->GetSpawnSlot()%2==0)Goal=Own->GetActorLocation();
+  else if(EnemyFlag->GetCarrier())Goal=EnemyFlag->GetCarrier()->GetActorLocation()+FVector(250,0,0);
+  // Split the initial attack between left, centre and right lanes.
+  const float Lane=(State->GetSpawnSlot()%3-1)*1850.f;
+  if(!EnemyFlag->GetCarrier()&&Own->IsHome()&&FMath::Abs(BotCharacter->GetActorLocation().Y)>2700&&Lane!=0)
+   Goal=FVector(Lane,FMath::Sign(BotCharacter->GetActorLocation().Y)*2400,100);
+  Goal.Z=100;
+  if(Now>=NextRouteTime){PlanRoute(Goal);NextRouteTime=Now+1.f;}
+  while(Route.Num()&&FVector::Dist2D(BotCharacter->GetActorLocation(),Route[0])<80)Route.RemoveAt(0);
+  if(Route.Num()){const FVector D=(Route[0]-BotCharacter->GetActorLocation()).GetSafeNormal2D();TurnToward(BotCharacter->GetPawnViewLocation()+D*500,DeltaSeconds);MoveSafely(D,.8f);}
+  return;
+ }
  FVector Goal=Core->GetActorLocation();
  if(DeliveryZone) {
   Goal=DeliveryZone->GetActorLocation()+FVector(0,0,96);

@@ -42,6 +42,8 @@ protected:
  void BuildGridMap();
  void BuildFoundryMap();
  void BuildFoundryGameplay();
+ void BuildCTF();
+ void BuildCTFGameplay();
  void BuildGridV4();
  void BuildGridV4Gameplay();
  void ValidateGridV4();

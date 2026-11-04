@@ -89,6 +89,14 @@ public:
 	/** Transfers a departing human's live roster pawn/account before UE destroys it. */
 	bool HandOverPlayerSlot(AController* Exiting);
  void RestartTest();
+ bool IsCTF() const;
+ int32 TeamSize() const { return IsCTF()?5:3; }
+ void CaptureFlag(EVanthexTeam Team);
+ void TickCTF();
+ void RespawnCTF(AVanthexCharacter* Pawn);
+ friend void VanthexRunCTFTest(AVanthexGameMode*);
+ TMap<TWeakObjectPtr<AVanthexCharacter>,float> CTFRespawns;
+ bool bCTFOvertime=false;
 	void NotifyCombatantDied(AVanthexCharacter* Combatant);
 	bool HasDepositedCore() const;
 	// A friendly pickup retains an already deposited objective, but never creates one.

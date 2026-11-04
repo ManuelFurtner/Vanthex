@@ -1,6 +1,7 @@
 #include "SVanthexSessionMenu.h"
 #include "VanthexPlayerController.h"
 #include "VanthexLocalSettings.h"
+#include "Kismet/GameplayStatics.h"
 #include "VanthexCommunicationComponent.h"
 #include "VanthexPlayerState.h"
 #include "GameFramework/GameStateBase.h"
@@ -45,12 +46,12 @@ void SVanthexSessionMenu::Construct(const FArguments& Args)
 	const FString Map = Controller.IsValid() && VanthexMap::IsGridV4(Controller->GetWorld()) ? TEXT("AEGIS / GRID V4") : TEXT("VANTHEX FACILITY");
 	auto Navigation = SNew(SVerticalBox);
 	Navigation->AddSlot().AutoHeight().Padding(0,0,0,6)[Text(TEXT("V A N T H E X"),30,Cyan)];
-	Navigation->AddSlot().AutoHeight().Padding(0,0,0,34)[Text(TEXT("TACTICAL CORE OPERATIONS"),11,Muted)];
+	Navigation->AddSlot().AutoHeight().Padding(0,0,0,34)[Text(TEXT("TACTICAL TEAM OPERATIONS"),11,Muted)];
 	const TCHAR* Tabs[] = {TEXT("01   SPIELEN"),TEXT("02   EINSTELLUNGEN"),TEXT("03   STEUERUNG"),TEXT("04   FADENKREUZ")};
 	for (int32 I=0; I<4; ++I)
 		Navigation->AddSlot().AutoHeight().Padding(0,0,0,10)[Button(Tabs[I],[this,I](){ShowPage(I); return FReply::Handled();},false,I)];
 	Navigation->AddSlot().FillHeight(1)[SNew(SBox)];
-	Navigation->AddSlot().AutoHeight().Padding(0,24,0,10)[Text(TEXT("3 vs 3  /  CORE  /  TAKTIK"),12,Cyan)];
+	Navigation->AddSlot().AutoHeight().Padding(0,24,0,10)[Text(TEXT("CORE 3v3 / CAPTURE THE FLAG 5v5"),12,Cyan)];
 	Navigation->AddSlot().AutoHeight()[Text(TEXT("ESC  Zurueck ins Spiel\nDie laufende Runde geht weiter."),12,Muted)];
 	ChildSlot[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.003f,.007f,.01f,.96f)).Padding(20)
 	[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
@@ -81,8 +82,10 @@ TSharedRef<SWidget> SVanthexSessionMenu::PlayPage()
 {
 	return SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,6)[Text(TEXT("BEREIT FUER DIE NAECHSTE RUNDE?"),27)]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Text(TEXT("Sichere den Core. Decke dein Team. Kontrolliere die Anlage."),15,Muted)]
+	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Text(TEXT("Core 3v3 oder Capture the Flag 5v5. Waehle deinen Modus."),15,Muted)]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("WEITERSPIELEN"),[this](){Resume.ExecuteIfBound(); return FReply::Handled();},true)]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("CAPTURE THE FLAG / 5 GEGEN 5"),[this](){return RequestTravel(3);})]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("CORE / GRID V4 / 3 GEGEN 3"),[this](){return RequestTravel(4);})]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,22)[Button(TEXT("LAN-SITZUNG HOSTEN"),[this](){return RequestTravel(1);})]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)[Text(TEXT("DIREKT BEITRETEN"),12,Cyan)]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)[SAssignNew(AddressBox,SEditableTextBox)
@@ -185,7 +188,7 @@ FReply SVanthexSessionMenu::OnPreviewKeyDown(const FGeometry& Geometry,const FKe
 FReply SVanthexSessionMenu::RequestTravel(int32 Action)
 {
 	if(PendingAction!=Action) { PendingAction=Action; Feedback->SetText(FText::FromString(TEXT("Die aktuelle Sitzung wird verlassen. Zum Bestaetigen dieselbe Schaltflaeche erneut waehlen."))); return FReply::Handled(); }
-	if(auto* PC=Controller.Get()) { Resume.ExecuteIfBound(); if(Action==1) PC->HostGame(); else PC->LeaveGame(); }
+	if(auto* PC=Controller.Get()) { Resume.ExecuteIfBound(); if(Action==3||Action==4) UGameplayStatics::OpenLevel(PC,FName(Action==3?TEXT("/Game/Vanthex/Maps/CrossroadsCTF"):TEXT("/Game/Vanthex/Maps/GridV4"))); else if(Action==1) PC->HostGame(); else PC->LeaveGame(); }
 	return FReply::Handled();
 }
 

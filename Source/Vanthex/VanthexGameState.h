@@ -25,6 +25,8 @@ class AVanthexGameState : public AGameStateBase
 
 public:
 	virtual void BeginPlay() override;
+ void SetCTFOvertime(bool Value){if(HasAuthority())bCTFOvertime=Value;}
+ bool IsCTFOvertime()const{return bCTFOvertime;}
  void PublishElimination(const AVanthexPlayerState* Killer, const AVanthexPlayerState* Victim);
  const TArray<FVanthexElimination>& GetEliminations() const { return Eliminations; }
  void PublishRound(
@@ -52,6 +54,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+ UPROPERTY(Replicated) bool bCTFOvertime=false;
  UPROPERTY(Replicated) TArray<FVanthexElimination> Eliminations;
 	UPROPERTY(Replicated)
 	EVanthexRoundPhase Phase = EVanthexRoundPhase::Waiting;

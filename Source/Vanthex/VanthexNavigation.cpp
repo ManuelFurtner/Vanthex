@@ -239,7 +239,7 @@ bool FindGridV3Route(UWorld* World,const FVector& StartPosition,const FVector& G
 bool FindLegacyRoute(UWorld* World,const FVector& StartPosition,const FVector& Goal,TArray<FVector>& Route)
 {
  Route.Reset(); if(!World) return false;
- const FVector2D Bounds=VanthexMap::Extent()-FVector2D(200,200);
+ const FVector2D Bounds=VanthexMap::Extent(World)-FVector2D(200,200);
  constexpr float Step=200.f;
  const int32 Width=FMath::RoundToInt(Bounds.X*2/Step)+1,Height=FMath::RoundToInt(Bounds.Y*2/Step)+1;
  const int32 Count=Width*Height;

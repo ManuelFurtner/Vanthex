@@ -43,6 +43,7 @@ void AVanthexGameState::PublishCore(EVanthexCoreReadout NewReadout, float NewExt
 void AVanthexGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AVanthexGameState, bCTFOvertime);
 	DOREPLIFETIME(AVanthexGameState, Eliminations);
 	DOREPLIFETIME(AVanthexGameState, Phase);
 	DOREPLIFETIME(AVanthexGameState, AlphaScore);
