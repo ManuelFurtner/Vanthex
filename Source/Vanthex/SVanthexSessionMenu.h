@@ -32,6 +32,8 @@ private:
 	TSharedRef<SWidget> PlayPage();
 	TSharedRef<SWidget> SettingsPage();
 	TSharedRef<SWidget> ControlsPage();
+ TSharedRef<SWidget> CrosshairPage();
+ TSharedRef<SWidget> CrosshairRow(const FString& Label,float* Value,float Min,float Max,float Fallback);
 	TSharedRef<SWidget> Button(const FString& Label, TFunction<FReply()> Action, bool Primary=false, int32 Tab=-1);
 	TSharedRef<SWidget> VolumeRow(const FString& Label, float* Value);
 	void ShowPage(int32 Page);
