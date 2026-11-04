@@ -1,5 +1,6 @@
 #include "VanthexShiftDevice.h"
 #include "VanthexCharacter.h"
+#include "VanthexGadgetComponent.h"
 #include "HealthComponent.h"
 #include "VanthexGameMode.h"
 #include "Components/StaticMeshComponent.h"
@@ -9,6 +10,7 @@
 #include "EngineUtils.h"
 #include "Engine/PointLight.h"
 #include "VanthexArt.h"
+#include "GameFramework/GameStateBase.h"
 AVanthexShiftDevice::AVanthexShiftDevice()
 {
  bReplicates = true; bAlwaysRelevant = true; SetReplicateMovement(true);
@@ -50,6 +52,7 @@ void AVanthexShiftDevice::BeginPlay() {
 void AVanthexShiftDevice::OnRep_Kind() { Configure(Kind); }
 bool AVanthexShiftDevice::Activate(AVanthexCharacter* User, float Range)
 {
+ if(IsEMPDisabled()||(User&&User->GetGadgets()&&User->GetGadgets()->IsJammed()))return false;
  auto* Mode=GetWorld()->GetAuthGameMode<AVanthexGameMode>();
  if (!HasAuthority() || !User || User->GetHealthComponent()->IsDead() || !Mode || !Mode->IsRoundActive() || GetWorld()->GetTimeSeconds()-LastUse<0.75f || FVector::Dist(User->GetActorLocation(),InteractionPoint(User->GetActorLocation()))>Range || (!bPowered && Kind!=3)) return false;
  FHitResult Hit; FCollisionQueryParams Params(SCENE_QUERY_STAT(ShiftUse),false,User); Params.AddIgnoredActor(this);
@@ -61,10 +64,16 @@ bool AVanthexShiftDevice::Activate(AVanthexCharacter* User, float Range)
  }
  bActive=!bActive; LastUse=GetWorld()->GetTimeSeconds(); ForceNetUpdate(); return true;
 }
-void AVanthexShiftDevice::ResetDevice() { if (HasAuthority()) { bActive=false; bPowered=true; Hacker.Reset(); HackProgress=0; SetActorLocation(Home); LastUse=-10; ForceNetUpdate(); } }
+void AVanthexShiftDevice::ResetDevice() { if (HasAuthority()) { EMPEndTime=0; bActive=false; bPowered=true; Hacker.Reset(); HackProgress=0; SetActorLocation(Home); LastUse=-10; ForceNetUpdate(); } }
 void AVanthexShiftDevice::Tick(float DeltaSeconds)
 {
  Super::Tick(DeltaSeconds);
+ if(IsEMPDisabled()) {
+  Light->SetVisibility(false);
+  if(HasAuthority()){Hacker.Reset();HackProgress=0;}
+  if(Kind==3){const FName Tag(*FString::Printf(TEXT("Circuit%d"),Circuit));for(TActorIterator<APointLight> It(GetWorld());It;++It)if(It->Tags.Contains(Tag))It->GetLightComponent()->SetVisibility(false);}
+  return;
+ }
  Light->SetVisibility(Kind==1 ? bPowered && !bActive : true);
  Light->SetLightColor(!bPowered ? FLinearColor::Red : HackProgress>0 ? FLinearColor::Yellow : bActive ? FLinearColor::Green : FLinearColor(0.2f,0.5f,1));
  if(Kind==3) {
@@ -73,7 +82,7 @@ void AVanthexShiftDevice::Tick(float DeltaSeconds)
   if(HasAuthority() && Hacker.IsValid()) {
    auto* User=Hacker.Get(); auto* Mode=GetWorld()->GetAuthGameMode<AVanthexGameMode>();
    FHitResult Hit; FCollisionQueryParams Params; Params.AddIgnoredActor(User); Params.AddIgnoredActor(this);
-   if(!Mode || !Mode->IsRoundActive() || User->GetHealthComponent()->IsDead() || User->GetHealthComponent()->GetHealth()<HackHealth || FVector::Dist(User->GetActorLocation(),GetActorLocation())>HackRange || GetWorld()->LineTraceSingleByChannel(Hit,User->GetPawnViewLocation(),GetActorLocation(),ECC_Visibility,Params)) { Hacker.Reset(); HackProgress=0; }
+   if(!Mode || !Mode->IsRoundActive() || User->GetHealthComponent()->IsDead() || (User->GetGadgets()&&User->GetGadgets()->IsJammed()) || User->GetHealthComponent()->GetHealth()<HackHealth || FVector::Dist(User->GetActorLocation(),GetActorLocation())>HackRange || GetWorld()->LineTraceSingleByChannel(Hit,User->GetPawnViewLocation(),GetActorLocation(),ECC_Visibility,Params)) { Hacker.Reset(); HackProgress=0; }
    else { HackProgress+=DeltaSeconds/4.f; if(HackProgress>=1.f) { SetCircuitPower(!bPowered); Hacker.Reset(); HackProgress=0; LastUse=GetWorld()->GetTimeSeconds(); } }
   } else if(HasAuthority()) HackProgress=0;
  }
@@ -86,5 +95,18 @@ void AVanthexShiftDevice::Tick(float DeltaSeconds)
   SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(),Target,DeltaSeconds,120.f),true);
  }
 }
-void AVanthexShiftDevice::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const { Super::GetLifetimeReplicatedProps(OutLifetimeProps); DOREPLIFETIME(AVanthexShiftDevice,Kind); DOREPLIFETIME(AVanthexShiftDevice,bActive); DOREPLIFETIME(AVanthexShiftDevice,DoorWidth); DOREPLIFETIME(AVanthexShiftDevice,LiftTravel); DOREPLIFETIME(AVanthexShiftDevice,Circuit); DOREPLIFETIME(AVanthexShiftDevice,bPowered); DOREPLIFETIME(AVanthexShiftDevice,HackProgress); DOREPLIFETIME(AVanthexShiftDevice,Home); }
+void AVanthexShiftDevice::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const { Super::GetLifetimeReplicatedProps(OutLifetimeProps); DOREPLIFETIME(AVanthexShiftDevice,EMPEndTime); DOREPLIFETIME(AVanthexShiftDevice,Kind); DOREPLIFETIME(AVanthexShiftDevice,bActive); DOREPLIFETIME(AVanthexShiftDevice,DoorWidth); DOREPLIFETIME(AVanthexShiftDevice,LiftTravel); DOREPLIFETIME(AVanthexShiftDevice,Circuit); DOREPLIFETIME(AVanthexShiftDevice,bPowered); DOREPLIFETIME(AVanthexShiftDevice,HackProgress); DOREPLIFETIME(AVanthexShiftDevice,Home); }
 
+
+bool AVanthexShiftDevice::IsEMPDisabled()const
+{
+ const auto* GS=GetWorld()?GetWorld()->GetGameState():nullptr;
+ const float Now=GS?GS->GetServerWorldTimeSeconds():(GetWorld()?GetWorld()->GetTimeSeconds():0.f);
+ return EMPEndTime>Now;
+}
+void AVanthexShiftDevice::ApplyEMP(float Duration)
+{
+ if(!HasAuthority()||!FMath::IsFinite(Duration)||Duration<=0)return;
+ EMPEndTime=FMath::Max(EMPEndTime,GetWorld()->GetTimeSeconds()+Duration);
+ Hacker.Reset();HackProgress=0;ForceNetUpdate();
+}

@@ -18,6 +18,7 @@ private:
  float NextRouteTime = 0.f;
  float TargetVisibleSince = 0.f;
  float NextCombatShot = 0.f;
+ float NextGadgetUse=0.f;
  TWeakObjectPtr<APawn> CombatTarget;
  void PlanRoute(const FVector& Goal);
 };

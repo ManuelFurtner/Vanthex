@@ -1,0 +1,36 @@
+OVERALL PASS
+CHECKS 32
+FAILURES 0
+ELAPSED 4.96
+PASS fixture starts in genuine purchase phase
+PASS normal activation enables real Core interactions
+PASS real collision graph supplies flat clear 1100-1250 cm lane with >=900 cm extraction progress
+PASS real TryPickup attaches Core before case
+PASS real Throw starts an eligible flight
+PASS world-ticked flight is caught by teammate
+PASS genuine qualifying catch pays exactly 50 to thrower
+PASS subsequent world ticks cannot pay the catch twice
+PASS real TryPickup attaches Core before case
+PASS thrower can physically catch own returning Core
+PASS own catch does not pay
+PASS real TryPickup attaches Core before case
+PASS manual Drop is ineligible immediately
+PASS manual drop does not become an automatic rewarding catch
+PASS teammate physically picks settled drop from floor
+PASS floor pickup pays no pass bonus
+PASS real TryPickup attaches Core before case
+PASS actual death releases an ineligible Core
+PASS teammate catches actual death drop during world ticks
+PASS death drop catch pays no bonus
+PASS real TryPickup attaches Core before case
+PASS teleport case starts from eligible real throw
+PASS 10 cm external teleport invalidates reward on next real flight ticks
+PASS teleported flight can still be caught for gameplay
+PASS teleported flight pays no intercept
+PASS real TryPickup attaches Core before case
+PASS reset during flight immediately invalidates reward
+PASS reset flight cannot later catch or pay
+PASS real TryPickup attaches Core before case
+PASS opponent catches real untampered throw
+PASS real intercept pays exactly 100 without a pass reward
+PASS intercept remains single payment on subsequent ticks

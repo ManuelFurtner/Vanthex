@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "source": "Original deterministic synthesis, no third-party recordings",
+  "files": [
+    {
+      "event": "Throw",
+      "file": "S_GD_Throw.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.18,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "cb8073e27e4fe0eb93deed35ce6acec3453fef84ba40af6be21edff5860a6fe7"
+    },
+    {
+      "event": "FlightLoop",
+      "file": "S_GD_FlightLoop.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.6,
+      "peak_dbfs": -6.375175252488256,
+      "loop": true,
+      "sha256": "41fe1db018ce56a5cbe50c6adb6a255fd7622f6929100e44a3262f00bd87eb8f"
+    },
+    {
+      "event": "Bounce01",
+      "file": "S_GD_Bounce01.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.13,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "9fd04dba1a613c3bd51b5f1ad5a08dc33735044d9676b0ad3c171584b46baf8e"
+    },
+    {
+      "event": "Bounce02",
+      "file": "S_GD_Bounce02.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.14,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "c4bafd24d94a2c80c703b331e2829e1e856873f3a78bf0b31f049df3c26e4313"
+    },
+    {
+      "event": "Bounce03",
+      "file": "S_GD_Bounce03.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.12,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "1304ad096fc04c1f7fb8d0461d17a574607f98140574ed2a976fc570134d9eb9"
+    },
+    {
+      "event": "Flash",
+      "file": "S_GD_Flash.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.48,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "6a38a0f5a5e20c75def3eea0f92a4187626c6676b0ef4d57e6fa52d39dd8c127"
+    },
+    {
+      "event": "SmokeStart",
+      "file": "S_GD_SmokeStart.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.3,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "447a89bcd698543d56487d36636d739a150fcdf2f952d535a3d86f4beb79a99a"
+    },
+    {
+      "event": "SmokeLoop",
+      "file": "S_GD_SmokeLoop.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 1.2,
+      "peak_dbfs": -6.375175252488256,
+      "loop": true,
+      "sha256": "4d1c59a3f7b3ab68f926ed21bd031c122ff197b4bd504189e5ef9289600a7480"
+    },
+    {
+      "event": "SmokeEnd",
+      "file": "S_GD_SmokeEnd.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.24,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "cac2145538dfed95ebd00acfff6d8528da0366bdcae607e9e37a182116156021"
+    },
+    {
+      "event": "Frag",
+      "file": "S_GD_Frag.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 1.1,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "309180d764ae44e664f7daf52d3d5e81d4ff487007416216567ac75bf2da1634"
+    },
+    {
+      "event": "EMP",
+      "file": "S_GD_EMP.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.85,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "a45fd1f073195aa1182ca3e105d0c6401c28d5cdf08152d16905c2926fb3ede9"
+    },
+    {
+      "event": "EMPHumLoop",
+      "file": "S_GD_EMPHumLoop.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.8,
+      "peak_dbfs": -6.375175252488256,
+      "loop": true,
+      "sha256": "0b9cb63eb4dcaa64b0f60f77f9df026c1f9bb80969821c5665f6fabf75ba0bd7"
+    },
+    {
+      "event": "SensorStart",
+      "file": "S_GD_SensorStart.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.32,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "76f3655ee93cd007066b3393277d6d6704469d311a64c11e4572a96d238bbe68"
+    },
+    {
+      "event": "SensorPing",
+      "file": "S_GD_SensorPing.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.18,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "354ce590d5040f7fdb9c8749e38f48b61409cfe24ef35c0f48b58d7b05320c2c"
+    },
+    {
+      "event": "SensorEnd",
+      "file": "S_GD_SensorEnd.wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "duration": 0.2,
+      "peak_dbfs": -6.375175252488256,
+      "loop": false,
+      "sha256": "e8e6c5e3ad1166c58518c455fd31b293bd6583fc89db869da031910c924e5612"
+    }
+  ]
+}

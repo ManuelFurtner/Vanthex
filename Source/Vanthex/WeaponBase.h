@@ -35,6 +35,8 @@ public:
  void SetReserveAmmo(int32 NewAmmo);
  bool EquipProfile(FName Id, int32 Magazine = -1, int32 Reserve = -1);
  void HolsterForKnife();
+ /** Public visible reload clock; magazine and reserve stay owner-only. */
+ float GetReloadProgress() const;
 
 	/** Single magazine write. Fire, reload, and the M1 self-test all go through this. */
 	void SetMagazineAmmo(int32 NewAmmo);
@@ -54,6 +56,7 @@ protected:
 	TObjectPtr<USceneComponent> WeaponRoot;
  UPROPERTY(ReplicatedUsing=OnRep_ActiveWeaponId) FName ActiveWeaponId = TEXT("Pistol");
  UPROPERTY(Replicated) int32 ReserveAmmo = 48;
+ UPROPERTY(Replicated) float ReloadStartTime = -1.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	int32 MagazineSize = 30;

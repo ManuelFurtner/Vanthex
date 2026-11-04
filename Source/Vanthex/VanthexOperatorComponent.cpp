@@ -3,6 +3,7 @@
 #include "VanthexCharacter.h"
 #include "HitscanWeapon.h"
 #include "VanthexWeaponProfile.h"
+#include "VanthexWeaponPresentation.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexArt.h"
 #include "HealthComponent.h"
@@ -129,6 +130,7 @@ void UVanthexOperatorComponent::TickComponent(float DeltaTime,ELevelTick TickTyp
   WorldFirearmRoot->SetRelativeTransform(UVanthexOperatorAnimInstance::GetRifleTransform(Animation->GetAimPitch(),Animation->GetCrouchAlpha(),Presentation.Lower));
  WorldFirearmRoot->SetVisibility(ShowRifle,true);
  for(const auto& Part:WorldFirearmParts) if(Part) Part->SetCastHiddenShadow(ShowRifle);
+ if(const auto* Weapon=Character->GetWeapon()) VanthexWeaponPresentation::Animate(WorldFirearmParts,Weapon->GetWeaponId(),Weapon->GetReloadProgress(),FMath::Clamp(MuzzleSeconds/.06f,0.f,1.f));
  MuzzleSeconds=FMath::Max(0.f,MuzzleSeconds-DeltaTime);
  if(WorldMuzzle) WorldMuzzle->SetVisibility(ShowRifle&&MuzzleSeconds>0);
 }

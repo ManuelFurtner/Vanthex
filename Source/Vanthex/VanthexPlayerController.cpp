@@ -29,6 +29,12 @@ void AVanthexPlayerController::BeginPlay()
 		extern void VanthexStartEconomyNetworkTest(AVanthexPlayerController* PC);
 		VanthexStartEconomyNetworkTest(this);
 	}
+ if(FParse::Param(FCommandLine::Get(),TEXT("GadgetNetworkTest"))) {
+  extern void VanthexStartGadgetNetworkTest(AVanthexPlayerController* PC);VanthexStartGadgetNetworkTest(this);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("AimNetworkTest"))) {
+  extern void VanthexStartAimNetworkTest(AVanthexPlayerController* PC);VanthexStartAimNetworkTest(this);
+ }
 	if(FParse::Param(FCommandLine::Get(),TEXT("EquipmentNetworkTest"))) {
 		extern void VanthexStartEquipmentNetworkTest(AVanthexPlayerController* PC);
 		VanthexStartEquipmentNetworkTest(this);
@@ -140,7 +146,7 @@ void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
   if(auto* RemoteCharacter=Cast<AVanthexCharacter>(GetPawn())) { FVanthexDamageRequest Damage; Damage.Damage=40; RemoteCharacter->GetHealthComponent()->ApplyDamage(Damage); bProbeDamaged=true; }
  }
 
- if (IsLocalController() && !FParse::Param(FCommandLine::Get(),TEXT("OperatorShots"))) {
+ if (IsLocalController() && !FParse::Param(FCommandLine::Get(),TEXT("OperatorShots")) && !FParse::Param(FCommandLine::Get(),TEXT("WeaponModelShots")) && !FParse::Param(FCommandLine::Get(),TEXT("GadgetShots"))) {
   auto* OwnCharacter=Cast<AVanthexCharacter>(GetPawn());
   if (OwnCharacter && OwnCharacter->GetHealthComponent()->IsDead()) {
    if (APawn* Spectated = BulletAudio->GetListenerPawn()) { if(GetViewTarget()!=Spectated) SetViewTargetWithBlend(Spectated,0.3f); }

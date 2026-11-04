@@ -41,7 +41,7 @@ void UHealthComponent::ApplyDamage(const FVanthexDamageRequest& Request)
 
 	AVanthexCharacter* Character = Cast<AVanthexCharacter>(GetOwner());
 	float HPDamage = Request.Damage;
-	if (Character && Request.DamageKind == EVanthexDamageKind::Bullet)
+	if (Character && (Request.DamageKind == EVanthexDamageKind::Bullet || Request.DamageKind == EVanthexDamageKind::Explosion))
 	{
 		if (auto* State = Character->GetPlayerState<AVanthexPlayerState>())
 			HPDamage = State->ApplyArmorDamage(Request.Damage, Request.bHeadshot, false);

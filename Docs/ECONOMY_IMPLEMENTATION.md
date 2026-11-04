@@ -43,8 +43,9 @@ dem Wurf die Bonusberechtigung. Dynamische Türblockaden werden bei der für Cre
 verwendeten Routenlänge berücksichtigt.
 
 Leichte Rüstung hat 40 Punkte und 25 % Absorption, schwere 80 Punkte und 40 %.
-Nur explizit als Projektil markierte Körpertreffer verbrauchen Rüstung. Kopf,
-Messer und Umgebungsschaden umgehen sie. Bruchteile bleiben in der Rechnung erhalten.
+Explizit als Projektil markierte Körpertreffer und seit dem Gadget-Update vom
+4. November auch Frag-Explosionen verbrauchen Rüstung. Kopf, Messer und
+Umgebungsschaden umgehen sie. Bruchteile bleiben in der Rechnung erhalten.
 Vollständige Rüstung desselben Typs kann nicht erneut berechnet werden; beschädigte
 Rüstung wird zum vollen Preis ersetzt. Leicht → schwer kostet den vollen Preis,
 schwer → leicht wird abgelehnt.
@@ -59,15 +60,28 @@ und MP7 bleiben die ersten drei Prioritäten für weitere Ausarbeitung und Playt
 Die Werte sind Startparameter; daraus folgt keine nachgewiesene Waffenbalance.
 
 Die vorhandene ARC-Handführung und der Waffenwechsel verwenden die tatsächlichen
-Equipment-Zustände. Waffenformen sind weiterhin Prototypdarstellungen. Separate
-Ego-Arme, ausgearbeitete Nachladeanimationen, endgültige Waffenmodelle und weitere
-Operatoren bleiben offen.
+Equipment-Zustände. Zehn eigenständig erzeugte detaillierte Waffenmodelle mit
+Magazin-/Verschlussteilen ersetzen die früheren Platzhalter; lokal ergänzen
+Fab-Modelle M4, AK und Messer. Separate Ego-Arme, ausgearbeitete Hand-/Nachladeanimationen
+und weitere Operatoren bleiben offen. Details und Nachweise stehen unter
+[Waffenmodelle und Zielen](WEAPON_MODELS_AND_AIM.md).
 
-**Flash, Smoke, Frag, EMP und Sensor haben Preise und kaufbare Inventarplätze;
-ihre Anwendung und Wirkung fehlen.** Zwei Plätze sind erlaubt, auch zweimal
-derselbe Typ. Es gibt keine behauptete Blendwirkung, Rauchsimulation, Explosion,
-EMP-Störung oder Sensorerkennung. Kostenlose Operatorfähigkeiten belegen diese
-Plätze nicht. Die Wirkungsprofile müssen vor ihrer Implementierung festgelegt werden.
+**Ergänzung vom 4. November:** Flash, Smoke, Frag, EMP und Sensor besitzen nun
+serverseitige Wurf- und Wirkungsimplementierungen. **4/5** verwenden die beiden
+Inventarplätze; gleiche Typen sind erlaubt. Kostenlose Operatorfähigkeiten
+belegen diese Plätze nicht. Die Parameter, Autoritätsregeln und neuen Prüfungen
+stehen unter [Gadget-Regeln und Prüfungen](GADGETS.md). Sechs Gadget-Automationgruppen,
+58 Weltprüfungen und beide Rollen des Host-/Client-Tests sind dort separat belegt.
+Die historischen Economy-Nachweise unten bleiben Nachweise ihres ursprünglichen
+Prüfumfangs; die neuen technischen Tests ersetzen keine visuelle Abnahme.
+
+Mit dem abschließenden Build vom 4. November wurden außerdem sämtliche
+**24 Automationgruppen** erfolgreich ausgeführt. Die erneuten Weltläufe melden
+**45 Economy-, 32 Core- und 24 Waffenprüfungen ohne Fehler**. Diese frischen
+Regressionsnachweise liegen unter
+[Validation/GadgetsWeaponsAim](Validation/GadgetsWeaponsAim); die
+[Gesamt-Automation](Validation/GadgetsWeaponsAim/FullAutomation.json) umfasst
+auch die neuen Gadget-, Modell- und Zielprüfungen.
 
 ## Waffen-Audio
 

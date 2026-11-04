@@ -97,6 +97,11 @@ public:
 	friend void VanthexRunEconomyIntegrationTest(AVanthexGameMode* Mode);
 	friend void VanthexRunWeaponProfileTest(AVanthexGameMode* Mode);
 	friend void VanthexRunCoreEconomyTest(AVanthexGameMode* Mode);
+ friend void VanthexRunGadgetTest(AVanthexGameMode* Mode);
+ friend void VanthexRunWeaponModelShots(AVanthexGameMode* Mode);
+ friend void VanthexRunGadgetShots(AVanthexGameMode* Mode);
+ friend void VanthexRunAimTest(AVanthexGameMode* Mode);
+ friend void VanthexRunAimShots(AVanthexGameMode* Mode);
 	friend void VanthexRunEconomyShots(AVanthexGameMode* Mode);
 	bool CanDamage(const AActor* InstigatorActor, const AActor* TargetActor) const;
 	AVanthexCore* GetCore() const { return Core; }

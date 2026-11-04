@@ -16,6 +16,7 @@ class AHitscanWeapon;
 class AVanthexCore;
 class UVanthexOperatorComponent;
 class UVanthexEquipmentComponent;
+class UVanthexGadgetComponent;
 
 UCLASS()
 class AVanthexCharacter : public ACharacter
@@ -33,6 +34,14 @@ public:
  void DoMove(float Right, float Forward);
 	void DoAim(float Yaw, float Pitch);
 	void SetSprinting(bool bNewSprinting);
+ /** Owner request; gameplay ADS is accepted and replicated by the server. */
+ void SetAiming(bool bRequested);
+ bool CanAim() const;
+ bool IsAiming() const;
+ bool IsAuthoritativelyAiming() const { return bAiming && CanAim(); }
+ float GetAimBlend() const { return AimBlend; }
+ UFUNCTION(Server, Reliable) void ServerSetAiming(bool bRequested,uint16 RequestId);
+ UFUNCTION(Client, Reliable) void ClientConfirmAiming(bool bAccepted,uint16 RequestId);
 	void SetCrouching(bool bNewCrouching);
 	void SetHoldForward(bool bHold);
 	void RequestRestart();
@@ -54,6 +63,10 @@ public:
 	UHealthComponent* GetHealthComponent() const { return Health; }
 	AHitscanWeapon* GetWeapon() const { return Weapon; }
 	UVanthexEquipmentComponent* GetEquipment() const { return Equipment; }
+ UVanthexGadgetComponent* GetGadgets() const { return Gadgets; }
+ virtual FVector GetPawnViewLocation() const override;
+ virtual void OnStartCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust) override;
+ virtual void OnEndCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust) override;
 	UCameraComponent* GetFirstPersonCamera() const { return FirstPersonCamera; }
 	bool CanUseRifle() const;
 	bool IsSprintWanted() const { return bSprintWanted; }
@@ -63,6 +76,10 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaSeconds) override;
  void TickEquipmentMovementAudio(float DeltaSeconds);
+ void TickAiming(float DeltaSeconds);
+ void RefreshMovementSpeed();
+ void StartAimingInput();
+ void StopAimingInput();
 
 	void MoveInput(const FInputActionValue& Value);
 	void LookInput(const FInputActionValue& Value);
@@ -78,6 +95,8 @@ protected:
 	void SelectRifle();
  void SelectPistol();
 	void SelectKnife();
+ void UseGadgetOne();
+ void UseGadgetTwo();
 	void HandleDeath(AActor* DeadActor);
 	void BuildInput();
 
@@ -89,6 +108,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Equipment")
 	TObjectPtr<UVanthexEquipmentComponent> Equipment;
+ UPROPERTY(VisibleAnywhere,Category="Gadgets") TObjectPtr<UVanthexGadgetComponent> Gadgets;
 
 	UPROPERTY(VisibleAnywhere, Category = "Presentation")
 	TObjectPtr<UStaticMeshComponent> BodyMesh;
@@ -125,6 +145,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UInputAction> FireAction;
+ UPROPERTY() TObjectPtr<UInputAction> AimAction;
 
 	UPROPERTY()
 	TObjectPtr<UInputAction> ReloadAction;
@@ -151,6 +172,11 @@ protected:
 	float LookSensitivity = 1.f;
 
 	bool bSprintWanted = false;
+ UPROPERTY(Replicated) bool bAiming=false;
+ bool bPredictedAiming=false,bAimInputHeld=false,bAimCameraManaged=false;
+ float AimBlend=0.f,HipFieldOfView=90.f;
+ uint16 AimRequestId=0,LastServerAimRequestId=0;
+ FName AimedWeaponId;
 	bool bHoldForward = false;
  EVanthexTeam CachedTeam = EVanthexTeam::None;
  FVanthexEquipmentStepClock EquipmentStepClock;

@@ -1,4 +1,6 @@
 #include "VanthexGameMode.h"
+#include "VanthexGadgetActor.h"
+#include "VanthexGadgetComponent.h"
 
 #include "Vanthex.h"
 #include "VanthexBotController.h"
@@ -167,6 +169,21 @@ void AVanthexGameMode::BeginPlay()
 	Super::BeginPlay();
  if(FParse::Param(FCommandLine::Get(),TEXT("WeaponProfileTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunWeaponProfileTest(AVanthexGameMode*); VanthexRunWeaponProfileTest(this); }),.05f,true,2.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("GadgetTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunGadgetTest(AVanthexGameMode*); VanthexRunGadgetTest(this); }),.05f,true,2.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("WeaponModelShots"))) {
+  GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunWeaponModelShots(AVanthexGameMode*); VanthexRunWeaponModelShots(this); }),.1f,true,2.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("GadgetShots"))) {
+  GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunGadgetShots(AVanthexGameMode*); VanthexRunGadgetShots(this); }),.05f,true,1.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("AimTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunAimTest(AVanthexGameMode*); VanthexRunAimTest(this); }),.05f,true,2.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("AimShots"))) {
+  GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunAimShots(AVanthexGameMode*); VanthexRunAimShots(this); }),.05f,true,2.f);
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("EconomyShots"))) {
   GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunEconomyShots(AVanthexGameMode*); VanthexRunEconomyShots(this); }),.1f,true,1.f);
@@ -628,6 +645,7 @@ void AVanthexGameMode::EndRound(EVanthexTeam Winner)
 
 	RoundWinner = Winner;
 	SettleRoundEconomy(Winner, Core && Core->GetCoreState() == EVanthexCoreState::Extracted);
+ for(AVanthexCharacter* Combatant:Combatants)if(Combatant&&Combatant->GetGadgets())Combatant->GetGadgets()->ResetForRound();
 	for (AVanthexCharacter* Combatant : Combatants) if (Combatant && Combatant->GetWeapon()) { Combatant->GetWeapon()->StopFire(); Combatant->GetWeapon()->CancelReload(); }
 	if (Winner == EVanthexTeam::Alpha)
 	{
@@ -689,6 +707,7 @@ void AVanthexGameMode::EnterMatchEnded()
 
 void AVanthexGameMode::ResetCombatants()
 {
+ AVanthexGadgetActor::ResetAll(GetWorld());
 	if (Arena)
 	{
 		Arena->ResetRoundState();

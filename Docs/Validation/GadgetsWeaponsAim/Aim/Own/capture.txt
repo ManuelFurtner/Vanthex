@@ -1,0 +1,19 @@
+PASS 9 fresh own-pawn hip, iron, reflex and scope views
+M4 ownPawn=1 ads=0 alpha=0.000 fov=90.00
+M4 ownPawn=1 ads=1 alpha=1.000 fov=64.00
+MP7 ownPawn=1 ads=1 alpha=1.000 fov=64.00
+Pistol ownPawn=1 ads=1 alpha=1.000 fov=72.00
+MP5 ownPawn=1 ads=1 alpha=1.000 fov=72.00
+AK ownPawn=1 ads=1 alpha=1.000 fov=72.00
+Shotgun ownPawn=1 ads=1 alpha=1.000 fov=72.00
+AUG ownPawn=1 ads=1 alpha=1.000 fov=45.00
+DMR ownPawn=1 ads=1 alpha=1.000 fov=28.00
+../../../../../Vanthex/Saved/AimShots/01_M4_hip.png
+../../../../../Vanthex/Saved/AimShots/02_M4_sight.png
+../../../../../Vanthex/Saved/AimShots/03_MP7_sight.png
+../../../../../Vanthex/Saved/AimShots/04_Pistol_sight.png
+../../../../../Vanthex/Saved/AimShots/05_MP5_sight.png
+../../../../../Vanthex/Saved/AimShots/06_AK_sight.png
+../../../../../Vanthex/Saved/AimShots/07_Shotgun_sight.png
+../../../../../Vanthex/Saved/AimShots/08_AUG_sight.png
+../../../../../Vanthex/Saved/AimShots/09_DMR_sight.png

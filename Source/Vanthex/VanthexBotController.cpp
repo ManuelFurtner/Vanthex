@@ -1,6 +1,8 @@
 #include "VanthexBotController.h"
 #include "VanthexCharacter.h"
 #include "VanthexEquipmentComponent.h"
+#include "VanthexGadgetComponent.h"
+#include "VanthexGadgetActor.h"
 #include "VanthexPlayerState.h"
 #include "VanthexGameMode.h"
 #include "VanthexCore.h"
@@ -24,6 +26,8 @@ void AVanthexBotController::PlanRoute(const FVector& Goal)
 void AVanthexBotController::Tick(float DeltaSeconds)
 {
  Super::Tick(DeltaSeconds);
+ if(FParse::Param(FCommandLine::Get(),TEXT("AimTest"))||FParse::Param(FCommandLine::Get(),TEXT("AimShots"))||FParse::Param(FCommandLine::Get(),TEXT("AimNetworkTest")))return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("GadgetTest"))||FParse::Param(FCommandLine::Get(),TEXT("GadgetNetworkTest"))||FParse::Param(FCommandLine::Get(),TEXT("GadgetShots"))||FParse::Param(FCommandLine::Get(),TEXT("WeaponModelShots")))return;
  if(FParse::Param(FCommandLine::Get(),TEXT("EconomyShots")) || FParse::Param(FCommandLine::Get(),TEXT("WeaponProfileTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("CoreEconomyTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("EconomyTest")) || FParse::Param(FCommandLine::Get(),TEXT("EconomyNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("WeaponAudioPlaybackTest"))) return;
@@ -37,6 +41,7 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  if(!BotCharacter || !Mode || !BotCharacter->GetWeapon()) return;
  auto* Weapon=BotCharacter->GetWeapon();
  if(BotCharacter->GetHealthComponent()->IsDead() || !Mode->IsRoundActive()) { Weapon->StopFire(); Route.Reset(); return; }
+ if(BotCharacter->GetGadgets()->IsBlinded()){Weapon->StopFire();CombatTarget.Reset();TargetVisibleSince=GetWorld()->GetTimeSeconds();return;}
  // A departing human can leave this pawn holding a knife. Bots use rifle combat.
  if(auto* Equipment=BotCharacter->GetEquipment(); Equipment && Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife) {
   if(Equipment->HasSlot(EVanthexWeaponSlot::Rifle)) Equipment->SelectRifle(); else Equipment->SelectPistol();
@@ -46,12 +51,22 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) {
   if(*It==BotCharacter || It->GetHealthComponent()->IsDead() || !Mode->CanDamage(BotCharacter,*It)) continue;
   float Distance=FVector::Dist(BotCharacter->GetActorLocation(),It->GetActorLocation()); if(Distance>=Best) continue;
+  if(AVanthexGadgetActor::SmokeBlocks(GetWorld(),BotCharacter->GetPawnViewLocation(),It->GetActorLocation()))continue;
   FHitResult Hit; FCollisionQueryParams Params(SCENE_QUERY_STAT(BotSight),false,BotCharacter); Params.AddIgnoredActor(Weapon);
   if(!GetWorld()->LineTraceSingleByChannel(Hit,BotCharacter->GetPawnViewLocation(),It->GetActorLocation(),ECC_Visibility,Params) || Hit.GetActor()==*It) { Enemy=*It; Best=Distance; }
  }
  if(Enemy!=CombatTarget.Get()) { CombatTarget=Enemy; TargetVisibleSince=Now; Weapon->StopFire(); }
  if(Enemy) {
   SetControlRotation((Enemy->GetActorLocation()-BotCharacter->GetPawnViewLocation()).Rotation());
+  if(Now>=NextGadgetUse&&Best>350.f&&Best<1100.f){
+   const auto* State=BotCharacter->GetPlayerState<AVanthexPlayerState>();
+   if(State&&State->GetEconomy().Gadgets.Num()){
+    const FName Gadget=State->GetEconomy().Gadgets[0];
+    if(Gadget!=TEXT("Smoke")||BotCharacter->GetHealthComponent()->GetHealth()<65.f||BotCharacter->IsCarryingCore()){
+     BotCharacter->GetGadgets()->UseSlot(0);NextGadgetUse=Now+10.f;NextCombatShot=Now+.9f;
+    }
+   }
+  }
   if (Weapon->GetAmmoInMagazine()==0 && Weapon->GetReserveAmmo()>0) Weapon->StartReload();
   if(Now-TargetVisibleSince>0.5f && !Weapon->IsReloading()) {
    if (Weapon->IsAutomatic()) { if(!Weapon->IsTriggerHeld()) Weapon->StartFire(); }

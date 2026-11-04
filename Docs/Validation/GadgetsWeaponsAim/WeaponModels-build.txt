@@ -1,0 +1,31 @@
+OVERALL PASS
+MESHES 28
+MATERIALS 10
+PASS SM_Pistol_Body triangles=3304 lods=2 size=X=13.900 Y=2.720 Z=9.756
+PASS SM_Pistol_Magazine triangles=624 lods=2 size=X=3.978 Y=2.220 Z=5.776
+PASS SM_Pistol_Bolt triangles=1392 lods=2 size=X=13.500 Y=2.400 Z=3.330
+PASS SM_P250_Body triangles=3364 lods=2 size=X=13.900 Y=2.720 Z=9.756
+PASS SM_P250_Magazine triangles=624 lods=2 size=X=3.978 Y=2.220 Z=5.776
+PASS SM_P250_Bolt triangles=1448 lods=2 size=X=13.500 Y=2.400 Z=3.330
+PASS SM_MP5_Body triangles=5552 lods=2 size=X=40.316 Y=3.900 Z=13.980
+PASS SM_MP5_Magazine triangles=624 lods=2 size=X=4.079 Y=2.220 Z=10.289
+PASS SM_MP5_Bolt triangles=60 lods=2 size=X=4.200 Y=0.110 Z=1.100
+PASS SM_MP7_Body triangles=5636 lods=2 size=X=25.700 Y=3.020 Z=15.464
+PASS SM_MP7_Magazine triangles=624 lods=2 size=X=3.978 Y=2.220 Z=6.776
+PASS SM_MP7_Bolt triangles=60 lods=2 size=X=3.800 Y=0.100 Z=1.200
+PASS SM_M4_Body triangles=8580 lods=2 size=X=49.469 Y=3.520 Z=17.964
+PASS SM_M4_Magazine triangles=624 lods=2 size=X=4.578 Y=2.220 Z=10.291
+PASS SM_M4_Bolt triangles=120 lods=2 size=X=8.800 Y=2.665 Z=2.350
+PASS SM_AK_Body triangles=5560 lods=2 size=X=52.316 Y=3.800 Z=14.770
+PASS SM_AK_Magazine triangles=624 lods=2 size=X=8.668 Y=2.220 Z=13.533
+PASS SM_AK_Bolt triangles=124 lods=2 size=X=4.800 Y=0.900 Z=0.900
+PASS SM_AUG_Body triangles=5484 lods=2 size=X=45.325 Y=3.620 Z=17.800
+PASS SM_AUG_Magazine triangles=624 lods=2 size=X=4.779 Y=2.220 Z=8.599
+PASS SM_AUG_Bolt triangles=60 lods=2 size=X=4.200 Y=0.100 Z=1.300
+PASS SM_DMR_Body triangles=9800 lods=2 size=X=59.316 Y=5.500 Z=18.350
+PASS SM_DMR_Magazine triangles=624 lods=2 size=X=4.578 Y=2.220 Z=7.291
+PASS SM_DMR_Bolt triangles=120 lods=2 size=X=8.800 Y=2.665 Z=2.350
+PASS SM_Shotgun_Body triangles=3072 lods=2 size=X=57.316 Y=3.520 Z=9.202
+PASS SM_Shotgun_Magazine triangles=240 lods=2 size=X=3.900 Y=1.200 Z=1.200
+PASS SM_Shotgun_Bolt triangles=764 lods=2 size=X=20.100 Y=3.800 Z=4.550
+PASS SM_Knife_Body triangles=2146 lods=2 size=X=32.000 Y=2.300 Z=5.300

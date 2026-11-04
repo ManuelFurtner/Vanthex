@@ -1,0 +1,358 @@
+{
+  "format": "VXM1",
+  "materials": [
+    "Anodized",
+    "Steel",
+    "Silver",
+    "Polymer",
+    "Rubber",
+    "Olive",
+    "Walnut",
+    "Brass",
+    "Optic",
+    "Marking"
+  ],
+  "weapons": [
+    {
+      "id": "Pistol",
+      "muzzle": [
+        9.55,
+        0,
+        1.8
+      ],
+      "bounds_min": [
+        -4.5,
+        -1.36,
+        -7.776339693715485
+      ],
+      "bounds_max": [
+        9.5,
+        1.36,
+        3.9299999999999997
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "Pistol_Body.vxm",
+          "triangles": 3304
+        },
+        {
+          "part": "Magazine",
+          "file": "Pistol_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "Pistol_Bolt.vxm",
+          "triangles": 1392
+        }
+      ]
+    },
+    {
+      "id": "P250",
+      "muzzle": [
+        9.55,
+        0,
+        1.8
+      ],
+      "bounds_min": [
+        -4.5,
+        -1.36,
+        -7.776339693715485
+      ],
+      "bounds_max": [
+        9.5,
+        1.36,
+        3.9299999999999997
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "P250_Body.vxm",
+          "triangles": 3364
+        },
+        {
+          "part": "Magazine",
+          "file": "P250_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "P250_Bolt.vxm",
+          "triangles": 1448
+        }
+      ]
+    },
+    {
+      "id": "MP5",
+      "muzzle": [
+        23.05,
+        0,
+        1.6
+      ],
+      "bounds_min": [
+        -17.31582404475999,
+        -2.0,
+        -12.489457325881009
+      ],
+      "bounds_max": [
+        23.0,
+        1.9,
+        5.18
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "MP5_Body.vxm",
+          "triangles": 5552
+        },
+        {
+          "part": "Magazine",
+          "file": "MP5_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "MP5_Bolt.vxm",
+          "triangles": 60
+        }
+      ]
+    },
+    {
+      "id": "MP7",
+      "muzzle": [
+        12.75,
+        0,
+        1.6
+      ],
+      "bounds_min": [
+        -13.0,
+        -1.51,
+        -9.876339693715485
+      ],
+      "bounds_max": [
+        12.7,
+        1.51,
+        7.9642976126761384
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "MP7_Body.vxm",
+          "triangles": 5636
+        },
+        {
+          "part": "Magazine",
+          "file": "MP7_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "MP7_Bolt.vxm",
+          "triangles": 60
+        }
+      ]
+    },
+    {
+      "id": "M4",
+      "muzzle": [
+        30.05,
+        0,
+        1.5
+      ],
+      "bounds_min": [
+        -19.469041211945264,
+        -1.76,
+        -12.791053126868363
+      ],
+      "bounds_max": [
+        30.0,
+        1.76,
+        9.164297612676137
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "M4_Body.vxm",
+          "triangles": 8580
+        },
+        {
+          "part": "Magazine",
+          "file": "M4_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "M4_Bolt.vxm",
+          "triangles": 120
+        }
+      ]
+    },
+    {
+      "id": "AK",
+      "muzzle": [
+        31.05,
+        0,
+        1.7
+      ],
+      "bounds_min": [
+        -21.31582404475999,
+        -2.4,
+        -15.33269910649023
+      ],
+      "bounds_max": [
+        31.0,
+        1.9,
+        5.97
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "AK_Body.vxm",
+          "triangles": 5560
+        },
+        {
+          "part": "Magazine",
+          "file": "AK_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "AK_Bolt.vxm",
+          "triangles": 124
+        }
+      ]
+    },
+    {
+      "id": "AUG",
+      "muzzle": [
+        26.05,
+        0,
+        2
+      ],
+      "bounds_min": [
+        -19.325,
+        -1.81,
+        -11.599131922141572
+      ],
+      "bounds_max": [
+        26.0,
+        1.81,
+        9.0
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "AUG_Body.vxm",
+          "triangles": 5484
+        },
+        {
+          "part": "Magazine",
+          "file": "AUG_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "AUG_Bolt.vxm",
+          "triangles": 60
+        }
+      ]
+    },
+    {
+      "id": "DMR",
+      "muzzle": [
+        38.05,
+        0,
+        1.5
+      ],
+      "bounds_min": [
+        -21.31582404475999,
+        -2.75,
+        -9.791053126868363
+      ],
+      "bounds_max": [
+        38.0,
+        2.75,
+        8.9
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "DMR_Body.vxm",
+          "triangles": 9800
+        },
+        {
+          "part": "Magazine",
+          "file": "DMR_Magazine.vxm",
+          "triangles": 624
+        },
+        {
+          "part": "Bolt",
+          "file": "DMR_Bolt.vxm",
+          "triangles": 120
+        }
+      ]
+    },
+    {
+      "id": "Shotgun",
+      "muzzle": [
+        35.05,
+        0,
+        2
+      ],
+      "bounds_min": [
+        -22.31582404475999,
+        -1.9,
+        -5.602019459220461
+      ],
+      "bounds_max": [
+        35.0,
+        1.9,
+        3.6
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "Shotgun_Body.vxm",
+          "triangles": 3072
+        },
+        {
+          "part": "Magazine",
+          "file": "Shotgun_Magazine.vxm",
+          "triangles": 240
+        },
+        {
+          "part": "Bolt",
+          "file": "Shotgun_Bolt.vxm",
+          "triangles": 764
+        }
+      ]
+    },
+    {
+      "id": "Knife",
+      "muzzle": [
+        22,
+        0,
+        1
+      ],
+      "bounds_min": [
+        -10.0,
+        -1.15,
+        -2.6
+      ],
+      "bounds_max": [
+        22.0,
+        1.15,
+        2.7
+      ],
+      "parts": [
+        {
+          "part": "Body",
+          "file": "Knife_Body.vxm",
+          "triangles": 2146
+        }
+      ]
+    }
+  ],
+  "license": "Original procedural Vanthex geometry; no third-party mesh inputs."
+}

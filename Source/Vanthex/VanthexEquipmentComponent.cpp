@@ -1,4 +1,5 @@
 #include "VanthexEquipmentComponent.h"
+#include "VanthexWeaponPresentation.h"
 
 #include "VanthexCharacter.h"
 #include "VanthexPlayerState.h"
@@ -234,39 +235,22 @@ void UVanthexEquipmentComponent::BuildKnife()
 	WorldKnifeRoot->ComponentTags.Add(TEXT("OperatorKnife"));
 	OwnerCharacter->AddInstanceComponent(WorldKnifeRoot);
 	WorldKnifeRoot->RegisterComponent();
-	auto* Steel = VanthexArt::MakeSurface(OwnerCharacter, FLinearColor(0.3f, 0.32f, 0.34f), 0.3f, 0.9f);
-	auto* Grip = VanthexArt::MakeSurface(OwnerCharacter, FLinearColor(0.025f, 0.028f, 0.03f), 0.8f, 0.05f);
-	auto AddPart = [&](USceneComponent* Parent, bool FirstPerson, UStaticMesh* Mesh, const FVector& Position, const FRotator& Rotation, const FVector& Scale, UMaterialInterface* Material)
-	{
-		auto* Part = NewObject<UStaticMeshComponent>(OwnerCharacter);
-		Part->SetupAttachment(Parent);
-		Part->SetStaticMesh(Mesh);
-		Part->SetRelativeLocation(Position);
-		Part->SetRelativeRotation(Rotation);
-		Part->SetRelativeScale3D(Scale);
-		Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		Part->SetOnlyOwnerSee(FirstPerson);
-		Part->SetOwnerNoSee(!FirstPerson);
-		Part->SetCastShadow(!FirstPerson);
-		Part->SetCastHiddenShadow(!FirstPerson);
-		Part->SetMaterial(0, Material);
-		Part->ComponentTags.Add(FirstPerson ? TEXT("EquipmentKnifeFirstPerson") : TEXT("EquipmentKnifeWorld"));
-		OwnerCharacter->AddInstanceComponent(Part);
-		Part->RegisterComponent();
-		if (!FirstPerson) WorldKnifeParts.Add(Part);
-	};
-	for (const bool FirstPerson : {true, false})
-	{
-		USceneComponent* Parent = FirstPerson ? KnifeRoot.Get() : WorldKnifeRoot.Get();
-		if (KnifeMesh) AddPart(Parent, FirstPerson, KnifeMesh, FVector::ZeroVector, FRotator::ZeroRotator, FVector::OneVector, Steel);
-		else
-		{
-			// Same replaceable prototype geometry in both views, without double rendering.
-			AddPart(Parent, FirstPerson, VanthexArt::LoadCube(), FVector(-4,0,0), FRotator::ZeroRotator, FVector(0.1f,0.025f,0.03f), Grip);
-			AddPart(Parent, FirstPerson, VanthexArt::LoadCube(), FVector(2,0,0), FRotator::ZeroRotator, FVector(0.015f,0.065f,0.025f), Steel);
-			AddPart(Parent, FirstPerson, LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone")), FVector(12,0,0), FRotator(-90,0,0), FVector(0.007f,0.045f,0.2f), Steel);
-		}
-	}
+ TArray<TObjectPtr<UStaticMeshComponent>> FirstPersonParts; FVector Muzzle;
+ if(!KnifeMesh) {
+  VanthexWeaponPresentation::Build(OwnerCharacter,KnifeRoot,TEXT("Knife"),true,FirstPersonParts,Muzzle);
+  VanthexWeaponPresentation::Build(OwnerCharacter,WorldKnifeRoot,TEXT("Knife"),false,WorldKnifeParts,Muzzle);
+ } else {
+  for(bool FirstPerson:{true,false}) {
+   auto* Part=NewObject<UStaticMeshComponent>(OwnerCharacter);
+   Part->SetupAttachment(FirstPerson?KnifeRoot.Get():WorldKnifeRoot.Get()); Part->SetStaticMesh(KnifeMesh);
+   Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetOnlyOwnerSee(FirstPerson); Part->SetOwnerNoSee(!FirstPerson);
+   Part->SetCastShadow(!FirstPerson); Part->SetCastHiddenShadow(!FirstPerson);
+   OwnerCharacter->AddInstanceComponent(Part); Part->RegisterComponent();
+   if(!FirstPerson) WorldKnifeParts.Add(Part);
+  }
+ }
+ for(const auto& Part:FirstPersonParts) Part->ComponentTags.Add(TEXT("EquipmentKnifeFirstPerson"));
+ for(const auto& Part:WorldKnifeParts) Part->ComponentTags.Add(TEXT("EquipmentKnifeWorld"));
 	UpdatePresentation();
 }
 

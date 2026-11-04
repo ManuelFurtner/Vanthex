@@ -1,4 +1,5 @@
 #include "VanthexWeaponProfile.h"
+#include "VanthexWeaponPresentation.h"
 #include "VanthexArt.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -65,51 +66,5 @@ const FVanthexWeaponProfile* VanthexWeapons::Find(FName Id)
 void VanthexWeapons::BuildVisual(AActor* Owner, USceneComponent* Parent, FName Id, bool FirstPerson,
  TArray<TObjectPtr<UStaticMeshComponent>>& Parts, FVector& Muzzle, UMaterialInterface* Accent)
 {
- for(const auto& Part:Parts) if(Part) Part->DestroyComponent();
- Parts.Reset();
- const auto* P=Find(Id); if(!Owner||!Parent||!P) return;
- auto* Metal=VanthexArt::MakeSurface(Owner,FLinearColor(.075f,.085f,.095f),.48f,.72f);
- auto* Grip=VanthexArt::MakeSurface(Owner,FLinearColor(.025f,.03f,.035f),.8f,.05f);
- if(!Accent) Accent=VanthexArt::MakeEnergy(Owner,FLinearColor(.1f,.45f,.7f),.4f);
- auto Add=[&](UStaticMesh* Mesh,FVector At,FVector Scale,UMaterialInterface* Material,FRotator Rotation=FRotator::ZeroRotator) {
-  auto* Part=NewObject<UStaticMeshComponent>(Owner); Part->SetupAttachment(Parent); Part->SetStaticMesh(Mesh);
-  Part->SetRelativeLocationAndRotation(At,Rotation); Part->SetRelativeScale3D(Scale); Part->SetMaterial(0,Material);
-  Part->SetCollisionEnabled(ECollisionEnabled::NoCollision); Part->SetOnlyOwnerSee(FirstPerson); Part->SetOwnerNoSee(!FirstPerson);
-  Part->SetCastHiddenShadow(!FirstPerson); Owner->AddInstanceComponent(Part); Part->RegisterComponent(); Parts.Add(Part);
-  return Part;
- };
- auto* Cube=VanthexArt::LoadCube();
- Muzzle=FVector(23,0,1.1f);
- if(P->Shape==EVanthexFirearmShape::Pistol) {
-  Add(Cube,FVector(2,0,1),FVector(.18f,.035f,.045f),Metal);
-  Add(Cube,FVector(0,0,-1.5f),FVector(.12f,.038f,.035f),Grip);
-  Add(Cube,FVector(-1,0,-4),FVector(.045f,.035f,.08f),Grip,FRotator(-12,0,0));
-  Add(Cube,FVector(7,0,3.5f),FVector(.012f,.01f,.012f),Accent);
-  Muzzle=FVector(12,0,1);
- } else if(P->Shape==EVanthexFirearmShape::SMG) {
-  Add(Cube,FVector(0,0,0),FVector(.20f,.05f,.07f),Metal);
-  Add(Cube,FVector(-1,0,-5),FVector(.04f,.035f,.10f),Grip);
-  Add(Cube,FVector(-14,0,0),FVector(.08f,.035f,.045f),Grip);
-  Add(Cube,FVector(14,0,1),FVector(.09f,.02f,.02f),Metal);
-  Add(Cube,FVector(6,0,-5),FVector(.025f,.035f,.06f),Grip);
-  Add(Cube,FVector(0,0,5),FVector(.08f,.025f,.02f),Accent);
-  Muzzle=FVector(19,0,1);
- } else if(P->Shape==EVanthexFirearmShape::Bullpup) {
-  Add(Cube,FVector(-3,0,0),FVector(.25f,.055f,.075f),Metal);
-  Add(Cube,FVector(-12,0,-5),FVector(.045f,.035f,.10f),Grip);
-  Add(Cube,FVector(-1,0,-3.2f),FVector(.04f,.035f,.07f),Grip);
-  Add(Cube,FVector(14,0,1),FVector(.19f,.02f,.02f),Metal);
-  Add(Cube,FVector(-3,0,6),FVector(.12f,.035f,.035f),Grip);
-  Add(Cube,FVector(3,0,6),FVector(.012f,.025f,.025f),Accent);
-  Muzzle=FVector(24,0,1);
- } else {
-  auto* Mesh=VanthexArt::LoadKit(TEXT("SM_Rifle"));
-  auto* Body=Add(Mesh?Mesh:Cube,FVector::ZeroVector,Mesh?FVector(1):FVector(.4f,.05f,.06f),Metal);
-  if(Mesh) Body->SetMaterial(1,Accent);
-  if(P->Shape==EVanthexFirearmShape::Marksman) {
-   Add(Cube,FVector(0,0,7),FVector(.18f,.035f,.035f),Grip); Add(Cube,FVector(26,0,1),FVector(.14f,.02f,.02f),Metal); Muzzle.X=34;
-  } else if(P->Shape==EVanthexFirearmShape::Shotgun) {
-   Add(Cube,FVector(16,0,0),FVector(.24f,.045f,.04f),Metal); Add(Cube,FVector(10,0,-3),FVector(.12f,.05f,.035f),Grip); Muzzle.X=29;
-  }
- }
+ VanthexWeaponPresentation::Build(Owner,Parent,Id,FirstPerson,Parts,Muzzle);
 }

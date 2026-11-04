@@ -12,6 +12,9 @@
 #include "Sound/SoundAttenuation.h"
 #include "Sound/SoundConcurrency.h"
 #include "TimerManager.h"
+#include "Misc/PackageName.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 namespace
 {
@@ -29,6 +32,10 @@ void UVanthexWeaponAudioComponent::BeginPlay()
 {
  Super::BeginPlay();
  Profile=LoadObject<UVanthexWeaponAudioProfile>(nullptr,TEXT("/Game/Vanthex/Audio/Weapons/DA_WeaponAudio.DA_WeaponAudio"));
+ // Fab source assets are optional: an ordinary clone remains playable with owned audio.
+ if(!FParse::Param(FCommandLine::Get(),TEXT("VanthexOwnWeaponAudio")) &&
+  FPackageName::DoesPackageExist(TEXT("/Game/Vanthex/Imported/WeaponAudio/DA_WeaponAudio_Fab")))
+  if(auto* Imported=LoadObject<UVanthexWeaponAudioProfile>(nullptr,TEXT("/Game/Vanthex/Imported/WeaponAudio/DA_WeaponAudio_Fab.DA_WeaponAudio_Fab")))Profile=Imported;
 }
 
 void UVanthexWeaponAudioComponent::EndPlay(const EEndPlayReason::Type Reason)

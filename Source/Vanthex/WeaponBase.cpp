@@ -3,6 +3,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/SceneComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/GameStateBase.h"
 #include "TimerManager.h"
 
 AWeaponBase::AWeaponBase()
@@ -57,6 +58,8 @@ void AWeaponBase::StartReload()
 {
  if(!HasAuthority()||!GetWorld()||bReloading||AmmoInMagazine>=MagazineSize||ReserveAmmo<=0) return;
  bReloading=true; ReloadActionId=NextActionId();
+ const auto* GS=GetWorld()->GetGameState();
+ ReloadStartTime=GS?GS->GetServerWorldTimeSeconds():GetWorld()->GetTimeSeconds(); ForceNetUpdate();
  UVanthexWeaponAudioComponent::DispatchEvent(this,ActiveWeaponId,EVanthexWeaponAudioEvent::ReloadStart,ReloadActionId);
  const uint32 Action=ReloadActionId;
  auto Mark=[this,Action](EVanthexWeaponAudioEvent Event) {
@@ -73,6 +76,7 @@ void AWeaponBase::FinishReload()
  if(!HasAuthority()||!bReloading) return;
  const int32 Transfer=FMath::Min(MagazineSize-AmmoInMagazine,ReserveAmmo);
  SetMagazineAmmo(AmmoInMagazine+Transfer); SetReserveAmmo(ReserveAmmo-Transfer); bReloading=false;
+ ReloadStartTime=-1.f; ForceNetUpdate();
  UVanthexWeaponAudioComponent::DispatchEvent(this,ActiveWeaponId,EVanthexWeaponAudioEvent::ReloadEnd,ReloadActionId);
 }
 void AWeaponBase::CancelReload()
@@ -80,11 +84,21 @@ void AWeaponBase::CancelReload()
  if(GetWorld()) { auto& T=GetWorld()->GetTimerManager(); T.ClearTimer(ReloadTimer); T.ClearTimer(MagazineOutTimer); T.ClearTimer(MagazineInTimer); T.ClearTimer(BoltTimer); }
  if(HasAuthority()&&bReloading) UVanthexWeaponAudioComponent::DispatchEvent(this,ActiveWeaponId,EVanthexWeaponAudioEvent::ReloadCancel,ReloadActionId);
  bReloading=false;
+ ReloadStartTime=-1.f;
+}
+float AWeaponBase::GetReloadProgress() const
+{
+ if(ReloadStartTime<0||!GetWorld()||ActiveWeaponId==TEXT("Knife")) return -1.f;
+ const auto* GS=GetWorld()->GetGameState();
+ const float Now=GS?GS->GetServerWorldTimeSeconds():GetWorld()->GetTimeSeconds();
+ const float Progress=(Now-ReloadStartTime)/FMath::Max(.01f,ReloadDuration);
+ return Progress>=1.f?-1.f:FMath::Clamp(Progress,0.f,1.f);
 }
 void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
  Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  DOREPLIFETIME(AWeaponBase,ActiveWeaponId);
+ DOREPLIFETIME(AWeaponBase,ReloadStartTime);
  DOREPLIFETIME_CONDITION(AWeaponBase,AmmoInMagazine,COND_OwnerOnly);
  DOREPLIFETIME_CONDITION(AWeaponBase,ReserveAmmo,COND_OwnerOnly);
  DOREPLIFETIME_CONDITION(AWeaponBase,bReloading,COND_OwnerOnly);

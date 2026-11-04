@@ -1,6 +1,7 @@
 #include "HitscanWeapon.h"
 #include "VanthexCharacter.h"
 #include "VanthexWeaponAudioComponent.h"
+#include "VanthexWeaponPresentation.h"
 
 #include "Vanthex.h"
 #include "VanthexArt.h"
@@ -60,6 +61,7 @@ void AHitscanWeapon::OnWeaponProfileChanged()
 void AHitscanWeapon::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+ VanthexWeaponPresentation::Animate(FirearmParts,GetWeaponId(),GetReloadProgress(),FMath::Clamp(MuzzleTime/.035f,0.f,1.f));
 	Recoil = FMath::FInterpTo(Recoil, 0.f, DeltaSeconds, 14.f);
 	if (RiflePivot)
 	{
@@ -69,13 +71,25 @@ void AHitscanWeapon::Tick(float DeltaSeconds)
 			Sprint = OwnerPawn->GetVelocity().Size2D() > 750.f ? 1.f : 0.f;
 		}
 		const float Kick = Sprint * 3.5f;
-		RiflePivot->SetRelativeLocation(FVector(28.f - Recoil * 1.4f + Kick, 8.f, -6.f - Kick));
-		RiflePivot->SetRelativeRotation(FRotator(Recoil * 0.35f, 0.f, Sprint * -2.f));
+  const auto* Character=Cast<AVanthexCharacter>(GetOwner());
+  const float Aim=Character?Character->GetAimBlend():0.f;
+  const auto Sight=VanthexWeaponPresentation::Aim(GetWeaponId());
+  const FVector Hip(28.f-Recoil*1.4f+Kick,8.f,-6.f-Kick);
+  const FVector Aimed=Sight.CameraRelativeOrigin-FVector(30,14,-12)-FVector(Recoil*.24f,0,0);
+  RiflePivot->SetRelativeLocation(FMath::Lerp(Hip,Aimed,Aim));
+  const float Progress=GetReloadProgress();
+  const float ReloadPose=Progress>=0?FMath::Sin(Progress*PI):0.f;
+  const FRotator HipRotation(Recoil*.35f-8.f*ReloadPose,-8.f*ReloadPose,Sprint*-2.f-24.f*ReloadPose);
+  RiflePivot->SetRelativeRotation(FMath::Lerp(HipRotation,Sight.Rotation+FRotator(Recoil*.05f,0,0),Aim));
+  const bool ScopeView=Sight.Sight==EVanthexSight::Scope&&Aim>.85f;
+  for(const auto& Part:FirearmParts) if(Part) Part->SetVisibility(!ScopeView);
 	}
 	if (MuzzleFlash)
 	{
 		MuzzleTime = FMath::Max(0.f, MuzzleTime - DeltaSeconds);
-		MuzzleFlash->SetVisibility(MuzzleTime > 0.f);
+  const auto* Character=Cast<AVanthexCharacter>(GetOwner());
+  const bool ScopeView=Character&&Character->GetAimBlend()>.85f&&VanthexWeaponPresentation::Aim(GetWeaponId()).Sight==EVanthexSight::Scope;
+		MuzzleFlash->SetVisibility(MuzzleTime > 0.f&&!ScopeView);
 	}
 }
 
@@ -229,6 +243,7 @@ void AHitscanWeapon::StartReload()
 {
  if(!HasAuthority()||bReloading||AmmoInMagazine>=MagazineSize||GetReserveAmmo()<=0) return;
  if(const auto* Character=Cast<AVanthexCharacter>(GetOwner())) if(!Character->CanUseRifle()) return;
+ if(auto* Character=Cast<AVanthexCharacter>(GetOwner())) Character->SetAiming(false);
  if(GetWorld()) GetWorld()->GetTimerManager().ClearTimer(FireTimer);
  Super::StartReload();
 }
@@ -289,7 +304,8 @@ void AHitscanWeapon::FireShot()
  Params.AddIgnoredActor(this); Params.bReturnPhysicalMaterial=true;
  FHitResult FirstHit; TArray<FHitResult> ExtraImpacts;
  for(int32 Pellet=0;Pellet<Profile.Pellets;++Pellet) {
-  const FVector End=Start+Profile.ShotDirection(View,ShotSequence,Pellet,OwnerPawn->GetVelocity().Size2D())*TraceRange;
+  const float MovingSpreadScale=Character&&Character->IsAuthoritativelyAiming()?VanthexWeaponPresentation::Aim(GetWeaponId()).MovingSpreadScale:1.f;
+  const FVector End=Start+Profile.ShotDirection(View,ShotSequence,Pellet,OwnerPawn->GetVelocity().Size2D()*MovingSpreadScale)*TraceRange;
   FHitResult Hit; World->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,Params);
   if(Pellet==0) {
    FirstHit=Hit;

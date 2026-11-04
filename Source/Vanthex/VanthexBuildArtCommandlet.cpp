@@ -5,8 +5,10 @@
 #include "Engine/StaticMesh.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/Parse.h"
 
 #if WITH_EDITOR
+#include "AssetCompilingManager.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialExpressionAdd.h"
@@ -109,6 +111,8 @@ bool BuildSurface()
 	Material->bTangentSpaceNormal = false;
 	Material->bUsedWithInstancedStaticMeshes = true;
 	Material->bUsedWithNanite = true;
+	// The shared surface also colors first-person skeletal arms and team body meshes.
+	Material->SetMaterialUsage(MATUSAGE_SkeletalMesh);
 
 	auto Scalar = [&](const TCHAR* Name, float Value)
 	{
@@ -250,6 +254,28 @@ return shaped;
 	Connect(EditorOnly->Specular, Specular);
 	Connect(EditorOnly->EmissiveColor, Emissive);
 	return SaveMaterial(Material->GetPackage(), Material);
+}
+
+bool RepairSurfaceSkeletalUsage()
+{
+	UMaterial* Material=LoadObject<UMaterial>(nullptr,TEXT("/Game/Vanthex/Materials/M_VanthexSurface.M_VanthexSurface"));
+	if(!Material) {
+		UE_LOG(LogVanthex,Error,TEXT("Surface usage repair: existing M_VanthexSurface missing; no assets changed"));
+		return false;
+	}
+	Material->GetPackage()->FullyLoad();
+	const int32 ExpressionCount=Material->GetExpressions().Num();
+	const bool WasEnabled=Material->GetUsageByFlag(MATUSAGE_SkeletalMesh);
+	Material->PreEditChange(nullptr);
+	Material->SetMaterialUsage(MATUSAGE_SkeletalMesh);
+	const bool Saved=SaveMaterial(Material->GetPackage(),Material);
+	FAssetCompilingManager::Get().FinishAllCompilation();
+	const bool OK=Saved&&Material->GetUsageByFlag(MATUSAGE_SkeletalMesh)&&Material->GetExpressions().Num()==ExpressionCount;
+	const FString Report=FString::Printf(TEXT("OVERALL %s\nMaterial=%s\nSkeletalMeshUsageBefore=%d\nSkeletalMeshUsageAfter=%d\nExpressionsPreserved=%d\nOnly the existing surface material was updated; no map, mesh or material graph regeneration.\n"),
+		OK?TEXT("PASS"):TEXT("FAIL"),*Material->GetPathName(),WasEnabled,Material->GetUsageByFlag(MATUSAGE_SkeletalMesh),ExpressionCount);
+	FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/TEXT("SurfaceUsageRepair.txt")));
+	UE_LOG(LogVanthex,Display,TEXT("%s"),*Report);
+	return OK;
 }
 
 bool BuildDecal()
@@ -415,6 +441,7 @@ int32 UVanthexBuildArtCommandlet::Main(const FString& Params)
 {
 #if WITH_EDITOR
 	extern bool VanthexBakeFoundry(bool bGridV3);
+	if(FParse::Param(*Params,TEXT("RepairSurfaceUsage"))) return RepairSurfaceSkeletalUsage()?0:1;
 	if(Params.Contains(TEXT("InspectStairs"))) { extern bool VanthexInspectStairs(); return VanthexInspectStairs()?0:1; }
 	if(Params.Contains(TEXT("InspectOperator"))) { extern bool VanthexInspectOperator(); return VanthexInspectOperator()?0:1; }
 	if(Params.Contains(TEXT("BuildOperatorArt"))) { extern bool VanthexBuildOperatorArt(); return VanthexBuildOperatorArt()?0:1; }

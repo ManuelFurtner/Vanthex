@@ -16,6 +16,9 @@ public:
  void ResetDevice();
  FVector InteractionPoint(const FVector& UserLocation) const;
  void SetCircuitPower(bool bOn);
+ void ApplyEMP(float Duration);
+ bool IsEMPDisabled() const;
+ UPROPERTY(Replicated) float EMPEndTime=0.f;
  UPROPERTY(Replicated) int32 Circuit = -1;
  UPROPERTY(Replicated) bool bPowered = true;
  UPROPERTY(Replicated) float HackProgress = 0.f;

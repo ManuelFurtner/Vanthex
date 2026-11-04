@@ -1,0 +1,119 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "MANUEL-GAMING",
+			"instance": "2E41B2C84BAF7F8B28C0E58F4371839A",
+			"instanceName": "MANUEL-GAMING-41020",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 11 (25H2) [10.0.26200.9711] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 3070 Ti",
+			"cPUModel": "AMD Ryzen 5 7500X3D 6-Core Processor           ",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.11.04-10.05.20",
+	"succeeded": 6,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 0.018812898546457291,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "BlastFalloff",
+			"fullTestPath": "Vanthex.Gadgets.BlastFalloff",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"2E41B2C84BAF7F8B28C0E58F4371839A"
+			],
+			"duration": 0.00069620087742805481,
+			"dateTime": "2026.11.04-10.05.20",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Catalog",
+			"fullTestPath": "Vanthex.Gadgets.Catalog",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"2E41B2C84BAF7F8B28C0E58F4371839A"
+			],
+			"duration": 0.00070610269904136658,
+			"dateTime": "2026.11.04-10.05.20",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "FlashFalloff",
+			"fullTestPath": "Vanthex.Gadgets.FlashFalloff",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"2E41B2C84BAF7F8B28C0E58F4371839A"
+			],
+			"duration": 0.00075939670205116272,
+			"dateTime": "2026.11.04-10.05.20",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "PresentationAssets",
+			"fullTestPath": "Vanthex.Gadgets.PresentationAssets",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"2E41B2C84BAF7F8B28C0E58F4371839A"
+			],
+			"duration": 0.011493001133203506,
+			"dateTime": "2026.11.04-10.05.20",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SmokeIntersection",
+			"fullTestPath": "Vanthex.Gadgets.SmokeIntersection",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"2E41B2C84BAF7F8B28C0E58F4371839A"
+			],
+			"duration": 0.00075249746441841125,
+			"dateTime": "2026.11.04-10.05.20",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "SmokeWallClipping",
+			"fullTestPath": "Vanthex.Gadgets.SmokeWallClipping",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"2E41B2C84BAF7F8B28C0E58F4371839A"
+			],
+			"duration": 0.0044056996703147888,
+			"dateTime": "2026.11.04-10.05.20",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

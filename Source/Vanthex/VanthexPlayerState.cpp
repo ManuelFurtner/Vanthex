@@ -93,6 +93,12 @@ void AVanthexPlayerState::HandleEconomyDeath()
 	ForceNetUpdate();
 }
 
+bool AVanthexPlayerState::ConsumeGadget(int32 Slot,FName Expected)
+{
+ if(!HasAuthority()||!Economy.Gadgets.IsValidIndex(Slot)||Economy.Gadgets[Slot]!=Expected)return false;
+ Economy.Gadgets.RemoveAt(Slot);ForceNetUpdate();return true;
+}
+
 float AVanthexPlayerState::ApplyArmorDamage(float Damage, bool Head, bool Melee)
 {
 	if (!HasAuthority()) return Damage;

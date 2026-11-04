@@ -75,6 +75,7 @@ void VanthexStartWeaponAudioPlaybackTest(AVanthexPlayerController* Controller)
    const uint32 Rendered=Audio->PlayedSounds-S->PlayedBefore;
    bool Pass=Rendered==7;
    FString Report=FString::Printf(TEXT("%s renderedEvents=%u expected=7\n"),Pass?TEXT("PASS"):TEXT("FAIL"),Rendered);
+   Report+=FString::Printf(TEXT("PROFILE %s\n"),*Audio->GetProfile()->GetPathName());
    auto Check=[&](const TCHAR* Name,bool Ok){Pass&=Ok; Report+=FString::Printf(TEXT("%s %s\n"),Ok?TEXT("PASS"):TEXT("FAIL"),Name);};
    const uint32 DupBefore=Audio->DuplicateDropped; Audio->Receive(S->First);
    Check(TEXT("duplicate delivers no second sound"),Audio->DuplicateDropped==DupBefore+1 && Audio->PlayedSounds-S->PlayedBefore==Rendered);

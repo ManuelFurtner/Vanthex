@@ -1,0 +1,111 @@
+OVERALL PASS
+CHECKS 45
+FAILURES 0
+PASS initial 25-second buy phase
+PASS buy phase freezes movement at spawn
+PASS match starts with 800 CR pistol knife no armor
+PASS buy phase rejects firearms and melee
+PASS buy phase rejects Core interaction
+PASS round one P250 and armor cost 750
+PASS duplicate purchase cannot charge twice
+PASS insufficient credits and invalid IDs leave account unchanged
+PASS credit cap 7000
+PASS heavy armor purchase
+PASS active round unlocks movement with 180 seconds
+PASS active round rejects purchases
+PASS real body hit heavy armor absorbs16 HP loss24
+PASS headshot bypasses armor
+PASS knife bypasses armor
+PASS survivor keeps damaged armor while HP restore
+PASS death removes equipment but preserves credits
+PASS next round restores free pistol and full health
+PASS 29 HP no assist and overkill excluded
+PASS dead target cannot pay another kill
+PASS 30 HP earns single assist and killer gets only kill
+PASS damage older than eight seconds excluded
+PASS damage exactly eight seconds old still earns assist
+PASS equal-time equal-damage assist chooses lower stable slot
+PASS dead assisting teammate remains eligible
+PASS environmental death gives no assist
+PASS healing clears damage ledger
+PASS extraction pays win3000 plus300 and first loss1900
+PASS round settlement is idempotent
+PASS second team loss pays2400
+PASS third team loss pays2900
+PASS draw pays1900 without changing loss streak
+PASS win resets team loss streak
+PASS match end rejects all purchases
+PASS pass exact 399/400 travel and route-progress boundaries
+PASS unreachable route never pays pass
+PASS intercept once per player round no passer reward or duplicate
+PASS Core pass fixture uses reachable extraction progress on collision graph
+PASS paid pass once per throw and directed pair
+PASS passer maximum two paid passes
+PASS team maximum four paid passes
+PASS inactive throw cannot award credits
+PASS slot handover copies balance and inventory without reset
+PASS mid-match team switch rejected
+PASS new match resets accounts series and enters buy phase
+OVERALL PASS
+CHECKS 32
+FAILURES 0
+ELAPSED 4.96
+PASS fixture starts in genuine purchase phase
+PASS normal activation enables real Core interactions
+PASS real collision graph supplies flat clear 1100-1250 cm lane with >=900 cm extraction progress
+PASS real TryPickup attaches Core before case
+PASS real Throw starts an eligible flight
+PASS world-ticked flight is caught by teammate
+PASS genuine qualifying catch pays exactly 50 to thrower
+PASS subsequent world ticks cannot pay the catch twice
+PASS real TryPickup attaches Core before case
+PASS thrower can physically catch own returning Core
+PASS own catch does not pay
+PASS real TryPickup attaches Core before case
+PASS manual Drop is ineligible immediately
+PASS manual drop does not become an automatic rewarding catch
+PASS teammate physically picks settled drop from floor
+PASS floor pickup pays no pass bonus
+PASS real TryPickup attaches Core before case
+PASS actual death releases an ineligible Core
+PASS teammate catches actual death drop during world ticks
+PASS death drop catch pays no bonus
+PASS real TryPickup attaches Core before case
+PASS teleport case starts from eligible real throw
+PASS 10 cm external teleport invalidates reward on next real flight ticks
+PASS teleported flight can still be caught for gameplay
+PASS teleported flight pays no intercept
+PASS real TryPickup attaches Core before case
+PASS reset during flight immediately invalidates reward
+PASS reset flight cannot later catch or pay
+PASS real TryPickup attaches Core before case
+PASS opponent catches real untampered throw
+PASS real intercept pays exactly 100 without a pass reward
+PASS intercept remains single payment on subsequent ticks
+OVERALL PASS
+CHECKS 24
+FAILURES 0
+PASS free pistol and knife without phantom primary
+PASS buy phase blocks firing reload and switching
+PASS unowned primary key cannot grant weapon
+PASS held semi trigger fires exactly once
+PASS duplicate press without release cannot repeat semi shot
+PASS released semi trigger fires next shot
+PASS finite reload begins
+PASS reload moves only missing magazine rounds from reserve
+PASS cancel clears timer without minting or losing ammunition
+PASS partial reserve loads only available rounds
+PASS empty reserve rejects reload
+PASS holster blocks shots before profile swap
+PASS sidearm selection applies independent profile
+PASS primary ammunition survives sidearm switch
+PASS sidearm ammunition survives primary switch
+PASS knife public ID does not expose a holstered inventory weapon
+PASS knife switch preserves sidearm ammunition
+PASS held automatic trigger repeatedly fires at profile rate
+PASS empty real weapon dry-fires without automatic reload
+PASS shotgun consumes one shell per trigger
+PASS eight close shotgun pellets each apply eleven damage
+PASS unknown profile cannot mutate active weapon
+PASS inventory uses exactly one hitscan actor per player
+PASS round refill restores purchased weapon ammunition

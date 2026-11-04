@@ -16,7 +16,7 @@
 
 namespace
 {
-constexpr const TCHAR* Root=TEXT("/Game/Vanthex/Audio/Weapons/");
+constexpr const TCHAR* WeaponAssetRoot=TEXT("/Game/Vanthex/Audio/Weapons/");
 bool Save(UObject* Asset)
 {
  if(!Asset) return false;
@@ -27,14 +27,14 @@ bool Save(UObject* Asset)
 }
 template<typename T> T* Asset(const FString& Name,bool& Created)
 {
- const FString Package=FString(Root)+Name;
+ const FString Package=FString(WeaponAssetRoot)+Name;
  if(T* Existing=LoadObject<T>(nullptr,*(Package+TEXT(".")+Name),nullptr,LOAD_NoWarn)) { Created=false; return Existing; }
  T* New=NewObject<T>(CreatePackage(*Package),*Name,RF_Public|RF_Standalone|RF_Transactional);
  FAssetRegistryModule::AssetCreated(New); Created=true; return New;
 }
 USoundWave* Wave(const FString& Name,bool Replace)
 {
- const FString PackageName=FString(Root)+Name;
+ const FString PackageName=FString(WeaponAssetRoot)+Name;
  USoundWave* Existing=LoadObject<USoundWave>(nullptr,*(PackageName+TEXT(".")+Name),nullptr,LOAD_NoWarn);
  if(Existing && !Replace) return Existing;
  const FString File=FPaths::ProjectDir()/TEXT("AudioSource/Weapons")/(Name+TEXT(".wav"));

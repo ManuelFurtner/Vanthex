@@ -5,8 +5,10 @@ implementiert; 45 Integrations-, 32 Core- und 24 Waffenprüfungen sowie der
 Host-/Client-Ablauf sind bestanden.** Den belegten Umfang und die verbleibenden
 Produktionsgrenzen nennt der
 [Validierungsstand](ECONOMY_IMPLEMENTATION.md#vorliegende-validierung).
-Gadget-Preise und zwei Inventarplätze sind vorhanden;
-die einzelnen Gadget-Wirkungen fehlen weiterhin.
+Ergänzung vom 4. November: Die fünf Gadget-Wirkungen und ihre serverseitige
+Anwendung sind umgesetzt und mit sechs Automationgruppen, 58 Weltprüfungen sowie
+einem echten Host-/Client-Lauf geprüft. Wirkungsprofile und Nachweise stehen in
+[Gadget-Regeln und Prüfungen](GADGETS.md).
 Die Preise, Credit-Belohnungen und Spielsäulen stammen aus dem neuen Teamkonzept.
 Die mit „Startvorschlag“ bezeichneten Regeln konkretisieren offene Entscheidungen
 für einen ersten Playtest. Sie sind keine bereits gemessenen Balance-Ergebnisse.
@@ -97,12 +99,12 @@ Die Anzeige rundet, die Schadensrechnung behält die Bruchteile.
 Rüstung schützt Körper und Gliedmaßen; Kopftreffer und Messer umgehen sie.
 Schadensquellen kennzeichnen dafür explizit Trefferzone und Schadenstyp.
 Kopfschaden verwendet weiterhin den jeweiligen Waffenmultiplikator.
-Beide Rüstungen haben zunächst keine Geschwindigkeitsstrafe. Gadget-spezifische
-Explosionen und EMP-Wirkung benötigen vor ihrer Umsetzung eigene Wirkungsprofile;
-aus dem Preis folgt noch kein implementiertes Gadget-Verhalten.
-Die aktuelle Rüstungsrechnung verarbeitet ausdrücklich als Projektil markierte
-Treffer. Umgebungsschaden bleibt unabsorbiert; spätere Explosionsprofile dürfen
-diese Entscheidung nicht stillschweigend übernehmen.
+Beide Rüstungen haben zunächst keine Geschwindigkeitsstrafe. Die Rüstungsrechnung
+verarbeitet ausdrücklich als Projektil oder Explosion markierten Schaden.
+Frag-Explosionen verwenden die gleichen Absorptionsfaktoren und keinen
+Kopftreffermultiplikator. Umgebungsschaden bleibt unabsorbiert. Details zu
+Sichtblockaden, Selbstschaden, Rauch, EMP und Sensoren sind in den
+[Gadget-Regeln](GADGETS.md) festgelegt; die Preise oben bleiben unverändert.
 
 | Testtreffer | HP-Verlust | Restliche Rüstung |
 |---|---:|---:|

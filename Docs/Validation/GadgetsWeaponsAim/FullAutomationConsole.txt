@@ -1,0 +1,29 @@
+
+fullTestPath                                     state
+------------                                     -----
+Vanthex.Aim.SightAlignmentAndSpread              Success
+Vanthex.BulletAudio.ClippedSegmentAndContinuity  Success
+Vanthex.BulletAudio.DistanceBands                Success
+Vanthex.BulletAudio.RealWallOcclusion            Success
+Vanthex.Economy.ArmorDamageBoundaries            Success
+Vanthex.Economy.ArmorPurchaseRules               Success
+Vanthex.Economy.AtomicPurchases                  Success
+Vanthex.Economy.CatalogAndDefaults               Success
+Vanthex.Economy.CreditCapAndDeath                Success
+Vanthex.Gadgets.BlastFalloff                     Success
+Vanthex.Gadgets.Catalog                          Success
+Vanthex.Gadgets.FlashFalloff                     Success
+Vanthex.Gadgets.PresentationAssets               Success
+Vanthex.Gadgets.SmokeIntersection                Success
+Vanthex.Gadgets.SmokeWallClipping                Success
+Vanthex.WeaponAudio.CompleteMonoBanks            Success
+Vanthex.WeaponAudio.EquipmentMovementCadence     Success
+Vanthex.WeaponAudio.MixPriorities                Success
+Vanthex.WeaponAudio.PhysicalPortalAndWall        Success
+Vanthex.WeaponModels.CompleteAuthoredArmory      Success
+Vanthex.WeaponModels.MagazineAndBoltPresentation Success
+Vanthex.WeaponModels.OptionalLicensedBundle      Success
+Vanthex.Weapons.CatalogAndHandling               Success
+Vanthex.Weapons.DeterministicSpreadAndRecoil     Success
+
+OVERALL PASS; GROUPS 24; EXIT 0; SOURCE H:\Vanthex\Saved\GadgetsFinalAutomation-20261104-111829

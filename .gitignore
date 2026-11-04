@@ -24,3 +24,9 @@ Saved/
 /Packaged/
 /StagedBuilds/
 *.log
+
+# Local Fab packages and converted derivatives: do not publish raw licensed assets.
+/VaultCache/
+/Content/FPS_Weapon_Bundle/
+/Content/FreeWeaponSFX/
+/Content/Vanthex/Imported/

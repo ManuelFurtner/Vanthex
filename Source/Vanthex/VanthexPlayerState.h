@@ -25,6 +25,7 @@ public:
 	const FString& GetLastPurchaseError() const { return LastPurchaseError; }
 	void AwardCredits(int32 Amount);
 	void HandleEconomyDeath();
+ bool ConsumeGadget(int32 Slot,FName Expected);
 	float GetArmorPoints() const { return Economy.ArmorPoints; }
 	float ApplyArmorDamage(float Damage, bool Head, bool Melee);
 

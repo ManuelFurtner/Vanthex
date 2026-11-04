@@ -6,7 +6,7 @@
 class AActor;
 class AController;
 
-enum class EVanthexDamageKind : uint8 { Environment, Bullet, Melee };
+enum class EVanthexDamageKind : uint8 { Environment, Bullet, Melee, Explosion };
 
 /** Single damage submission. Hitscan fills it; HealthComponent is the only applier. */
 struct FVanthexDamageRequest

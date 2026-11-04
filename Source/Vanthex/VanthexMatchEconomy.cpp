@@ -34,6 +34,8 @@ void AVanthexGameMode::BuyForBots()
 {
  if (!IsBuyPhase()) return;
 #if !UE_BUILD_SHIPPING
+ if(FParse::Param(FCommandLine::Get(),TEXT("AimTest"))||FParse::Param(FCommandLine::Get(),TEXT("AimShots"))||FParse::Param(FCommandLine::Get(),TEXT("AimNetworkTest")))return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("GadgetTest"))||FParse::Param(FCommandLine::Get(),TEXT("GadgetNetworkTest"))||FParse::Param(FCommandLine::Get(),TEXT("GadgetShots"))||FParse::Param(FCommandLine::Get(),TEXT("WeaponModelShots")))return;
  if(FParse::Param(FCommandLine::Get(),TEXT("EconomyTest")) || FParse::Param(FCommandLine::Get(),TEXT("EconomyNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("CoreEconomyTest")) || FParse::Param(FCommandLine::Get(),TEXT("EconomyShots")) || FParse::Param(FCommandLine::Get(),TEXT("WeaponProfileTest"))) return;
 #endif
  for (AVanthexCharacter* Character : Combatants) {
@@ -48,6 +50,7 @@ void AVanthexGameMode::BuyForBots()
   }
   if (!State->TryPurchase(TEXT("ArmorHeavy"), ++Request)) State->TryPurchase(TEXT("ArmorLight"), ++Request);
   if (State->GetEconomy().PrimaryWeapon.IsNone() && State->GetEconomy().Sidearm == TEXT("Pistol")) State->TryPurchase(TEXT("P250"), ++Request);
+  if(State->GetEconomy().Gadgets.Num()<2)State->TryPurchase(State->GetSpawnSlot()==0?TEXT("Smoke"):State->GetSpawnSlot()==1?TEXT("Frag"):TEXT("Sensor"),++Request);
   Character->SyncEconomyLoadout(false);
  }
 }

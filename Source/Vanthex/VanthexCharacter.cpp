@@ -1,6 +1,8 @@
 #include "VanthexCharacter.h"
 #include "VanthexEquipmentComponent.h"
+#include "VanthexGadgetComponent.h"
 #include "VanthexWeaponAudioComponent.h"
+#include "VanthexWeaponPresentation.h"
 #include "Net/UnrealNetwork.h"
 
 #include "Vanthex.h"
@@ -96,6 +98,7 @@ AVanthexCharacter::AVanthexCharacter()
 	Health = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 	OperatorPresentation = CreateDefaultSubobject<UVanthexOperatorComponent>(TEXT("OperatorPresentation"));
 	Equipment = CreateDefaultSubobject<UVanthexEquipmentComponent>(TEXT("Equipment"));
+ Gadgets = CreateDefaultSubobject<UVanthexGadgetComponent>(TEXT("Gadgets"));
 	WeaponClass = AHitscanWeapon::StaticClass();
 }
 
@@ -109,6 +112,7 @@ void AVanthexCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
  TickEquipmentMovementAudio(DeltaSeconds);
+ TickAiming(DeltaSeconds);
  if (const auto* PS = GetPlayerState<AVanthexPlayerState>()) { if (CachedTeam != PS->GetTeam()) { CachedTeam = PS->GetTeam(); SetTeamAppearance(CachedTeam); } }
  if (!HasAuthority() && Health) {
   if (Health->IsDead()) GetCharacterMovement()->DisableMovement();
@@ -201,6 +205,7 @@ void AVanthexCharacter::BuildInput()
 	SprintAction = NewObject<UInputAction>(this, TEXT("IA_Sprint"));
 	CrouchAction = NewObject<UInputAction>(this, TEXT("IA_Crouch"));
 	FireAction = NewObject<UInputAction>(this, TEXT("IA_Fire"));
+ AimAction = NewObject<UInputAction>(this,TEXT("IA_AimDownSights"));
 	ReloadAction = NewObject<UInputAction>(this, TEXT("IA_Reload"));
 	RestartAction = NewObject<UInputAction>(this, TEXT("IA_Restart"));
 	PickupAction = NewObject<UInputAction>(this, TEXT("IA_Pickup"));
@@ -232,6 +237,7 @@ void AVanthexCharacter::BuildInput()
 
 	MappingContext->MapKey(JumpAction, EKeys::SpaceBar);
 	MappingContext->MapKey(SprintAction, EKeys::LeftShift);
+ MappingContext->MapKey(AimAction,EKeys::RightMouseButton);
 	MappingContext->MapKey(CrouchAction, EKeys::LeftControl);
 	MappingContext->MapKey(FireAction, EKeys::LeftMouseButton);
 	MappingContext->MapKey(ReloadAction, EKeys::R);
@@ -249,6 +255,10 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AVanthexCharacter::SelectRifle);
  PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AVanthexCharacter::SelectPistol);
 	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AVanthexCharacter::SelectKnife);
+ PlayerInputComponent->BindKey(EKeys::Four, IE_Pressed, this, &AVanthexCharacter::UseGadgetOne);
+ PlayerInputComponent->BindKey(EKeys::Five, IE_Pressed, this, &AVanthexCharacter::UseGadgetTwo);
+ PlayerInputComponent->BindKey(EKeys::RightControl, IE_Pressed, this, &AVanthexCharacter::StartCrouchInput);
+ PlayerInputComponent->BindKey(EKeys::RightControl, IE_Released, this, &AVanthexCharacter::StopCrouchInput);
 
 	if (!MappingContext)
 	{
@@ -284,6 +294,9 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopCrouchInput);
 	EnhancedInput->BindAction(FireAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartFire);
 	EnhancedInput->BindAction(FireAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopFire);
+ EnhancedInput->BindAction(AimAction,ETriggerEvent::Started,this,&AVanthexCharacter::StartAimingInput);
+ EnhancedInput->BindAction(AimAction,ETriggerEvent::Completed,this,&AVanthexCharacter::StopAimingInput);
+ EnhancedInput->BindAction(AimAction,ETriggerEvent::Canceled,this,&AVanthexCharacter::StopAimingInput);
 	EnhancedInput->BindAction(ReloadAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartReload);
 	EnhancedInput->BindAction(RestartAction, ETriggerEvent::Started, this, &AVanthexCharacter::RequestRestart);
 	EnhancedInput->BindAction(PickupAction, ETriggerEvent::Started, this, &AVanthexCharacter::TryPickupCore);
@@ -343,12 +356,78 @@ void AVanthexCharacter::DoAim(float Yaw, float Pitch)
 		return;
 	}
 
-	AddControllerYawInput(Yaw * LookSensitivity);
-	AddControllerPitchInput(Pitch * LookSensitivity);
+ const float AimSensitivity=FirstPersonCamera?FMath::Lerp(1.f,FirstPersonCamera->FieldOfView/90.f,AimBlend):1.f;
+	AddControllerYawInput(Yaw * LookSensitivity * AimSensitivity);
+	AddControllerPitchInput(Pitch * LookSensitivity * AimSensitivity);
+}
+
+bool AVanthexCharacter::CanAim() const
+{
+ return Controller && Weapon && VanthexWeapons::Find(Weapon->GetWeaponId()) && CanUseRifle() && !Weapon->IsReloading() && !bSprintWanted;
+}
+bool AVanthexCharacter::IsAiming() const
+{
+ return (IsLocallyControlled()&&!HasAuthority()?bPredictedAiming:bAiming) && CanAim();
+}
+void AVanthexCharacter::SetAiming(bool Requested)
+{
+ const bool Accepted=Requested&&CanAim();
+ if(!Requested) bAimInputHeld=false;
+ AimedWeaponId=Accepted?Weapon->GetWeaponId():NAME_None;
+ if(HasAuthority()) {
+  bAiming=Accepted; bPredictedAiming=Accepted; ForceNetUpdate();
+  if(IsPlayerControlled()&&!IsLocallyControlled()) ClientConfirmAiming(Accepted,LastServerAimRequestId);
+ } else if(IsLocallyControlled()) {
+  bPredictedAiming=Accepted; ++AimRequestId; ServerSetAiming(Requested,AimRequestId);
+ }
+ RefreshMovementSpeed();
+}
+void AVanthexCharacter::ServerSetAiming_Implementation(bool Requested,uint16 RequestId)
+{
+ LastServerAimRequestId=RequestId; SetAiming(Requested);
+}
+void AVanthexCharacter::ClientConfirmAiming_Implementation(bool Accepted,uint16 RequestId)
+{
+ // An older press acknowledgement must not undo a newer local release.
+ if(RequestId!=AimRequestId) return;
+ bPredictedAiming=Accepted;
+ AimedWeaponId=Accepted&&Weapon?Weapon->GetWeaponId():NAME_None;
+ if(!Accepted) bAimInputHeld=false;
+ RefreshMovementSpeed();
+}
+void AVanthexCharacter::StartAimingInput() { bAimInputHeld=true; SetAiming(true); }
+void AVanthexCharacter::StopAimingInput() { SetAiming(false); }
+void AVanthexCharacter::RefreshMovementSpeed()
+{
+ if(!GetCharacterMovement()) return;
+ const float Scale=IsAiming()&&Weapon?VanthexWeaponPresentation::Aim(Weapon->GetWeaponId()).MovementScale:1.f;
+ GetCharacterMovement()->MaxWalkSpeed=(bSprintWanted?SprintSpeed:WalkSpeed)*Scale;
+ GetCharacterMovement()->MaxWalkSpeedCrouched=280.f*(IsAiming()?.7f:1.f);
+}
+void AVanthexCharacter::TickAiming(float Delta)
+{
+ const bool Pending=HasAuthority()?bAiming:bPredictedAiming;
+ if(Pending&&(!CanAim()||!Weapon||AimedWeaponId!=Weapon->GetWeaponId())) SetAiming(false);
+ if(IsLocallyControlled()) {
+  if(const auto* PC=Cast<APlayerController>(Controller))
+   if((bAimInputHeld&&!PC->IsInputKeyDown(EKeys::RightMouseButton))||((bAiming||bPredictedAiming)&&PC->bShowMouseCursor)) SetAiming(false);
+  const bool Active=IsAiming();
+  if(Active&&!bAimCameraManaged&&FirstPersonCamera) { HipFieldOfView=FirstPersonCamera->FieldOfView; bAimCameraManaged=true; }
+  AimBlend=FMath::FInterpTo(AimBlend,Active?1.f:0.f,Delta,16.f);
+  if(AimBlend<.001f) AimBlend=0;
+  if(AimBlend>.999f) AimBlend=1;
+  if(bAimCameraManaged&&FirstPersonCamera) {
+   const float Target=Weapon?VanthexWeaponPresentation::Aim(Weapon->GetWeaponId()).FieldOfView:HipFieldOfView;
+   FirstPersonCamera->SetFieldOfView(FMath::Lerp(HipFieldOfView,Target,AimBlend));
+   if(!Active&&AimBlend==0) bAimCameraManaged=false;
+  }
+ }
+ if(HasAuthority()||IsLocallyControlled()) RefreshMovementSpeed();
 }
 
 void AVanthexCharacter::SetSprinting(bool bNewSprinting)
 {
+ if(bNewSprinting) SetAiming(false);
  if(bNewSprinting&&!CanPerformRoundActions()) return;
  if (!HasAuthority()) ServerAction(6, bNewSprinting);
 	if (Health && Health->IsDead())
@@ -364,7 +443,7 @@ void AVanthexCharacter::SetSprinting(bool bNewSprinting)
 	}
 
 	bSprintWanted = bNewSprinting;
-	GetCharacterMovement()->MaxWalkSpeed = bSprintWanted ? SprintSpeed : WalkSpeed;
+ RefreshMovementSpeed();
 }
 
 void AVanthexCharacter::SetCrouching(bool bNewCrouching)
@@ -425,6 +504,7 @@ void AVanthexCharacter::StopFire()
 
 void AVanthexCharacter::StartReload()
 {
+ SetAiming(false);
  if(!CanPerformRoundActions()) return;
  if (!HasAuthority()) { ServerAction(2, false); return; }
 	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
@@ -516,6 +596,8 @@ bool AVanthexCharacter::IsCarryingCore() const
 
 void AVanthexCharacter::PrepareForRound(const FTransform& Spawn)
 {
+ SetAiming(false);
+ if(Gadgets)Gadgets->ResetForRound();
 	SetHoldForward(false);
  AbilityReadyTime = 0.f;
 	bSprintWanted = false;
@@ -581,6 +663,7 @@ void AVanthexCharacter::SetTeamAppearance(EVanthexTeam Team)
 
 void AVanthexCharacter::HandleDeath(AActor* /*DeadActor*/)
 {
+ SetAiming(false);
 	if (Equipment) Equipment->ResetEquipment();
 	StopFire();
 	if (Weapon) { Weapon->CancelReload(); }
@@ -606,6 +689,7 @@ void AVanthexCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
  Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  DOREPLIFETIME(AVanthexCharacter, Weapon);
  DOREPLIFETIME(AVanthexCharacter, AbilityReadyTime);
+ DOREPLIFETIME(AVanthexCharacter,bAiming);
 }
 
 void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled) {
@@ -614,13 +698,13 @@ void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled)
 
 
 void AVanthexCharacter::InteractShift() { ServerUseDevice(false); }
-void AVanthexCharacter::SelectRifle() { if (Equipment) Equipment->SelectRifle(); }
-void AVanthexCharacter::SelectPistol() { if (Equipment) Equipment->SelectPistol(); }
-void AVanthexCharacter::SelectKnife() { if (Equipment) Equipment->SelectKnife(); }
+void AVanthexCharacter::SelectRifle() { SetAiming(false); if (Equipment) Equipment->SelectRifle(); }
+void AVanthexCharacter::SelectPistol() { SetAiming(false); if (Equipment) Equipment->SelectPistol(); }
+void AVanthexCharacter::SelectKnife() { SetAiming(false); if (Equipment) Equipment->SelectKnife(); }
 bool AVanthexCharacter::CanUseRifle() const { return CanPerformRoundActions() && (!Health || !Health->IsDead()) && (!Equipment || Equipment->CanUseRifle()); }
 void AVanthexCharacter::UseOperator() { ServerUseDevice(true); }
 void AVanthexCharacter::ServerUseDevice_Implementation(bool bRemote) {
- if (!CanPerformRoundActions() || Health->IsDead() || (bRemote && GetWorld()->GetTimeSeconds()<AbilityReadyTime)) return;
+ if (!CanPerformRoundActions() || Health->IsDead() || (Gadgets&&Gadgets->IsJammed()) || (bRemote && GetWorld()->GetTimeSeconds()<AbilityReadyTime)) return;
  AVanthexShiftDevice* Best=nullptr; float Distance=bRemote ? 1200.f : 250.f;
  for (TActorIterator<AVanthexShiftDevice> It(GetWorld()); It; ++It) {
   const FVector Offset=It->InteractionPoint(GetActorLocation())-GetPawnViewLocation();
@@ -658,4 +742,26 @@ void AVanthexCharacter::ClientWeaponRecoil_Implementation(FVector2D Kick)
  auto Rotation=GetController()->GetControlRotation();
  Rotation.Pitch=FMath::Clamp(FRotator::NormalizeAxis(Rotation.Pitch)+Kick.X,-89.f,89.f);
  Rotation.Yaw+=Kick.Y; GetController()->SetControlRotation(Rotation);
+}
+
+void AVanthexCharacter::UseGadgetOne(){if(Gadgets)Gadgets->UseSlot(0);}
+void AVanthexCharacter::UseGadgetTwo(){if(Gadgets)Gadgets->UseSlot(1);}
+FVector AVanthexCharacter::GetPawnViewLocation()const
+{
+ return FirstPersonCamera?FirstPersonCamera->GetComponentLocation():Super::GetPawnViewLocation();
+}
+void AVanthexCharacter::OnStartCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
+{
+ Super::OnStartCrouch(HalfHeightAdjust,ScaledHalfHeightAdjust);
+ if(FirstPersonCamera)FirstPersonCamera->SetRelativeLocation(FVector(0,0,42));
+ // Fallback hit geometry follows the shortened capsule. ARC adds its own bone hit zones.
+ if(BodyMesh){BodyMesh->SetRelativeLocation(FVector(0,0,-8));BodyMesh->SetRelativeScale3D(FVector(.7,.7,.85));}
+ if(HeadMesh)HeadMesh->SetRelativeLocation(FVector(0,0,42));
+}
+void AVanthexCharacter::OnEndCrouch(float HalfHeightAdjust,float ScaledHalfHeightAdjust)
+{
+ Super::OnEndCrouch(HalfHeightAdjust,ScaledHalfHeightAdjust);
+ if(FirstPersonCamera)FirstPersonCamera->SetRelativeLocation(FVector(0,0,64));
+ if(BodyMesh){BodyMesh->SetRelativeLocation(FVector::ZeroVector);BodyMesh->SetRelativeScale3D(FVector(.7,.7,1.5));}
+ if(HeadMesh)HeadMesh->SetRelativeLocation(FVector(0,0,70));
 }

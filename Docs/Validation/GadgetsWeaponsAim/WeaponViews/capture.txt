@@ -1,0 +1,13 @@
+PASS 12 fresh first-person and crouched-operator model views
+../../../../../Vanthex/Saved/WeaponModelShots/01_Pistol_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/02_P250_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/03_MP5_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/04_MP7_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/05_M4_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/06_AK_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/07_AUG_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/08_DMR_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/09_Shotgun_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/10_Knife_first_person.png
+../../../../../Vanthex/Saved/WeaponModelShots/11_AUG_operator.png
+../../../../../Vanthex/Saved/WeaponModelShots/12_AUG_crouch.png

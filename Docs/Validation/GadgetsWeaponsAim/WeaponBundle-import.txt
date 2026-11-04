@@ -1,0 +1,11 @@
+OVERALL PASS models=3. Licensed derived assets are local-only under /Game/Vanthex/Imported.
+PASS SM_M4_Body triangles=9709 materials=2 bounds=(X=53.546 Y=3.739 Z=13.377)
+PASS SM_M4_Magazine triangles=1100 materials=2 bounds=(X=4.744 Y=1.343 Z=10.921)
+PASS SM_M4_Bolt triangles=312 materials=2 bounds=(X=5.742 Y=3.419 Z=0.732)
+MODEL M4 source=/Game/FPS_Weapon_Bundle/Weapons/Meshes/AR4/SK_AR4_X.SK_AR4_X hiddenSpentCaseTriangles=0 muzzle=(X=33.977 Y=0.000 Z=3.022) sight=(X=0.544 Y=0.000 Z=7.060) pitch=0.527985
+PASS SM_AK_Body triangles=5482 materials=2 bounds=(X=51.718 Y=2.917 Z=11.560)
+PASS SM_AK_Magazine triangles=1223 materials=2 bounds=(X=8.627 Y=2.144 Z=12.594)
+PASS SM_AK_Bolt triangles=108 materials=2 bounds=(X=4.989 Y=2.062 Z=1.618)
+MODEL AK source=/Game/FPS_Weapon_Bundle/Weapons/Meshes/Ka47/SK_KA47_X.SK_KA47_X hiddenSpentCaseTriangles=0 muzzle=(X=35.385 Y=0.000 Z=1.611) sight=(X=10.965 Y=0.000 Z=4.847) pitch=0.554724
+PASS SM_Knife_Body triangles=2098 materials=1 bounds=(X=31.438 Y=3.110 Z=7.789)
+MODEL Knife source=/Game/FPS_Weapon_Bundle/Weapons/Meshes/M9_Knife/SK_M9_Knife_X.SK_M9_Knife_X hiddenSpentCaseTriangles=0 muzzle=(X=20.285 Y=0.000 Z=0.000) sight=(X=0.000 Y=0.000 Z=0.000) pitch=0.000000

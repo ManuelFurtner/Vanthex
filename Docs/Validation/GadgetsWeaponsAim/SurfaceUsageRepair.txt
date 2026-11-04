@@ -1,0 +1,6 @@
+OVERALL PASS
+Material=/Game/Vanthex/Materials/M_VanthexSurface.M_VanthexSurface
+SkeletalMeshUsageBefore=0
+SkeletalMeshUsageAfter=1
+ExpressionsPreserved=14
+Only the existing surface material was updated; no map, mesh or material graph regeneration.

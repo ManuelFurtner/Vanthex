@@ -83,7 +83,7 @@ void UVanthexBuyMenuComponent::Open()
   const auto* PC = Cast<AVanthexPlayerController>(GetOwner()); const auto* PS = PC ? PC->GetPlayerState<AVanthexPlayerState>() : nullptr;
   if (!PS) return FText::GetEmpty(); const auto& E = PS->GetEconomy();
   return FText::FromString(FString::Printf(TEXT("1  %s     2  %s     3  Messer\nRuestung %.0f     |     Gadgets %d / 2"), E.PrimaryWeapon.IsNone() ? TEXT("Kein Primaer") : *E.PrimaryWeapon.ToString(), *E.Sidearm.ToString(), E.ArmorPoints, E.Gadgets.Num())); })]
- +SVerticalBox::Slot().AutoHeight().Padding(12,2)[SNew(STextBlock).TextStyle(&Small).Text(FText::FromString(TEXT("Gadget-Plaetze sind vorbereitet; Gadget-Einsatz folgt. Ersatzkaeufe ohne Erstattung.")))]
+ +SVerticalBox::Slot().AutoHeight().Padding(12,2)[SNew(STextBlock).TextStyle(&Small).Text(FText::FromString(TEXT("4 / 5: Gadget werfen. Flash blendet auch Verbuendete. Ersatzkaeufe ohne Erstattung.")))]
  +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(STextBlock).TextStyle(&Text).Text_Lambda([this]() { return FText::FromString(Feedback); })]
  +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(SButton).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this]() { Close(); return FReply::Handled(); })[SNew(STextBlock).TextStyle(&Text).Text(FText::FromString(TEXT("Bereit / Schliessen")))]];
  Menu = SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.012f,.022f,.035f,.98f)).HAlign(HAlign_Center).VAlign(VAlign_Center)
