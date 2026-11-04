@@ -1,0 +1,150 @@
+[
+  {
+    "map": "/Game/Vanthex/Maps/GridV4",
+    "view": "12_connected_rooms",
+    "camera": [
+      -1800,
+      -400,
+      165
+    ],
+    "blocking": false,
+    "initial_overlap": false,
+    "distance": null,
+    "details": "None",
+    "near_geometry": [
+      {
+        "actor": "GridV4_SM_ConcreteWall",
+        "mesh": "SM_ConcreteWall",
+        "instance": 1388,
+        "distance_to_bounds": 0.0,
+        "location": "<Struct 'Vector' (0x0000018132713170) {x: -1800.000000, y: -400.000000, z: 100.000000}>",
+        "rotation": "<Struct 'Rotator' (0x0000018122081140) {pitch: 0.000000, yaw: 90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x0000018132713190) {x: 0.993722, y: 0.688888, z: 1.000000}>",
+        "local_offset": "<Struct 'Vector' (0x0000018122080790) {x: 0.000000, y: 0.000000, z: 65.000000}>",
+        "bounds_extent": "<Struct 'Vector' (0x0000018135B06E18) {x: 201.263489, y: 21.774208, z: 100.000000}>"
+      },
+      {
+        "actor": "Structure_660",
+        "mesh": "Cube",
+        "instance": -1,
+        "distance_to_bounds": 0.0,
+        "location": "<Struct 'Vector' (0x0000018116DA08F0) {x: -1800.000000, y: -600.000000, z: 210.000000}>",
+        "rotation": "<Struct 'Rotator' (0x0000018122080790) {pitch: 0.000000, yaw: 90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x0000018116DA0910) {x: 8.000000, y: 0.280000, z: 4.200000}>",
+        "local_offset": "<Struct 'Vector' (0x0000018122081140) {x: 25.000000, y: 0.000000, z: -10.714286}>",
+        "bounds_extent": "<Struct 'Vector' (0x00000181216F6E58) {x: 50.000000, y: 50.000000, z: 50.000000}>"
+      }
+    ]
+  },
+  {
+    "map": "/Game/Vanthex/Maps/GridV4",
+    "view": "22_closed_service_boundary",
+    "camera": [
+      -700,
+      -2700,
+      -435
+    ],
+    "blocking": false,
+    "initial_overlap": false,
+    "distance": null,
+    "details": "None",
+    "near_geometry": [
+      {
+        "actor": "GridV4_SM_Stair_01",
+        "mesh": "SM_Stair_01",
+        "instance": 13,
+        "distance_to_bounds": 27.121742633619778,
+        "location": "<Struct 'Vector' (0x0000018132667B90) {x: -517.149583, y: -2941.823016, z: -407.878257}>",
+        "rotation": "<Struct 'Rotator' (0x0000018122080790) {pitch: -0.000000, yaw: -90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x0000018132667BB0) {x: 1.292247, y: 1.890080, z: 0.617136}>",
+        "local_offset": "<Struct 'Vector' (0x0000018122081140) {x: 75.819344, y: 0.000000, z: -271.473571}>",
+        "bounds_extent": "<Struct 'Vector' (0x00000181216F6B18) {x: 262.971191, y: 105.815651, z: 227.525803}>"
+      }
+    ]
+  },
+  {
+    "map": "/Game/Vanthex/Experiments/GraphicsLab/Maps/FacilityCandidate_GridV4",
+    "view": "12_connected_rooms",
+    "camera": [
+      -1800,
+      -400,
+      165
+    ],
+    "blocking": false,
+    "initial_overlap": false,
+    "distance": null,
+    "details": "None",
+    "near_geometry": [
+      {
+        "actor": "GridV4_SM_ConcreteWall",
+        "mesh": "SM_ConcreteWall",
+        "instance": 1388,
+        "distance_to_bounds": 0.0,
+        "location": "<Struct 'Vector' (0x00000181326F33B0) {x: -1800.000000, y: -400.000000, z: 100.000000}>",
+        "rotation": "<Struct 'Rotator' (0x0000018122081140) {pitch: 0.000000, yaw: 90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x00000181326F33D0) {x: 0.993722, y: 0.688888, z: 1.000000}>",
+        "local_offset": "<Struct 'Vector' (0x0000018116E270D0) {x: 0.000000, y: 0.000000, z: 65.000000}>",
+        "bounds_extent": "<Struct 'Vector' (0x000001813A7F16D8) {x: 201.263489, y: 21.774208, z: 100.000000}>"
+      },
+      {
+        "actor": "Structure_660",
+        "mesh": "Cube",
+        "instance": -1,
+        "distance_to_bounds": 0.0,
+        "location": "<Struct 'Vector' (0x0000018132666C60) {x: -1800.000000, y: -600.000000, z: 210.000000}>",
+        "rotation": "<Struct 'Rotator' (0x00000181220810F0) {pitch: 0.000000, yaw: 90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x0000018132666C80) {x: 8.000000, y: 0.280000, z: 4.200000}>",
+        "local_offset": "<Struct 'Vector' (0x00000181326B29F0) {x: 25.000000, y: 0.000000, z: -10.714286}>",
+        "bounds_extent": "<Struct 'Vector' (0x000001813A7F1818) {x: 50.000000, y: 50.000000, z: 50.000000}>"
+      },
+      {
+        "actor": "FacilityStyle_SM_LabWallCassette",
+        "mesh": "SM_LabWallCassette",
+        "instance": 2728,
+        "distance_to_bounds": 15.19999996750878,
+        "location": "<Struct 'Vector' (0x00000180FC116C60) {x: -1784.799990, y: -400.000000, z: 100.000000}>",
+        "rotation": "<Struct 'Rotator' (0x0000018122015410) {pitch: -0.000000, yaw: -90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x00000180FC116C80) {x: 1.351351, y: 0.793648, z: 1.020408}>",
+        "local_offset": "<Struct 'Vector' (0x00000181326B29F0) {x: 0.035004, y: -22.307216, z: 63.671375}>",
+        "bounds_extent": "<Struct 'Vector' (0x000001813A7F1D18) {x: 148.035004, y: 3.155139, z: 98.028625}>"
+      },
+      {
+        "actor": "FacilityStyle_SM_LabWallCassette",
+        "mesh": "SM_LabWallCassette",
+        "instance": 2729,
+        "distance_to_bounds": 15.19999996750878,
+        "location": "<Struct 'Vector' (0x00000180FC116CF0) {x: -1815.200010, y: -400.000000, z: 100.000000}>",
+        "rotation": "<Struct 'Rotator' (0x00000181326B29F0) {pitch: 0.000000, yaw: 90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x00000180FC116D10) {x: 1.351351, y: 0.793648, z: 1.020408}>",
+        "local_offset": "<Struct 'Vector' (0x00000181326B2B30) {x: 0.035004, y: -22.307216, z: 63.671375}>",
+        "bounds_extent": "<Struct 'Vector' (0x000001813A7F1D18) {x: 148.035004, y: 3.155139, z: 98.028625}>"
+      }
+    ]
+  },
+  {
+    "map": "/Game/Vanthex/Experiments/GraphicsLab/Maps/FacilityCandidate_GridV4",
+    "view": "22_closed_service_boundary",
+    "camera": [
+      -700,
+      -2700,
+      -435
+    ],
+    "blocking": false,
+    "initial_overlap": false,
+    "distance": null,
+    "details": "None",
+    "near_geometry": [
+      {
+        "actor": "GridV4_SM_Stair_01",
+        "mesh": "SM_Stair_01",
+        "instance": 13,
+        "distance_to_bounds": 27.121742633619778,
+        "location": "<Struct 'Vector' (0x0000018132666A20) {x: -517.149583, y: -2941.823016, z: -407.878257}>",
+        "rotation": "<Struct 'Rotator' (0x00000181326B17D0) {pitch: -0.000000, yaw: -90.000000, roll: -0.000000}>",
+        "scale": "<Struct 'Vector' (0x0000018132666A40) {x: 1.292247, y: 1.890080, z: 0.617136}>",
+        "local_offset": "<Struct 'Vector' (0x00000181326B2B30) {x: 75.819344, y: 0.000000, z: -271.473571}>",
+        "bounds_extent": "<Struct 'Vector' (0x000001813A7F1D98) {x: 262.971191, y: 105.815651, z: 227.525803}>"
+      }
+    ]
+  }
+]

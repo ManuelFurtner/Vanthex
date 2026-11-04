@@ -1,0 +1,28 @@
+{
+  "revision": 4,
+  "map": "/Game/Vanthex/Experiments/GraphicsLab/Maps/PowerLab_V4_GridV4",
+  "production_sha256": "c41322ab876290c3597cb7be4f5594089f3b8a49ba9526dfdc72315517ca2e6d",
+  "collision_components": 1753,
+  "collision_signature_equal": true,
+  "collision_rays": 306,
+  "collision_rays_equal": true,
+  "new_actors": 148,
+  "removed_visual_instances": {
+    "GridV4_SM_LampSet_01": 2,
+    "GridV4_SM_CeilingVentilation01": 2,
+    "GridV4_SM_Boiler_01": 3,
+    "GridV4_SM_Pipe_round_long": 2
+  },
+  "new_mesh_bounds": {
+    "SM_LabWallCassette": [
+      148.0,
+      3.15,
+      98.0
+    ],
+    "SM_LabPowerCabinet": [
+      131.2,
+      108.875,
+      149.5
+    ]
+  }
+}

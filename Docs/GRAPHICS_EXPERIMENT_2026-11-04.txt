@@ -1,0 +1,313 @@
+VANTHEX – AUTONOMES GRAFIKEXPERIMENT / TECHNISCHER BERICHT
+Stand: 4. November 2026. Projekt: H:\Vanthex. Engine: Unreal Engine 5.8.3.
+
+HISTORISCHER UMFANG: Dieser Bericht beschreibt die abgeschlossene Einraum-PoC-Phase.
+Anschließend hat der Nutzer die Optik freigegeben und ausdrücklich die Übertragung
+auf die ganze Karte beauftragt. Aussagen zur unveränderten Produktionskarte gelten
+für den PoC-Zeitpunkt. Der anschließende Gesamtstand wird separat dokumentiert.
+
+ERGEBNIS
+
+Der belastbare Weg ist Unreal Editor Python mit den vorhandenen Industrie-Assets,
+ergänzt um Blender Python für eigene Architekturmodule. Eine vollständig autonome
+Twinmotion-Autorenpipeline wurde NICHT nachgewiesen und nicht vorgetäuscht.
+
+Ein separates Experiment für TURBINE POWER, Raum-ID 8 / Beschilderung 09, wurde
+erstellt und mehrfach anhand echter Unreal-Spielaufnahmen korrigiert. Die finale
+Variante heißt PowerLab_V4_GridV4. Das V4 in PowerLab_V4 bezeichnet die vierte
+Versuchsvariante, nicht eine neue Version der Produktionskarte.
+
+Die Produktionskarte, Gameplay-Quelltexte und Startmap-Konfiguration sind unverändert.
+Das Ergebnis ist ein überprüfbarer visueller Prototyp, kein fertiger fotorealistischer
+AAA-Raum und keine Freigabe für die automatische Umgestaltung aller 25 Räume.
+
+1. INSTALLATION UND TWINMOTION-FÄHIGKEITEN
+
+Lokal nachgewiesen:
+- Epic-Launcher-Manifest: Twinmotion 2026.2 Preview.
+- Build: RELEASE_WINDOWS_2026.2.57279582.
+- Installation: C:\Program Files\Epic Games\Twinmotion2026.2.
+- Content\Library: 111 .tmi-Dateien, insgesamt 341.757.952 Bytes;
+  81 Dateien unter Presets und 30 unter SBSAR.
+- Zusätzlich ein gepackter Twinmotion-WindowsCookedEditor.pak von rund 4,39 GiB.
+  Diese Paketgröße ist keine Anzahl frei exportierbarer Bibliotheksobjekte.
+- Keine gesonderte heruntergeladene Benutzer-/Cloudbibliothek in den untersuchten
+  Standardverzeichnissen gefunden. Das ist keine vollständige Festplattenforensik.
+- Das Verzeichnis SDK enthält ActivateSupportFiles.bat, das UE_SDKS_ROOT leert.
+  Es ist kein belegter Zugang zur automatischen Szenengestaltung.
+- Content\Scripts enthält drei Shellskripte für Update/Deinstallation auf macOS,
+  keine nachgewiesene Python- oder Szenenautoren-API.
+
+Die offiziellen Versionsseiten führen 2026.1 und 2026.2 Preview. Weitere ältere
+Versionsfamilien sind dokumentiert. Welche Downloads das konkrete Epic-Konto
+anbietet, wurde nicht durch Installieren weiterer Versionen getestet.
+Quelle: https://dev.epicgames.com/documentation/en-us/twinmotion/release-notes-for-twinmotion
+Preview: https://dev.epicgames.com/documentation/twinmotion/twinmotion-2026-2-preview-release-notes
+
+Die offiziellen Dokumente und untersuchten Installationsdateien liefern keinen
+verifizierten öffentlichen Python-/REST-/CLI-Zugang zum freien Erstellen, Platzieren,
+Materialisieren und Exportieren einer Twinmotion-Szene. Das bedeutet nicht den
+Beweis, dass keine interne Schnittstelle existiert. Es bedeutet: Für diesen Auftrag
+steht keine nachgewiesene, unterstützte Autorenautomatisierung zur Verfügung.
+Twinmotion wurde nicht durch undokumentierte Befehle, Reverse Engineering oder
+eine vorgetäuschte API angesteuert. Eine komplette UI-Makro-Pipeline wurde nicht
+erprobt. Sie wäre von Fenstern, Dialogen, Ladezeiten und Versionsänderungen abhängig.
+
+Verifizierte Austauschwege:
+- Datasmith Direct Link synchronisiert unterstützte DCC-/CAD-Quellen nach Twinmotion;
+  je nach Anwendung stehen manuelle Synchronisation und Auto Sync zur Verfügung.
+  Das ist keine allgemeine API für die Bearbeitung der Twinmotion-Szene.
+  https://dev.epicgames.com/documentation/twinmotion/datasmith-direct-link-workflow-in-twinmotion
+- Twinmotion exportiert .udatasmith plus zugehörige Assets über seine Exportfunktion.
+  Unreal importiert diese mit dem Datasmith Importer; dokumentierte Voraussetzung
+  ist UE 5.4 oder neuer. UE 5.8.3 erfüllt diese Mindestversion.
+  https://dev.epicgames.com/documentation/en-us/twinmotion/twinmotion-to-unreal-engine-workflow
+- Unreal besitzt eine skriptbare Datasmith-Importoberfläche. Lokal geprüft wurde
+  DatasmithBlueprintLibrary.h mit ConstructDatasmithSceneFromFile und Importfunktionen.
+  Vorbereitete Datasmith-Dateien können damit automatisiert verarbeitet werden.
+  Ein tatsächlicher 2026.2-Preview-Export mit anschließendem UE-Import wurde hier
+  NICHT durchgeführt. Kompatibilität im konkreten Roundtrip bleibt ungetestet.
+- .tm/.tmi sind nicht gleichbedeutend mit direkt importierbaren Unreal-Projektassets.
+
+Datasmith überträgt nicht die gesamte Twinmotion-Darstellung verlustfrei. Materialien,
+Lichter und Landschaften können Nacharbeit benötigen; einige Inhaltsarten werden
+nicht übertragen. Optimierter Export spart wiederholte Assets, führt aber auch zu
+gemeinsam genutzten Materialien. Für ein Spiel bleiben Kollision, Navigation und
+Laufzeitbudget eigenständige Aufgaben.
+Quelle: https://dev.epicgames.com/documentation/en-us/twinmotion/overview-of-the-twinmotion-to-unreal-engine-workflow
+
+2. VERGLEICH DER DREI WORKFLOWS
+
+A – Codex -> Twinmotion -> Datasmith -> Unreal
+Qualitätspotenzial: hoch für Visualisierung.
+Automatisierung: Import/Synchronisation teilweise dokumentiert; freie Szenenbearbeitung
+und Exportkette als unbeaufsichtigte Autorenpipeline nicht verifiziert.
+Zuverlässigkeit: zusätzliche Anwendung, Vorschauversion, Übertragungsunterschiede.
+Performance: Visualisierungsobjekte benötigen eine gesonderte Spieleoptimierung.
+Entscheidung: für diesen autonomen Spielraum nicht gewählt.
+
+B – Codex -> Blender Python -> Unreal
+Qualitätspotenzial: hohe Kontrolle über Form, Maße, UVs, Kanten und Varianten.
+Automatisierung: lokal tatsächlich ausgeführt mit Blender 4.3.2 im Hintergrund.
+Zuverlässigkeit: reproduzierbare Skripte; Einheiten und Achsen müssen geprüft werden.
+Performance: durch Geometriebudget und Wiederverwendung steuerbar.
+Entscheidung: als Ergänzung für fünf eigene Modularten verwendet.
+CLI-Quelle: https://developer.blender.org/docs/handbook/testing/python/
+
+C – Codex -> Unreal Python / vorhandene Fab-Assets
+Qualitätspotenzial: Zugriff auf die tatsächliche Spielbeleuchtung, Materialien und Kamera.
+Automatisierung: lokal nachgewiesen für Inventar, Map-Kopie, Import, Platzierung,
+Materialerzeugung, Beleuchtung, Speichern und Kollisionsprüfung.
+Zuverlässigkeit: keine zusätzliche Szenenübersetzung für vorhandene Unreal-Assets.
+Performance: im Zielrenderer direkt messbar und mit Instancing/LOD weiter optimierbar.
+Entscheidung: Hauptworkflow, ergänzt um B. PCG ist installiert, wurde aber nicht als
+Graph verwendet. Diese Arbeit darf nicht als getesteter PCG-Workflow bezeichnet werden.
+Python läuft zur Erstellung im Editor; das fertige Level benötigt kein Python zur Laufzeit.
+Quelle: https://dev.epicgames.com/documentation/en-us/unreal-engine/scripting-the-unreal-editor-using-python
+
+3. TATSÄCHLICH ERSTELLTES EXPERIMENT
+
+Finale Map:
+/Game/Vanthex/Experiments/GraphicsLab/Maps/PowerLab_V4_GridV4
+
+Datei:
+H:\Vanthex\Content\Vanthex\Experiments\GraphicsLab\Maps\PowerLab_V4_GridV4.umap
+
+Es handelt sich um eine Kopie der bestehenden Gesamtkarte. Die neue Ausstattung
+konzentriert sich auf den Raum bei X=2100..3900, Y=2400..3600, Boden Z=0, Decke Z=420.
+Damit bleiben die vorhandenen Verbindungen, GameMode-Regeln und Laufwege erhalten.
+
+Neu bzw. ersetzt:
+- Fünf eigene Blender-Modularten: Wandkassette, Deckenmodul, Stütze, Kabeltrasse,
+  Stromschrank mit Türen, Griffen, Lüftungsgittern, seitlichem Lüftergitter und Schrauben.
+- Modular gegliederte Wand- und Deckenflächen mit echten abgeschrägten Kanten.
+- Vorhandene Industrie-PBR-Oberflächen: Betonboden mit Base Color,
+  Normal und Roughness aus vorhandenen Texturen; Metallmikrostruktur für eigene Module.
+- Drei neue Stromaggregate an den drei vorhandenen Deckungspositionen; zusätzliche
+  bestehende Motor- und Elektrobauteile aus dem lokalen Assetbestand.
+- Durchgehende Leitungen, Kabeltrassen und Deckenbefestigungen.
+- Vier korrigiert ausgerichtete praktische Flächenleuchten, drei schwache Service-Lichter.
+- Wandanschlusskästen, Anlagenkennzeichen und flache Sicherheitsmarkierungen.
+- Vorhandene Raumkennzeichnung und Hauptwege beibehalten.
+- Atmosphäre über Lichtkontrast, Materialrauheit und technische Gliederung;
+  keine zusätzliche dichte Nebelschicht, welche die Sicht auf Gegner verdeckt.
+
+148 neue Actors; drei alte Raumlicht-Actors entfernt. Netto: 2.040 -> 2.185 Actors.
+Neun lokale visuelle Instanzen ersetzt: drei Boiler, zwei Leuchten, zwei extrem
+gestreckte Lüftungsteile und zwei gestreckte Rohre. Die vorhandenen visuellen
+Strukturgruppen außerhalb des Raums wurden nicht neu aufgebaut.
+
+Die neuen Dekorationen verwenden NoCollision. Vorhandene Deckungsvolumen und
+Strukturkollisionen bleiben erhalten. Die Kabinettenveloppen sind an die bisherigen
+250 x 210 x 300 cm Deckungsvolumen angepasst. Kleine Griffe/Vertiefungen besitzen
+keine separaten Trefferkörper; das ist weiterhin vereinfachte Spielkollision.
+
+4. AUTOMATISIERUNG UND KORREKTURDURCHLÄUFE
+
+Tatsächlich automatisiert wurden:
+- Lokale Werkzeug-/Assetinventur, Meshbounds und Materialreferenzen auslesen.
+- Fünf Mesharten per Blender-Python erzeugen und als FBX exportieren.
+- Aus bestehender Map separate Versuchsmaps erzeugen.
+- Assets importieren, eigene Materialien erstellen, Objekte und Licht platzieren.
+- Kollisionssignaturen, Strahl- und Kapselabfragen vergleichen.
+- Unreal im Spielmodus starten, feste Kamera setzen und echte PNG-Aufnahmen erstellen.
+- Bildschirmauflösung und Messablauf für Vorher/Nachher gleich einstellen.
+
+V1: erste Geometrie-/Lichtvariante. Aufnahme zeigte Überbelichtung, Schattenfehler,
+falsche Orientierungen und unpassende Exportskalierung.
+V2: Einheiten korrigiert, PBR-Boden und Metallnormal ergänzt; das Bild blieb zu hell.
+V3: Ursache im tatsächlich verwendeten Kamera-/Rotationscode korrigiert. Python-
+Rotator verwendet hier eine andere Positionsargument-Reihenfolge als angenommen;
+nun werden benannte Argumente verwendet. Die Spielkamera fixiert ihre Belichtung,
+weshalb nur das Ändern eines Postprocess-Volumes nicht wirkte. Die Lichtstärken
+wurden an die bestehende Kamera angepasst. Keine Gameplay-Kameraänderung vorgenommen.
+V4: Rohrlücken geschlossen, Leuchtenflächen korrekt nach unten gedreht, Halterungen,
+Schrankkennzeichen und Anschlusskästen ergänzt.
+
+Während einer Korrektur setzte asynchrones Mesh-Setup einzelne Dekorationen wieder
+auf BlockAll. Der Signaturtest erkannte dies; feste NoCollision-Profile und eine
+zusätzliche Prüfung nach dem Neuladen beheben den Fall im finalen Experiment.
+
+Der Nutzer musste für dieses Experiment keine Objekte modellieren, setzen oder
+Materialien manuell bearbeiten. Die Agentenarbeit enthielt visuelle Entscheidungen
+nach Bildprüfung; dies ist keine unbeaufsichtigte KI mit garantierter Qualitätskontrolle.
+
+5. TESTERGEBNISSE UND BILDVERGLEICH
+
+Finale Nachladeprüfung:
+- 1.753 vorhandene Kollisionskomponenten: Signaturen identisch.
+- 306 Visibility-Strahlabfragen: identische Treffer/Entfernungen/Positionen.
+- 51 Kapselabfragen (Radius 34 cm, Halbhöhe 88 cm): identische Ergebnisse.
+- Alle neuen statischen Dekorationen: NoCollision.
+- Gespeicherte Map wurde in Unreal geladen und im Spielmodus gerendert.
+- Generator und Nachladeprüfung mit Assertions erfolgreich abgeschlossen.
+- Keine Änderung an C++-Quellen; kein neuer C++-Build erforderlich oder behauptet.
+- Kein neuer vollständiger Multiplayer-/Cook-/Shipping-Test in diesem Grafikauftrag.
+
+Originaldatei SHA256 vor und nach dem Experiment:
+C41322AB876290C3597CB7BE4F5594089F3B8A49BA9526DFDC72315517CA2E6D
+
+Die Bilder sind echte Unreal-Spielaufnahmen, keine KI-Konzeptbilder und keine
+nachträglich retuschierten Renderings. Gleiche Position (2350,2700,165), gleiches
+Ziel (3500,3250,180), gleiche Spielkamera und 1920 x 1080 Pixel.
+
+Visuelle Bewertung:
+- Geometrie: zusätzliche Kanten, Fugen, Befestigungen und Untergliederung; bessere
+  technische Lesbarkeit. Die großen Eigenbau-Schränke sind weiterhin einfach.
+- Materialien: matter, strukturierter Beton statt des sehr glänzenden bisherigen
+  Bodeneindrucks; subtilere Metalloberflächen. Wand-/Schrankflächen sind noch recht
+  homogen und benötigen für einen finalen Fotorealismus gezieltere Abnutzung.
+- Licht: kontrollierte Arbeitslichtflächen, lesbare Anlagen und stärkerer Kontrast
+  zum Verbindungsgang. Dunkle obere Raumbereiche bleiben bewusst erhalten.
+- Tiefe: zusätzliche Decken- und Wandschichten; der Raum wirkt konstruktiv gegliedert.
+- Gameplay-Lesbarkeit: Durchgang und Bodenfläche bleiben sichtbar und frei. Die
+  Szenenaufnahme blendet die Spielfiguren aus; Gegnererkennung im Gefecht wurde
+  damit ausdrücklich nicht nachgewiesen.
+- Der Prototyp zeigt den Automatisierungsweg. Vollständiger Fotorealismus ist anhand
+  dieser Bilder nicht erreicht; insbesondere Schrankdetails und Oberflächenalterung
+  haben noch sichtbaren Entwicklungsbedarf.
+
+Vergleichbare Performance-Aufnahme nach dem Aufwärmen der Asset-Caches:
+Hardware: NVIDIA GeForce RTX 3070 Ti, 8.192 MiB VRAM, Treiber 610.88.
+Unreal Editor im Spielmodus, DX12/Lumen-Projekteinstellungen, 1920 x 1080,
+ScreenPercentage 100, VSync aus, kein FPS-Limit. Gleiche Startparameter, gleiche
+Kamera, gleiche lokale Benutzereinstellungen. Die beiden Prozesse liefen
+nacheinander; kein zweiter Unreal-Test/Blender-Prozess lief während der Messung.
+
+Original:   8,002 Sekunden / 558 Frames / 14,341 ms mittlere Bildzeit (~69,7 FPS).
+Experiment: 8,007 Sekunden / 505 Frames / 15,856 ms mittlere Bildzeit (~63,1 FPS).
+Differenz: +1,515 ms bzw. +10,6 Prozent mittlere Bildzeit, ~9,6 Prozent weniger FPS.
+
+Das ist ein einzelnes ruhendes 8-Sekunden-Messfenster je Variante, kein umfassender
+Benchmark. Gemessen wurde die Bildintervallzeit aus dem bestehenden Capture-Code,
+keine isolierte GPU-Zeit. Keine 1%-Lows, kein VRAM-Peak und keine 25-Raum-/Multiplayer-
+Hochrechnung. Betriebssystem-Hintergrundlast wurde nicht vollständig kontrolliert.
+Erste Läufe während des Cache-Aufbaus wurden nicht für diesen Vergleich verwendet.
+Die neue Optik kostet in dieser Messung Leistung; sie ist keine kostenlose Verbesserung.
+
+6. GRENZEN, MENSCHLICHE ENTSCHEIDUNGEN UND SKALIERUNG
+
+Noch erforderlich sind die visuelle Freigabe, ein tatsächlicher Spieltest mit Gegnern,
+die Auswahl der gewünschten Stilrichtung und bei zukünftigen Downloads das Prüfen
+der konkreten Assetlizenz. Für diesen PoC war keine manuelle Platzierung nötig.
+
+Auf 25 Räume übertragbar ist die Methode, nicht unverändert das aktuelle Raumskript.
+Das Skript enthält absichtlich konkrete TURBINE-POWER-Koordinaten. Für den Ausbau
+braucht es Raumprofile, Öffnungen/Schutzbereiche, Themenvarianten, reproduzierbare
+Seeds, Collider-Prüfungen und Kameraabnahmen je Raum. Wiederholte Module sollten
+als ISM/HISM gruppiert, Schattenlichter budgetiert und LOD/Culling geprüft werden.
+148 zusätzliche Actors pro Raum dürfen nicht einfach ohne Profiling multipliziert
+werden. Die Laufzeit aller 25 neu gestalteten Räume wurde nicht gemessen.
+
+Die Pipeline kann weitere Modelle automatisiert erstellen, ersetzt aber nicht die
+visuelle Bewertung von Proportionen, glaubwürdigen Anschlüssen, Stil und Spielbarkeit.
+Die Kamera besitzt feste Belichtung; physikalische Lichtwerte müssen deshalb im
+Kontext des bestehenden Spiels kalibriert oder später mit einem abgestimmten
+Belichtungskonzept eingeführt werden. Die niedrigen PoC-Lumenwerte sind keine
+lichttechnische Simulation einer realen Industrieanlage.
+
+Auf C: waren nur rund 2,3 GiB frei; Unreal Zen meldete Insufficient Storage (507).
+Für weitere Versuchsläufe wurde ausschließlich per Startparameter ein Dateicache
+unter H:\Vanthex\Saved\GraphicsLab\DDC verwendet. Keine fremden Dateien gelöscht
+und keine globale Cache-/Launcher-Einstellung geändert. Speicherplatz auf C: bleibt
+ein allgemeines Entwicklungsrisiko, obwohl H: ausreichend Platz bietet.
+
+7. LIZENZEN, KOSTEN UND VERÖFFENTLICHUNG
+
+Es wurde nichts gekauft, kein kostenpflichtiger Dienst verwendet und keine neue
+Cloudbibliothek heruntergeladen. Twinmotion-Inhalte wurden nicht in den PoC kopiert.
+
+Die aktuelle Twinmotion-EULA erlaubt bestimmte Inhaltsnutzung zur Visualisierung
+unter anderem in Unreal Engine. Das ist keine pauschale Erlaubnis zur Weitergabe
+roher Bibliotheksdateien oder automatisch eine bestätigte Lizenz für jede Form der
+Spielauslieferung. Vor einer späteren Übernahme konkreter Twinmotion-Bibliotheks-
+inhalte in ein ausgeliefertes Spiel sind deren konkrete Rechte zu klären.
+https://www.twinmotion.com/eula
+
+Die Twinmotion-Preisseite nennt eine kostenlose Nutzung für qualifizierte Nutzer
+unter der Umsatzschwelle von 1 Mio. USD; darüber bzw. für Cloud-Nutzung gelten
+weitere Bedingungen. Die persönliche Qualifikation wurde nicht geprüft, da
+Twinmotion für diesen PoC nicht genutzt wurde.
+https://www.twinmotion.com/license
+
+Die Fab-Standardlizenz erlaubt Einbau in Projekte sowie Zusammenarbeit, erlaubt
+aber keine eigenständige Weiterverteilung der rohen Assets. Ein öffentlicher
+Quellasset-Upload ist deshalb nicht mit einem ausgelieferten Spiel gleichzusetzen.
+Konkrete Erwerbsbelege/Lizenzen des vorhandenen Factory-Pakets wurden nicht neu
+auditiert. Die bereits vereinbarte Regel „Fab nur lokal“ bleibt bestehen.
+https://www.fab.com/eula
+
+Die Twinmotion-Bibliothek umfasst außerdem Inhalte verschiedener Herkunft wie
+Quixel, Sketchfab und Substance. Verfügbarkeit im Bibliotheksfenster ersetzt keine
+Prüfung der konkreten Lizenz; Sketchfab-Inhalte können eigene CC-Bedingungen haben.
+https://dev.epicgames.com/documentation/en-us/twinmotion/the-twinmotion-library
+
+Der gesamte neue Content-Unterordner GraphicsLab ist vorsorglich vom Git-Tracking
+ausgenommen, da Maps/Materialien lokale lizenzierte Inhalte referenzieren und teilweise
+daraus abgeleitet sind. Es erfolgte kein Commit oder Upload für dieses Experiment.
+Die generierten Original-Geometrieskripte enthalten keine extrahierten Fab-Geometrien.
+
+8. DATEIEN UND WIEDERVERWENDUNG
+
+Skripte: H:\Vanthex\Scripts\GraphicsLab\
+- build_modules.py: eigene Blender-Module erzeugen.
+- inspect_room.py: bestehende Raumobjekte und Assetbounds erfassen.
+- build_room.py: separate, nummerierte Versuchskarte erzeugen; verweigert Überschreiben.
+- verify_saved.py: Original/Versuch nach Neuladen auf Kollision vergleichen.
+- Capture-Comparison.ps1: gleiche Vorher-/Nachher-Spielaufnahme, nacheinander.
+- Preview-PowerLab.ps1: Versuch als Spiel starten; mit -Editor im Editor öffnen.
+
+Beispiel für die lokale Vorschau:
+powershell -NoProfile -ExecutionPolicy Bypass -File H:\Vanthex\Scripts\GraphicsLab\Preview-PowerLab.ps1
+
+Rohbelege: H:\Vanthex\Saved\GraphicsLab\
+validation_v4.json, saved_verification_v4.json, build_v4.log, verify_v4.log,
+baseline_warm.log, final_warm.log, dazu PNG-Aufnahmen und timing.csv pro Durchlauf.
+Die Vorstufen V1–V3 und deren Fehlerprotokolle wurden zur Nachvollziehbarkeit behalten.
+Sie sind keine empfohlenen Spielkarten. Die finale Vorschau verweist nur auf V4.
+
+Zur Sicherung/Weitergabe des Berichts liegen die relevanten Ergebnisbilder und
+kompakten Prüfergebnisse zusätzlich unter Docs\Validation\GraphicsLab\.
+Der Bericht trennt bewusst dokumentierte Fähigkeiten, lokal ausgeführte Schritte
+und noch ungetestete Annahmen. Die Produktionskarte wird erst nach Nutzerreview
+in einem neuen, ausdrücklich autorisierten Schritt geändert.

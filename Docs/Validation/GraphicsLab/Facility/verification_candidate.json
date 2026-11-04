@@ -1,0 +1,63 @@
+{
+  "map": "/Game/Vanthex/Experiments/GraphicsLab/Maps/FacilityCandidate_GridV4",
+  "actors": 2182,
+  "rooms": 25,
+  "collision_components": 1753,
+  "queries": 3886,
+  "components_equal": true,
+  "queries_exactly_equal": false,
+  "queries_equal": true,
+  "initial_overlap_contact_variations": [
+    {
+      "index": 11,
+      "before": [
+        0,
+        [
+          -5550,
+          -1000,
+          100.0
+        ],
+        [
+          -5450,
+          -1000,
+          100.0
+        ],
+        true,
+        true,
+        0.0,
+        [
+          -5572.0,
+          -1000.0,
+          67.857
+        ]
+      ],
+      "after": [
+        0,
+        [
+          -5550,
+          -1000,
+          100.0
+        ],
+        [
+          -5450,
+          -1000,
+          100.0
+        ],
+        true,
+        true,
+        0.0,
+        [
+          -5572.0,
+          -1000.0,
+          73.367
+        ]
+      ],
+      "source_initial_overlap_confirmed": true
+    }
+  ],
+  "unexplained_differences": [],
+  "new_decor_collision_errors": [],
+  "missing_visual_meshes": [],
+  "missing_asset_files": [],
+  "experiment_asset_references": []
+}
