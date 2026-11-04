@@ -1,0 +1,327 @@
+VANTHEX – Technische Bestandsaufnahme
+Stand: 4. November 2026, Europe/Vienna
+Untersuchtes Projekt: H:\Vanthex\Vanthex.uproject
+Untersuchter Gameplay-Commit: eb7286d (auf Basis von 5fcb47d)
+
+METHODIK UND GRENZEN
+Dieser Bericht beruht auf dem lokalen Quellcode, Projekt- und Konfigurationsdateien,
+Git-Historie, Map-Dateien sowie vorhandenen Build-, Gameplay-, Netzwerk- und
+Audio-Protokollen. Die unmittelbar zuvor durchgeführten aktuellen Builds und Tests
+sind gesondert von älteren Nachweisen aufgeführt. Während dieser Bestandsaufnahme
+wurde kein neuer vollständiger Testlauf, Shipping-Cook, WAN-Spieltest oder visueller
+Rundgang vorgenommen. Map-Binärdateien wurden über Existenz, Konfiguration,
+Erzeugungscode und vorhandene Lade-/Validierungsprotokolle beurteilt.
+Ein PASS belegt den jeweiligen Testumfang, nicht die Fehlerfreiheit des Spiels.
+
+Statusbegriffe:
+A = vollständig implementiert und im beschriebenen Umfang getestet.
+B = implementiert, aber im relevanten Einsatzfall nicht getestet/nicht nachgewiesen.
+C = teilweise implementiert; wesentliche Integration oder Produktreife fehlt.
+D = nur geplant oder als fehlender nächster Schritt identifiziert; kein belastbarer
+    Implementierungsnachweis. Eine vorgeschlagene Aufgabe ist keine zugesagte Roadmap.
+
+GESAMTBEURTEILUNG
+VANTHEX ist ein spielbarer technischer 3v3-FPS-Prototyp/Pre-Alpha mit erheblichem
+Gameplay-Umfang. Die Kernschleife aus Kaufen, Kämpfen, Core-Transport, Extraktion,
+Rundenwertung und Wiederbeginn existiert. Ein lokaler Listen-Server mit echten
+Client-Prozessen ist nachgewiesen. Das Projekt ist noch keine belastbar freigegebene
+öffentliche Online-Alpha. Besonders fehlen dedizierter Serverbetrieb, eine geprüfte
+Verteilung ohne Editor, Tests mit sechs Menschen über WAN, finale Trefferzonen,
+Performance-Nachweise und vollständige Integration der SHIFT-Systeme in GRID V4.
+
+1. PROJEKT UND GAMEPLAY
+Die .uproject-Datei ist gültiges JSON, EngineAssociation ist 5.8. Die installierte
+Engine H:\epic\UE_5.8 meldet Version 5.8.3. Es gibt einen Runtime-C++-Modul Vanthex,
+Game- und Editor-Build-Targets. 99 .cpp-Dateien liegen im Runtime-Modul, einschließlich
+Tests, Art-Erzeugern und Editor-Commandlets. EnhancedInput ist aktiviert; vorhandene
+Eingabeimplementierung und Slate-Menüs müssen deshalb nicht automatisch vollständig
+auf Input Actions/Mapping Contexts migriert sein.
+
+A: zwei Teams Alpha/Bravo, sechs Roster-Slots, Bots; 12 Sekunden Kaufphase;
+180 Sekunden aktive Runde; sieben Rundensiege zum Matchgewinn; Tod, Rundenreset,
+Rüstung, Munition, Nachladen, Trefferfeedback, Headshots, Eliminierung und Timeout.
+Friendly Fire ist standardmäßig deaktiviert. Frag-Selbstschaden ist möglich.
+A: Gehen 600 cm/s, Sprint 900 cm/s, Ducken 280 cm/s. Springen ist absichtlich
+deaktiviert. Vollständig gezogenes Messer erhöht Gehen/Sprint auf 690/1035 cm/s;
+während Waffenwechseln kein Bonus. Ducktempo wird nicht erhöht.
+A: Waffenwahl über Slots und Mausrad; Wechsel auch in der Kaufphase; Waffenwahl
+bleibt beim Rundenstart erhalten. Schüsse/Angriffe sind in der Kaufphase gesperrt.
+A: serverseitige Runden- und Schadensentscheidungen, Kills/Deaths/Assists.
+C: Bots sind funktionale Gegner mit Routenplanung, Sichtprüfung, Sichtkegel,
+Reaktionszeit, Ausrichtung zum Gegner, Feuerpausen, Bewegung und Gadget-Nutzung.
+Sie sind keine ausgereifte taktische Team-KI mit belegtem Balancing oder Rollenplanung.
+
+2. WAFFEN, KAUFSYSTEM, OPERATOR UND FÄHIGKEITEN
+Neun reguläre Schusswaffen plus Messer; LegacyRifle ist ein Diagnoseprofil und keine
+zusätzliche Shop-Waffe. Werte aus VanthexWeaponProfile.cpp und EconomyTypes.cpp:
+Waffe         Preis CR  Magazin/Reserve  Feuerart       Intervall
+Pistol             0       12/48        halbautomatisch 0,176 s
+P250             350       13/52        halbautomatisch 0,160 s
+MP5             1300       30/120       automatisch     0,086 s
+MP7             1900       40/160       automatisch     0,0625 s
+M4              2500       30/90        automatisch     0,100 s
+AK              2700       30/90        automatisch     0,115 s
+AUG             2900       30/90        automatisch     0,095 s
+DMR             3200       12/48        halbautomatisch 0,400 s
+Shotgun         1600        8/32        halbautomatisch 0,850 s, 8 Pellets
+
+A: individuelle Schäden, Reichweiten/Falloff, Kopfmultiplikatoren, Streuung,
+Bewegungsstreuung, Rückstoß, Magazine, Reservemunition, Nachladezeiten.
+A: ADS mit rechter Maustaste, angepasste Waffenposition/FOV und Visierdarstellung,
+Bewegungs-/Streuungseinfluss sowie Netzwerkbestätigung. Kein Nachweis eines freien
+Attachment-/Optik-Konfigurators oder eines vollständigen Picture-in-Picture-Scopes.
+A: 800 Startcredits, 7000 Credit-Limit, ein Primärplatz, ein Pistolenplatz, Messer,
+maximal zwei Gadgets. Server prüft Käufe und Anfragen; Economy owner-only repliziert.
+A: leichte Rüstung 400 CR/40 Punkte/25 % Absorption, schwere 750 CR/80 Punkte/40 %.
+Kopf- und Messerschaden umgehen die Rüstung. Ausrüstung geht bei Tod verloren;
+überlebende Ausrüstung und Credits folgen den implementierten Rundenregeln.
+A: Kill 200 CR, Assist 100 CR mit Schadens-/Zeitkriterien, Sieg 3000 CR,
+Niederlagenserie 1900/2400/2900 CR, Draw 1900 CR, Extraktionsbonus 300 CR pro Sieger.
+Bots benutzen denselben Katalog und bezahlen ihre Käufe.
+
+A/C: ein Operator ARC ist visuell implementiert: vorhandenes Mannequin-Skelett,
+Teamfarben, zusätzliche Ausrüstung, C++-Animationsinstanz, Aim-/Duck- und Waffenposen,
+IK, sichtbare Weltwaffe; eigener Körper/Beine in Egoansicht, Kopf/Arme ausgeblendet.
+Es gibt keinen nachgewiesenen Operator-Kader mit Auswahl, eigenständigem Loadout
+und vollständig unterschiedlichen Fähigkeiten. Die Fähigkeit ist direkt im
+Character implementiert, kein allgemeines Ability-System.
+C: ARC kann SHIFT-Geräte aus bis zu 1200 cm bedienen, 15 Sekunden Cooldown;
+normale Interaktion bis 250 cm. EMP kann dies blockieren. Der Code existiert, aber
+GRID V4 spawnt keine aktiven SHIFT-Geräte: die Fähigkeit hat dort derzeit keine
+vollständige praktische Zielintegration.
+
+A: Flash, Smoke, Frag, EMP und Sensor sind wirkende Gadgets, keine bloßen Icons.
+Flash: Blickrichtung, Entfernung, Sichtlinie, Rauch und Abklingen; maximal 4 s.
+Smoke: 18 s, Radius 450 cm, Sichtblockade für Bots/Sensoren, sichtbarer Rauch.
+Frag: 2 s Zünder, Radius 650 cm, bis 110 Schaden mit Abfall und Deckungsprüfung.
+EMP: Radius 1000 cm, 8 s Jam für Charakterelektronik/Geräte/Sensoren.
+Sensor: 15 s, Radius 1000 cm, Scan im Sekundentakt, kurzlebige Team-Markierungen,
+Sicht-/Rauch-/EMP-Abhängigkeit. Sensorinformationen werden nicht in die Minimap übernommen.
+Die technische Wirkung ist getestet; Wettkampf-Balance und alle Kombinationen nicht.
+
+3. CORE UND FORTGESCHRITTENE MECHANIKEN
+A: neutraler physischer Core, E aufnehmen, G ablegen, Q werfen; ein Träger;
+automatisches Fangen und Abfangen. Aufnahme bis 200 cm, Fangradius 180 cm,
+Wurfgeschwindigkeit 2000 cm/s. Autoritative kinematische Flugbewegung mit Gravitation,
+Sphere-Sweeps, kurzen Substeps und Bodenkontakten. Tod lässt den Core fallen;
+Out-of-bounds-/Rundenreset entfernt alte Besitzzuordnung und setzt ihn zurück.
+A: beide Teams dürfen A und B benutzen; 15 Sekunden Extraktion. Die tatsächliche
+Core-Position zählt. Ablegen oder Hineinwerfen erhält/startet den Countdown.
+Gleiche Teamaufnahme erhält Fortschritt; gegnerischer Besitz setzt ihn zurück.
+Team und Besitzrevision verhindern, dass alter Fortschritt über einen Besitzwechsel
+mitgenommen wird. Verlassen/Wechseln der Zone setzt ebenfalls zurück.
+A: loser Core in der Zone verschiebt Eliminierung und Timeout. Extraktion läuft
+auch nach Tod des eigenen Teams, des Gegners oder aller sechs Figuren weiter.
+Gegnerische Aufnahme löst gegebenenfalls die aufgeschobene Eliminierung aus.
+A: Bots prüfen kurze Würfe und sichere Landung, richten sich aus und werfen;
+eigene Ablagen werden nicht absichtlich wieder aufgenommen, gegnerische priorisiert.
+A: Pass-/Intercept-Credits mit Begrenzungen und Routenfortschrittsprüfung. Ein
+qualifizierter Pass vergibt 50 CR; Abfangen bis zu einmal pro Empfänger/Runde 100 CR.
+Passlimits und Mindestweg verhindern einfache unbegrenzte Credit-Schleifen.
+
+Offener Randfall aus Codeanalyse, NICHT reproduziert: HasDepositedCore verlangt
+einen Core ohne Carrier. Nimmt ein Verbündeter den abgelegten Core innerhalb der
+Zone auf, während Eliminierung bereits aufgeschoben ist, kann EvaluateElimination
+die Runde sofort nach den normalen Regeln beenden, obwohl normale Same-Team-Aufnahme
+den Countdown erhält. Dieser Fall fehlt in der neuen Eliminierungs-Testmatrix.
+Die jüngste Umsetzung deckt ausdrücklich den liegenbleibenden Core ab.
+
+4. MAPS, GRAFIK, ASSETS UND ANIMATION
+A: Default-/Editor-/Server-Map ist /Game/Vanthex/Maps/GridV4. Gespeicherte eigene
+Maps Foundry, GridV3 und GridV4 existieren; daneben Import-/Demonstrationsmaps.
+GRID V4/AEGIS ist die aktuelle asymmetrische Anlage mit drei Höhenebenen,
+25 Räumen, 46 Verbindungen und sechs Treppen. Nach letztem Bake-Bericht:
+11802 Kit-Instanzen in 27 Gruppen, 1753 Kollisionskörper, 194 Lichtquellen.
+Die visuellen Meshes und die vereinfachten Kollisionskörper sind getrennt.
+A im Stichprobenumfang: Außenhülle, Treppen, Bodenstützung ausgewählter Möbel,
+Core-Raumschutz, Extraktionswege und Gameplay wurden geprüft. Historisch gab es
+80 unsichere Außenhüllen-Proben; der Reparaturbericht weist 0 im neuen Prüfraster aus.
+Das ist kein mathematischer Beweis für jede Stelle oder jede mögliche Bewegung.
+Der Core-Raum hat versetzte Schutzwände und ein gestütztes Dach; direkte Schusslinien
+aus getesteten Hauptrichtungen sind blockiert. Längere Wege zu A/B sind dokumentiert.
+C: Aktive Aufzüge, hackbare Energie und SHIFT-Türen existieren im allgemeinen Code,
+aber VanthexGridV4Gameplay.cpp bezeichnet die aktuellen SHIFT-Orte ausdrücklich als
+Kulisse und aktiviert das System dort nicht. Nicht als fertige GRID-V4-Funktion zählen.
+B/C: Lumen-/Reflexionskonfiguration, virtuelle Schatten, DX12/SM6 und dynamische
+Beleuchtung sind vorhanden. Es gibt Renderbilder, aber keinen belastbaren
+Gefechtsbenchmark mit sechs Spielern, Ziel-FPS und GPU/CPU-/Speicherbudget.
+A/C: Originale Waffenmodelle und optionale Fab-Bundle-Konvertierungen, bewegte
+Magazine/Verschlüsse, Ego-/Weltpräsentation und ADS. Dies ist keine belegte finale
+Art-Abnahme für alle Waffen und Animationen. Das ARC-Modell bleibt ein aufgebauter
+Mannequin-Operator; Trefferzonen sind nicht automatisch skelettgenau.
+Fab-Waffen, FreeWeaponSFX, Energy-Quelldateien, Imported-Derivate und Aegis-Palette
+bleiben gemäß Projektentscheidung lokal ausgeschlossen. Ein öffentlicher Clone ist
+deshalb nicht automatisch optisch/akustisch identisch. Fallbacks sind vorhanden,
+aber ein frischer Clone mit aktuellem GRID V4 ohne diese lokalen Inhalte wurde in
+dieser Bestandsaufnahme nicht gestartet oder gepackt. Vollständige Lizenzprüfung
+aller historisch importierten Assets war nicht Bestandteil der Untersuchung.
+
+5. MULTIPLAYER, DEDICATED SERVER, EDGEGAP
+A: UE-Listen-Server über OpenLevel(..., listen), ClientTravel zu IP:Port,
+replizierter Match-/Spieler-/Core-/Waffen-/Gadget-Zustand. Schüsse, Schaden, Käufe,
+Core und Rundensieg werden serverseitig entschieden. Bot-/Human-Rosterübergaben
+und Übernahme bei Disconnect sind implementiert; nicht mit persistenter
+Account-Reconnection oder Host-Migration verwechseln.
+A: echte getrennte Host-/Client-Prozesse; Bullet-Audio historisch mit drei Prozessen.
+B: keine belegten sechs menschlichen WAN-Spieler, keine umfassende Prüfung mit
+Paketverlust/Latenz, keine nachgewiesenen Langzeitsessions oder öffentlichen Lasttests.
+C: Netzwerkbasis geeignet als Ausgangspunkt für Dedicated Server. Einzelne
+Präsentationssysteme prüfen NM_DedicatedServer. Es fehlt jedoch VanthexServer.Target.cs;
+es gibt nur Game/Editor. Kein nachgewiesenes Server-Paket, Linux-Server-Build oder
+Deployment. Ein erfolgreicher Windows-Game-Build ist kein Dedicated-Server-Nachweis.
+D: Edgegap-Integration, Docker-/Container-Pipeline, Deployment-Lifecycle, getestete
+Port-/Readiness-Konfiguration, Verbindung zu deployten Instanzen, Matchmaking.
+D: öffentliche Lobby, NAT-Traversal, Accounts/Ranked/Persistenz, Host-Migration,
+dedizierte Anti-Cheat-Integration. Serverautorität allein verhindert nicht alle Cheats.
+Keine implementierte Server-Rewind-/Lag-Compensation in der geprüften Hitscan-Logik.
+ADS hat lokale Vorhersage/Bestätigung; dies ist keine umfassende Schussvorhersage.
+
+Referenz für nächste Schritte, keine Behauptung einer vorhandenen Integration:
+Epic dokumentiert Source-Build und Server.Target.cs für den Dedicated-Server-Weg:
+https://dev.epicgames.com/documentation/unreal-engine/setting-up-dedicated-servers-in-unreal-engine?lang=de
+Edgegap dokumentiert Server-Container, Ports und lokale/entfernte Verbindungstests:
+https://docs.edgegap.com/unreal-engine
+
+6. SOUND UND AUDIO
+A: getrennte BulletAudio- und WeaponAudio-Komponenten/Profile. Vorbeiflug/Near-Miss,
+Überschallereignisse und materialbezogene Impacts; individuelle Schuss-/Mechanik-,
+Nachladephasen-, Trockenfeuer-, Ziehen-/Holstern-, Messer-, Bewegungs- und UI-Ereignisse.
+A: räumliche Abschwächung, Sicht-/Wanddämpfung, raum-/routenbezogene Akustik,
+Raumausklang, Varianten und Begrenzung von Stimmen/Paketen; kosmetische Netzwerkpakete
+und Sequenzbehandlung. Autoritative Schussentscheidung bleibt unabhängig vom Audio.
+A: echte Stereo-Mixer-Aufnahmen und Signalanalysen vorhanden, nicht nur NullRHI.
+Beispiel WeaponAudio: 48 kHz, zwei Kanäle, keine geclippten Samples im Test, klare
+Links-/Rechtsverteilung und Dämpfungsprüfung. Fab-Audio hat separaten Import-/Mixerbeleg.
+B/C: kein finaler Hörtest über viele Headsets, keine nachgewiesene HRTF-/Vertikal-
+Ortungsgüte, keine abschließende Dynamik-/Lautheitsabnahme für ein vollständiges Match.
+Stereo-RMS allein belegt keine sichere Unterscheidung von vorne/hinten/oben/unten.
+
+7. UI UND MENÜS
+A: Canvas-HUD mit Leben, Rüstung, Munition, Waffe, Inventar, Credits, Team-/Rundenstatus,
+Uhr, Extraktionsfortschritt, Trefferfeedback sowie Zuständen wie Nachladen/Ducken/EMP.
+A: Tab-Scoreboard mit Namen, Teams, K/A/D, Ping und Lebendstatus; Tab-Fokus-/Release-
+Verhalten über dem Kaufmenü ist geprüft. Kaufmenü als Slate-UI mit Servervalidierung.
+A: verkleinerte, etagenbezogene Minimap mit eigenem Spieler, lebenden Teamkameraden,
+Geometrie und Zielen; keine Gegner, auch keine Sensor-Ausnahme.
+A: einfaches Escape-Menü für Host und direkte IP-Verbindung.
+C/D: kein vollständiges Produkt-Frontend mit Account/Lobby/Matchmaking, umfassenden
+Grafik-/Audio-/Keybinding-Optionen, Accessibility-/Controller-/Lokalisierungsabnahme.
+Die sichtbare HUD-Überarbeitung ist kein Nachweis finaler UX-Reife aller Menüs.
+
+8. ARCHITEKTUR UND TECHNISCHE SCHULDEN
+Stärken: klare serverseitige Zuständigkeit; getrennte Komponenten für Gesundheit,
+Ausrüstung, Gadgets, Operator und Audio; zentrale Katalog-/Profilwerte; überprüfbare
+Regeln und erhebliche automatisierte Regressionsabdeckung; kosmetische Logik getrennt
+von Schaden; private Economy/Sensordaten owner-only; LFS für Unreal-Binärassets.
+Schulden: ein Runtime-Modul enthält Gameplay, umfangreiche Diagnosepfade, Art-Generatoren
+und Commandlets. GameMode hat über 2000 nichtleere Zeilen und verwaltet viele Aufgaben.
+Zahlreiche Test-Commandline-Abzweige verändern Bot-KI, Startausrüstung oder Rundenablauf;
+ein bestandener Legacy-Test ist nicht gleich einem normalen Matchtest.
+Viele eng geschriebene Einzeiler, fest codierte Zahlen/Assetpfade und mapabhängige
+Geometrie-/Navigationsdaten erschweren Erweiterungen. Globale Akustik-Graphdaten und
+Actor-Suchen pro Tick verdienen Profiling/Mehrwelt-Tests. Treffer-/Schusseffekte
+erzeugen kurzlebige Actors/Komponenten; kein belegtes umfassendes Pooling/Budget.
+Keine CI-Konfiguration unter .github gefunden. Kein aktueller Clean-Clone-/Shipping-
+Packaging-Nachweis. Historische Dokumente enthalten widersprüchliche Altstände,
+z.B. fehlende Operatoren/RPCs oder fünf Sekunden Extraktion trotz neuer Implementierung.
+Tests mit NullRHI beweisen keine Renderleistung, finales Aussehen oder tatsächliches
+Hörerlebnis. Historische Aufnahmen sind keine heutige vollständige visuelle Abnahme.
+
+9. TATSÄCHLICH VORLIEGENDE TESTERGEBNISSE
+Unmittelbar vor dieser Analyse am 04.11.2026 auf dem aktuellen Gameplay-Stand gelaufen:
+- VanthexEditor Win64 Development: Succeeded.
+- Vanthex Win64 Development: Succeeded.
+- ExtractionRules: 110/110 PASS.
+- LooseCoreExtraction: 59/59 PASS.
+- VanthexSelfTest: 64/64 PASS.
+- EliminationNetwork: Host und Client PASS, Messerbonus, Teamzuordnung,
+  monotoner Countdown, sechs tote Figuren und Extraktionssieg.
+Die 233 Prüfungen sind 110+59+64; sie sind keine 233 unterschiedlichen Testgruppen
+und kein Beleg für 233 vollständige menschliche Spielszenarien.
+
+Weitere vorhandene, heute oder früher durchgeführte Nachweise; nicht alle nach dem
+letzten Messer-/Bot-/Extraktionspatch erneut ausgeführt:
+- 26 allgemeine Automation-Testgruppen: Success, TacticalHUD-Nachweis.
+- ControlsTest: 20 Prüfungen, PASS.
+- EconomyIntegration: 45 Prüfungen, PASS.
+- GadgetIntegration: 58 Prüfungen, PASS; zugehörige Netzwerknachweise vorhanden.
+- CoreEconomy: 32 Prüfungen, PASS.
+- WeaponProfiles: 24 Prüfungen, PASS im CompactHUD-Nachweis.
+- ADS: 15 Prüfungen, PASS, auch separater Bundle-Fall und Host/Client.
+- OperatorValidation: 39 Prüfungen, PASS.
+- GRID V4: 188 Kartenprüfungen PASS; 7954 unterstützte Bodenproben und
+  83748 Kapsel-Sweeps mit 0 ungeschützten Ausgängen im getesteten Raster.
+- GRID-V4-Gameplay: 41 Prüfungen PASS; sechs Treppen in beide Richtungen.
+- Corpse-Collision: gezielte Regression plus Host-/Client-Tod/Revive-Nachweise.
+- Bullet-/Weapon-/Fab-Audio: Automation, Netzwerk und echte Stereoaufnahmen.
+Historische FAIL-Baselines und fehlgeschlagene Zwischen-Builds sind vorhanden;
+sie dürfen nicht mit finalen PASS-Läufen verwechselt oder verschwiegen werden.
+Nicht nachgewiesen: aktuelles Shipping-Paket, Linux-/Dedicated-Build, Edgegap-Start,
+frischer öffentlicher Clone ohne lokale Assets, sechs WAN-Menschen, Langzeit-/Lasttests.
+
+10. HEUTE NACHVOLLZIEHBARE ÄNDERUNGEN
+Git: 35339e1, 04.11.2026 11:29 +0100 – Gadgetwirkungen, Crouch, ADS und Waffenpräsentation.
+Git: 5fcb47d, 04.11.2026 12:20 +0100 – Bots, taktisches HUD, eigener Körper,
+optionaler Energy-Core. Ein Commitzeitpunkt beweist nicht die Entstehungsminute
+jeder Datei; Arbeiten können zuvor begonnen worden sein.
+Heutige Logs/Dateien und nun eb7286d belegen zusätzlich:
+- GRID V4/AEGIS, neue Extraktionswege; spätere Außenhüllen-, Möbel-, Treppen-,
+  Beleuchtungs- und Core-Raumkorrekturen.
+- Tote Figuren blockieren Schüsse/Bewegung nicht mehr; Reset stellt Kollision wieder her.
+- Tab-Scoreboard; kein Springen; 12 Sekunden Kaufen; Mausrad-/Kaufphasenwechsel.
+- Minimap ohne Gegner und zwei Größenreduktionen; höhere Pistolenfeuerrate.
+- Extraktion bei Ablegen/Hineinwerfen und Besitzwechselregeln.
+- Messerbonus, gezielte Bot-Core-Würfe, gegnerische Aufnahmepriorität,
+  Eliminierungs-/Timeout-Aufschub für abgelegten Core.
+Economy/Rüstung und erweitertes Waffen-Audio sind bereits im Commit f9b8067 vom
+03.11.2026 enthalten; ARC und Messergrundlagen ebenfalls älter. Nicht alles als
+heutige Neuentwicklung zählen.
+
+11. BUGS, LÜCKEN UND RISIKEN
+Bestätigte Einschränkung: sichtbares Skelett hat NoCollision; Treffer werden über
+vereinfachte, an der Kapsel befestigte Body-/Head-Cubes geprüft. Damit sind aktuelle
+Hitboxen nicht form- und animationsgenau. Der reparierte Leichenblocker löst dieses
+separate Präzisionsproblem nicht.
+Bestätigte Integrationslücke: keine aktiven SHIFT-/Aufzug-/Energiesystem-Geräte in
+der aktuellen GRID V4, obwohl allgemeiner Code und sichtbare Orte existieren.
+Unbestätigter Code-Randfall: freundliche Wiederaufnahme bei aufgeschobener Eliminierung,
+siehe Abschnitt 3; gezielte Reproduktion erforderlich, nicht als beobachteter Bug ausgegeben.
+Offen: autonome Bot-Match-Balance, Stau/Navigation/Teamspiel über lange Runden,
+Leistung in vollständigen Gefechten, Netzwerklatenz und öffentliche Serverabsicherung.
+Offen: vollständige Cook-/Paket-/Asset-Abhängigkeiten, insbesondere lokale optionale
+Fab-Derivate und Materialien. Ein Build allein validiert diese Verteilung nicht.
+Die bereits reparierten Maplöcher, Möbelpositionen und Leichenkollisionen sind
+historische Fehler mit gezielten Nachweisen; keine pauschale Garantie aller Varianten.
+
+12. WEG ZUR ERSTEN ALPHA – SCHÄTZUNG, KEIN MESSERGEBNIS
+Eine interne, direkt in Unreal startbare Spielversion ist bereits vorhanden.
+Für eine an externe Tester verteilbare kleine Alpha mit einer Map sind aus meiner
+technischen Einschätzung noch etwa 2–4 Vollzeit-Entwicklungswochen plus verfügbare
+Testspieler sinnvoll anzusetzen: reproduzierbares Paket, zweiter sauberer PC,
+Trefferzonen, Map-/Bot-Spieltests, Mindest-Frontend, Performance und Crash-Auswertung.
+Für eine gehostete Online-Alpha mit Dedicated Server/Edgegap eher insgesamt 6–10
+Wochen unter derselben Annahme, ohne neue Maps/Operatoren, Ranked oder finale AAA-Art.
+Das ist eine grobe Planungsbandbreite, abhängig von Assets, Team, Scope und Befunden;
+keine Terminzusage. Eine präzise Gesamt-Prozentzahl wäre ohne definierte Alpha-
+Abnahmekriterien irreführend.
+Priorität: (1) aktuelle Pakete/reproduzierbarer Clone, (2) Trefferzonen und Core-Randfall,
+(3) sechs menschliche Spieler und Map-/Bot-Balance, (4) Performance-/Netzwerkprofile,
+(5) Dedicated-Server-/Edgegap-Weg, falls Teil der ersten Alpha.
+
+QUELLENANKER IM PROJEKT
+Source/Vanthex/VanthexGameMode.cpp, VanthexCharacter.cpp, HealthComponent.cpp,
+HitscanWeapon.cpp, VanthexWeaponProfile.cpp, VanthexEquipmentComponent.cpp,
+VanthexEconomyTypes.cpp, VanthexPlayerState.cpp, VanthexMatchEconomy.cpp,
+VanthexCore.cpp, VanthexBotController.cpp, VanthexGadgetActor.cpp,
+VanthexGadgetComponent.cpp, VanthexGadgetRules.cpp, VanthexOperatorComponent.cpp,
+VanthexOperatorAnimInstance.cpp, VanthexShiftDevice.cpp, VanthexGridV4Gameplay.cpp,
+VanthexGridV4.cpp, VanthexNavigation.cpp, VanthexTacticalHUD.cpp,
+VanthexPlayerController.cpp, VanthexBulletAudioComponent.cpp,
+VanthexWeaponAudioComponent.cpp, VanthexWeaponAudioAcoustics.cpp.
+Config/DefaultEngine.ini, DefaultGame.ini; Vanthex.uproject; Source/*.Target.cs.
+Docs/Validation/ExtractionRules, TacticalHUD, CombatCollision, GridV4Repair,
+GadgetsWeaponsAim, BotsHUDCore, CompactHUD, EconomyArmorAudio, BulletAudio.
+
+GitHub-Umfang: veröffentlichbarer Projektstand und Prüfnachweise; die vereinbarten
+Fab-Originale und abgeleiteten lokalen Assets bleiben ausgeschlossen. Dieser Bericht
+ist eine Bestandsaufnahme; er ändert keine Gameplay-Funktion.
