@@ -2,6 +2,7 @@
 
 #include "Vanthex.h"
 #include "VanthexMapLayout.h"
+#include "VanthexShadows.h"
 #include "VanthexArt.h"
 #include "VanthexCore.h"
 #include "VanthexShiftDevice.h"
@@ -43,6 +44,7 @@ void AVanthexTestArena::Build()
 if(VanthexMap::IsGridV4(World)){
   const bool Baked=World->GetMapName().EndsWith(TEXT("GridV4"))&&!FParse::Param(FCommandLine::Get(),TEXT("BakeGridV4"));
   if(!Baked)BuildGridV4();BuildGridV4Gameplay();
+  VanthexShadows::ApplyGridV4(World);
   if(FParse::Param(FCommandLine::Get(),TEXT("GridV4Test"))){FTimerHandle Handle;World->GetTimerManager().SetTimer(Handle,this,&AVanthexTestArena::ValidateGridV4,2.f,false);}
   return;
  }

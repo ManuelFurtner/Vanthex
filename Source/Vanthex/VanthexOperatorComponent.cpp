@@ -47,6 +47,7 @@ void UVanthexOperatorComponent::BeginPlay()
   Character->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility,ECR_Ignore);
  }
  Mesh->SetOwnerNoSee(true);
+ Mesh->SetCastShadow(true);
  Mesh->SetCastHiddenShadow(true);
  Mesh->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
  Mesh->SetAnimInstanceClass(UVanthexOperatorAnimInstance::StaticClass());
@@ -117,7 +118,7 @@ void UVanthexOperatorComponent::BeginPlay()
   const FTransform Desired(Rotation,RefCS[BoneIndex].GetLocation()+Offset,Scale);
   Part->SetRelativeTransform(Desired.GetRelativeTransform(RefCS[BoneIndex]));
   Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-  Part->SetOwnerNoSee(true); Part->SetCastHiddenShadow(true);
+  Part->SetOwnerNoSee(true); Part->SetCastShadow(true); Part->SetCastHiddenShadow(true);
   Part->SetMaterial(0,Material); Character->AddInstanceComponent(Part); Part->RegisterComponent();
   return Part;
  };

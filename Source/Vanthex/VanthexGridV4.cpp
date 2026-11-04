@@ -1,5 +1,6 @@
 #include "VanthexTestArena.h"
 #include "VanthexGridV4Layout.h"
+#include "VanthexShadows.h"
 #include "Vanthex.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -117,6 +118,7 @@ void AVanthexTestArena::BuildGridV4()
   auto* A=World->SpawnActor<APointLight>(P,FRotator::ZeroRotator); if(!A) return;
   auto* L=Cast<UPointLightComponent>(A->GetLightComponent()); L->SetMobility(EComponentMobility::Movable);
   L->SetLightColor(Color); L->SetIntensity(Intensity*.55f); L->SetAttenuationRadius(Radius); L->SetCastShadows(Shadow);
+  if(Shadow) VanthexShadows::ConfigureKeyLight(L);
   A->Tags.Add(TEXT("GridV4Light")); ++LightCount;
  };
  auto Sign=[&](const FString& Label,const FVector& P,float Yaw,const FLinearColor& Color,float Size=35.f) {
@@ -353,7 +355,7 @@ void AVanthexTestArena::BuildGridV4()
  for(const auto& R:GridV4::Rooms()) {
   const bool OpenCore=R.Id==3||R.Id==17||R.Id==18;
   const FLinearColor White=FLinearColor::LerpUsingHSV(FLinearColor(.85f,.9f,1.f),R.Color,.12f);
-  Point(R.Center+FVector(0,0,R.Id==3?900:330),White,R.Id==3?40000.f:18000.f,R.Id==3?1600.f:FMath::Max(R.Size.X,R.Size.Y)*.95f,R.Id==3);
+  Point(R.Center+FVector(0,0,R.Id==3?900:330),White,R.Id==3?40000.f:18000.f,R.Id==3?1600.f:FMath::Max(R.Size.X,R.Size.Y)*.95f,true);
   for(float Side:{-1.f,1.f}) {
    const FVector P=R.Center+FVector(Side*R.Size.X*.27f,R.Size.Y*.22f,0);
    float MountedCeiling=R.Center.Z+RoofHeight(P,R.Level);

@@ -40,6 +40,8 @@ bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false)
    auto* Actor=World->SpawnActor<AActor>(); Actor->SetActorLabel(Part->GetName()); Actor->SetFolderPath(FName(*(Folder+TEXT("/Factory Kit"))));
    auto* Component=NewObject<UInstancedStaticMeshComponent>(Actor,TEXT("KitInstances")); Actor->SetRootComponent(Component); Actor->AddInstanceComponent(Component);
    Component->SetStaticMesh(Part->GetStaticMesh()); Component->SetCollisionEnabled(ECollisionEnabled::NoCollision); Component->ComponentTags=Part->ComponentTags;
+   // Preserve emissive accents' no-shadow policy when serializing kit instances.
+   Component->SetCastShadow(Part->CastShadow);
    CopyMaterials(Part,Component); Component->RegisterComponent();
    for(int32 I=0;I<Instances->GetInstanceCount();++I) { FTransform T; Instances->GetInstanceTransform(I,T,true); Component->AddInstance(T,true); }
   } else if(Part->GetCollisionEnabled()!=ECollisionEnabled::NoCollision) {
