@@ -1,6 +1,7 @@
 #include "VanthexPlayerController.h"
 #include "SVanthexSessionMenu.h"
 #include "VanthexLocalSettings.h"
+#include "VanthexCommunicationComponent.h"
 
 #include "Vanthex.h"
 #include "VanthexCharacter.h"
@@ -32,6 +33,7 @@ public:
 
 AVanthexPlayerController::AVanthexPlayerController()
 {
+ Communication = CreateDefaultSubobject<UVanthexCommunicationComponent>(TEXT("Communication"));
 	BulletAudio = CreateDefaultSubobject<UVanthexBulletAudioComponent>(TEXT("BulletAudio"));
 	WeaponAudio = CreateDefaultSubobject<UVanthexWeaponAudioComponent>(TEXT("WeaponAudio"));
 	BuyMenu = CreateDefaultSubobject<UVanthexBuyMenuComponent>(TEXT("BuyMenu"));
@@ -135,6 +137,8 @@ void AVanthexPlayerController::LeaveGame() { if (IsLocalController()) UGameplayS
 #include "Widgets/Text/STextBlock.h"
 void AVanthexPlayerController::SetupInputComponent() {
  Super::SetupInputComponent();
+ InputComponent->BindKey(EKeys::Y,IE_Pressed,Communication.Get(),&UVanthexCommunicationComponent::OpenTeamChat);
+ InputComponent->BindKey(EKeys::T,IE_Pressed,Communication.Get(),&UVanthexCommunicationComponent::OpenAllChat);
  InputComponent->BindKey(EKeys::Escape,IE_Pressed,this,&AVanthexPlayerController::ToggleSessionMenu);
  InputComponent->BindKey(EKeys::B,IE_Pressed,BuyMenu.Get(),&UVanthexBuyMenuComponent::Toggle);
  InputComponent->BindKey(EKeys::Tab,IE_Pressed,this,&AVanthexPlayerController::ShowScoreboard);
@@ -158,6 +162,7 @@ void AVanthexPlayerController::ToggleSessionMenu()
  HideScoreboard();
  if(!IsLocalController() || !GetWorld() || !GetWorld()->GetGameViewport()) return;
  if(SessionMenu.IsValid()) { CloseSessionMenu(); return; }
+ Communication->CloseChat();
  if(BuyMenu) BuyMenu->Close();
  if(auto* OwnPawn=Cast<AVanthexCharacter>(GetPawn())) {
   OwnPawn->ServerAction(1,false); OwnPawn->SetSprinting(false); OwnPawn->SetAiming(false);

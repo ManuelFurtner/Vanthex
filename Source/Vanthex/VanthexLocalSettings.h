@@ -15,6 +15,8 @@ public:
 	UPROPERTY(Config) float CombatVolume = .85f;
 	UPROPERTY(Config) float UIVolume = .55f;
 	UPROPERTY(Config) float RoomVolume = .65f;
+ UPROPERTY(Config) float VoiceVolume = .8f;
+ UPROPERTY(Config) bool bVoiceEnabled = true;
 	UPROPERTY(Config) FString LastAddress = TEXT("127.0.0.1:7777");
 	static UVanthexLocalSettings* Get();
 	void ApplyAudio(UWorld* World);

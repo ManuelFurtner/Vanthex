@@ -7,6 +7,7 @@
 #include "VanthexPlayerController.generated.h"
 
 class UVanthexBuyMenuComponent;
+class UVanthexCommunicationComponent;
 
 UCLASS()
 class AVanthexPlayerController : public APlayerController
@@ -15,6 +16,7 @@ class AVanthexPlayerController : public APlayerController
 
 public:
 	AVanthexPlayerController();
+ UVanthexCommunicationComponent* GetCommunication() const { return Communication; }
  UVanthexBulletAudioComponent* GetBulletAudio() const { return BulletAudio; }
  UFUNCTION(Client, Unreliable) void ClientBulletAudio(const FVanthexBulletAudioPacket& Packet);
  UVanthexWeaponAudioComponent* GetWeaponAudio() const { return WeaponAudio; }
@@ -36,6 +38,7 @@ public:
  UFUNCTION(Exec) void LeaveGame();
 
 protected:
+ UPROPERTY(VisibleAnywhere, Category="Communication") TObjectPtr<UVanthexCommunicationComponent> Communication;
  bool bScoreboardHeld=false;
  TSharedPtr<class IInputProcessor> ScoreboardKeyRelease;
  UPROPERTY(VisibleAnywhere, Category="Audio") TObjectPtr<UVanthexBulletAudioComponent> BulletAudio;

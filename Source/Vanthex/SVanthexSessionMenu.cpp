@@ -1,6 +1,10 @@
 #include "SVanthexSessionMenu.h"
 #include "VanthexPlayerController.h"
 #include "VanthexLocalSettings.h"
+#include "VanthexCommunicationComponent.h"
+#include "VanthexPlayerState.h"
+#include "GameFramework/GameStateBase.h"
+#include "Engine/World.h"
 #include "VanthexGameState.h"
 #include "VanthexMapLayout.h"
 #include "Engine/Engine.h"
@@ -101,6 +105,18 @@ TSharedRef<SWidget> SVanthexSessionMenu::VolumeRow(const FString& Label,float* V
 TSharedRef<SWidget> SVanthexSessionMenu::SettingsPage()
 {
 	auto* Settings = UVanthexLocalSettings::Get();
+ auto Mutes=SNew(SVerticalBox);
+ Mutes->AddSlot().AutoHeight().Padding(0,4,0,10)[Text(TEXT("SPIELER STUMMSCHALTEN (TEXT + VOICE)"),12,Cyan)];
+ if(Controller.IsValid() && Controller->GetWorld()->GetGameState())
+  for(const auto& State:Controller->GetWorld()->GetGameState()->PlayerArray)
+   if(State && !State->IsABot() && State!=Controller->PlayerState)
+   {
+    const int32 Id=State->GetPlayerId();
+    const FString Name=UVanthexCommunicationComponent::CleanText(State->GetPlayerName(),32);
+    Mutes->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SCheckBox)
+     .IsChecked_Lambda([this,Id](){return Controller.IsValid() && Controller->GetCommunication()->IsMuted(Id)?ECheckBoxState::Checked:ECheckBoxState::Unchecked;})
+     .OnCheckStateChanged_Lambda([this,Id](ECheckBoxState){if(Controller.IsValid()) Controller->GetCommunication()->ToggleMute(Id);})[Text(Name,14)]];
+   }
 	auto QualityButtons=SNew(SHorizontalBox);
 	const TCHAR* Names[]={TEXT("Niedrig"),TEXT("Mittel"),TEXT("Hoch"),TEXT("Episch")};
 	for(int32 I=0; I<4; ++I) QualityButtons->AddSlot().FillWidth(1).Padding(0,0,6,0)
@@ -111,6 +127,12 @@ TSharedRef<SWidget> SVanthexSessionMenu::SettingsPage()
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen & Bewegung"),&Settings->CombatVolume)]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Menue & Kaufhinweise"),&Settings->UIVolume)]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen-Raumreflexionen"),&Settings->RoomVolume)]
+ +SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Team-Voice"),&Settings->VoiceVolume)]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[SNew(SCheckBox)
+  .IsChecked_Lambda([Settings](){return Settings->bVoiceEnabled?ECheckBoxState::Checked:ECheckBoxState::Unchecked;})
+  .OnCheckStateChanged_Lambda([Settings](ECheckBoxState State){Settings->bVoiceEnabled=State==ECheckBoxState::Checked;})
+  [Text(TEXT("  Voice aktivieren / V zum Sprechen halten"),15)]]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,20)[Mutes]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,20)[Button(TEXT("UI-TESTTON"),[this](){if(Controller.IsValid()) Controller->GetWeaponAudio()->PlayUI(EVanthexWeaponAudioEvent::BuyPhaseStart); return FReply::Handled();})]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)[SNew(STextBlock).Text_Lambda([this](){return FText::FromString(FString::Printf(TEXT("GRAFIKQUALITAET: %s"), Quality<0?TEXT("Benutzerdefiniert"):Quality==0?TEXT("Niedrig"):Quality==1?TEXT("Mittel"):Quality==2?TEXT("Hoch"):TEXT("Episch")));}).ColorAndOpacity(Cyan)]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,16)[QualityButtons]
@@ -137,6 +159,7 @@ TSharedRef<SWidget> SVanthexSessionMenu::ControlsPage()
 	for(int32 I=0; I<8; ++I) List->AddSlot().AutoHeight().Padding(0,0,0,2)
 	[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Panel).Padding(14,12)
 	[SNew(SHorizontalBox)+SHorizontalBox::Slot().FillWidth(.46f)[Text(Keys[I],13,Cyan)]+SHorizontalBox::Slot().FillWidth(.54f)[Text(Actions[I],14)]]];
+ List->AddSlot().AutoHeight().Padding(14,12)[Text(TEXT("Y: Teamchat   /   T: Alle   /   V halten: Team-Voice\nEnter senden / Esc abbrechen. Stummschaltung unter Einstellungen."),14,Cyan)];
 	return SNew(SScrollBox)+SScrollBox::Slot()[List];
 }
 

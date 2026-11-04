@@ -45,6 +45,7 @@ Ein Match beginnt mit **800 CR**, Standardpistole und Messer. Vor jeder 180-Seku
 
 ## Dokumentation und Prüfungen
 
+- [Textchat und Team-Voice: Bedienung, Grenzen und ausstehende Prüfungen](Docs/COMMUNICATION.md)
 - [Audio und Menü: neue Bedienung, Einstellungen und Prüfstand](Docs/AUDIO_MENU_UPDATE.md)
 
 - [Wirtschaft, Rüstung und Waffen-Audio: Implementierung und offene Punkte](Docs/ECONOMY_IMPLEMENTATION.md)

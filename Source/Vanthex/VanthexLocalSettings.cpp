@@ -13,6 +13,7 @@ void UVanthexLocalSettings::ApplyAudio(UWorld* World)
 {
 	MasterVolume = SafeVolume(MasterVolume); CombatVolume = SafeVolume(CombatVolume);
 	UIVolume = SafeVolume(UIVolume); RoomVolume = SafeVolume(RoomVolume);
+ VoiceVolume = SafeVolume(VoiceVolume);
 	if (World) if (auto Device = World->GetAudioDevice(); Device.IsValid())
 		Device->SetTransientPrimaryVolume(MasterVolume);
 }
