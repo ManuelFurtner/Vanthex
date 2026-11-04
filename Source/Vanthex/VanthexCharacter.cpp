@@ -236,6 +236,7 @@ void AVanthexCharacter::BuildInput()
 	MapAxis(LookAction, EKeys::MouseX, false, false);
 	MapAxis(LookAction, EKeys::MouseY, true, true);
 
+	MappingContext->MapKey(JumpAction, EKeys::SpaceBar);
 	MappingContext->MapKey(SprintAction, EKeys::LeftShift);
  MappingContext->MapKey(AimAction,EKeys::RightMouseButton);
 	MappingContext->MapKey(CrouchAction, EKeys::LeftControl);
@@ -288,6 +289,9 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AVanthexCharacter::MoveInput);
 	EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVanthexCharacter::LookInput);
+	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartJump);
+	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopJump);
+	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Canceled, this, &AVanthexCharacter::StopJump);
 	EnhancedInput->BindAction(SprintAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartSprint);
 	EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopSprint);
 	EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartCrouchInput);
@@ -469,6 +473,11 @@ void AVanthexCharacter::SetCrouching(bool bNewCrouching)
 	{
 		UnCrouch();
 	}
+}
+
+bool AVanthexCharacter::CanJumpInternal_Implementation() const
+{
+ return CanPerformRoundActions() && Health && !Health->IsDead() && Super::CanJumpInternal_Implementation();
 }
 
 void AVanthexCharacter::StartJump()

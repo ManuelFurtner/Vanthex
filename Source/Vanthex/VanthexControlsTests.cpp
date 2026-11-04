@@ -35,6 +35,7 @@ bool FVanthexMinimapPrivacyTest::RunTest(const FString&)
 #include "Misc/Paths.h"
 #include "HAL/PlatformMisc.h"
 #include "Framework/Application/SlateApplication.h"
+#include "InputKeyEventArgs.h"
 #endif
 
 void VanthexRunControlsTest(AVanthexGameMode* Mode)
@@ -42,7 +43,7 @@ void VanthexRunControlsTest(AVanthexGameMode* Mode)
 #if !UE_BUILD_SHIPPING
  if(!Mode||!Mode->HasAuthority()) return;
  static TWeakObjectPtr<UWorld> Fixture; static int32 Step=0,Failures=0; static double Start=0,Next=0;
- static float BuyRemaining=0,StartZ=0; static TArray<FString> Lines;
+ static float BuyRemaining=0,StartZ=0,SecondJumpVelocity=0; static TArray<FString> Lines;
  const double Now=FPlatformTime::Seconds();
  if(Fixture.Get()!=Mode->GetWorld()) { Fixture=Mode->GetWorld(); Step=Failures=0; Start=Now; Next=0; Lines.Reset(); }
  if(Step==100) return;
@@ -94,9 +95,30 @@ void VanthexRunControlsTest(AVanthexGameMode* Mode)
   Check(!PC->IsScoreboardOpen(),TEXT("real Tab release closes scoreboard after leaving purchase UI"));
   Check(FMath::Abs((Now-Start)-BuyRemaining)<1.5,TEXT("real countdown enters combat after remaining twelve-second buy window"));
   Check(E->GetSelectedSlot()==EVanthexWeaponSlot::Pistol&&W->GetWeaponId()==TEXT("P250"),TEXT("buy-phase weapon selection survives round activation"));
-  StartZ=Pawn->GetActorLocation().Z;Pawn->Jump();Advance();return;
+  Check(Pawn->CanJump(),TEXT("living grounded character can jump during active play"));
+  StartZ=Pawn->GetActorLocation().Z;
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::SpaceBar,IE_Pressed,1.f));
+  ++Step;Next=Now+.15;return;
  case 9:
-  Check(!Pawn->CanJump()&&!Pawn->GetCharacterMovement()->IsFalling()&&FMath::Abs(Pawn->GetActorLocation().Z-StartZ)<5,TEXT("direct jump request cannot launch an active character"));Pawn->StopJumping();
+  Check(Pawn->GetCharacterMovement()->IsFalling()&&Pawn->GetActorLocation().Z>StartZ+15.f,TEXT("Space input launches character above the floor"));
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::SpaceBar,IE_Released,0.f));
+  ++Step;Next=Now+.05;return;
+ case 10:
+  Check(!Pawn->CanJump(),TEXT("airborne character cannot double jump"));
+  SecondJumpVelocity=Pawn->GetCharacterMovement()->Velocity.Z;
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::SpaceBar,IE_Pressed,1.f));
+  ++Step;Next=Now+.1;return;
+ case 11:
+  Check(Pawn->GetCharacterMovement()->Velocity.Z<=SecondJumpVelocity+5.f,TEXT("second Space press cannot add upward velocity in midair"));
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::SpaceBar,IE_Released,0.f));
+  ++Step;Next=Now+.8;return;
+ case 12:
+  Check(!Pawn->GetCharacterMovement()->IsFalling()&&FMath::Abs(Pawn->GetActorLocation().Z-StartZ)<5.f&&Pawn->CanJump(),TEXT("character lands and can jump again"));
+  Pawn->SetCrouching(true);++Step;Next=Now+.1;return;
+ case 13:
+  Check(Pawn->bIsCrouched&&!Pawn->CanJump(),TEXT("crouched character cannot jump"));
+  Pawn->SetCrouching(false);++Step;Next=Now+.1;return;
+ case 14:
   {auto* Ally=Mode->FindCombatant(EVanthexTeam::Alpha,1);auto* Enemy=Mode->FindCombatant(EVanthexTeam::Bravo,0);
    auto* H=Pawn->GetPlayerState<AVanthexPlayerState>();auto* A=Ally->GetPlayerState<AVanthexPlayerState>();auto* B=Enemy->GetPlayerState<AVanthexPlayerState>();
    const int32 K=H->GetKills(),Assists=A->GetAssists(),D=B->GetDeaths();
@@ -109,6 +131,7 @@ void VanthexRunControlsTest(AVanthexGameMode* Mode)
    Enemy->GetHealthComponent()->ApplyDamage(Hit);
    Check(Match->GetEliminations().Num()==FeedCount,TEXT("corpse hits cannot duplicate elimination messages"));
    Check(H->GetKills()==K+1&&B->GetDeaths()==D+1,TEXT("corpse hits cannot inflate scoreboard"));
+   Check(!Enemy->CanJump(),TEXT("dead character cannot jump"));
    Enemy->PrepareForRound(Enemy->GetActorTransform());Check(B->GetDeaths()==D+1,TEXT("round respawn preserves match statistics"));}
   Finish();return;
  }

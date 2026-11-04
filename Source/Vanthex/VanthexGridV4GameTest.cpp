@@ -101,7 +101,7 @@ void AVanthexGameMode::AdvanceGridV4GameTest()
   return;
  case 13:
   if(Core->GetCoreState()==EVanthexCoreState::AtRest) {
-   if(!Expect(!Human->CanJump()&&Core->GetActorLocation().Z>=600.f,TEXT("UPPER_RAIL_BLOCKS_STANDING_PASS"),TEXT("downward standing throw stays behind observation rail; jumping is disabled")))return;
+   if(!Expect(Core->GetActorLocation().Z>=600.f,TEXT("UPPER_RAIL_BLOCKS_STANDING_PASS"),TEXT("downward standing throw stays behind observation rail")))return;
    Park(); if(!Expect(Acquire(Human),TEXT("APERTURE_PASS_SETUP"),TEXT("carry to containment opening"))) return;
    Place(Human,FVector(700,280,100),FVector(0,1,-1)); Place(Enemy,FVector(700,750,-500)); Next(15);
   } else if(SelfTestTicks>70) Expect(false,TEXT("UPPER_STANDING_PASS_SETTLES"),Core->GetActorLocation().ToString());
@@ -111,7 +111,7 @@ void AVanthexGameMode::AdvanceGridV4GameTest()
   return;
  case 14:
   if(Core->GetCoreState()==EVanthexCoreState::AtRest) {
-   if(!Expect(!Human->CanJump()&&Core->GetActorLocation().Z>=0.f,TEXT("APERTURE_RAIL_BLOCKS_STANDING_PASS"),TEXT("downward standing throw is stopped by aperture guard; use the lower routes")))return;
+   if(!Expect(Core->GetActorLocation().Z>=0.f,TEXT("APERTURE_RAIL_BLOCKS_STANDING_PASS"),TEXT("downward standing throw is stopped by aperture guard; use the lower routes")))return;
    Park(); if(!Expect(Acquire(Human),TEXT("LOWER_DROP_SETUP"),TEXT("carry to lower floor"))) return;
    FVector Lower=FVector::ZeroVector;
    for(const auto& Room:GridV4::Rooms()) if(Room.Level==-1) { Lower=Room.Center; break; }
@@ -200,7 +200,7 @@ void AVanthexGameMode::AdvanceGridV4GameTest()
   Human->SetHoldForward(false);Human->GetCharacterMovement()->StopMovementImmediately();
   const FVector Position=Human->GetActorLocation();
   const float Moved=FVector::Dist2D(Position,MoveStart);
-  if(!Expect(!Human->CanJump()&&Moved>10.f&&Moved<250.f&&FMath::Abs(Position.Z-MoveStart.Z)<45.f,TEXT("SEALED_EXIT_WALK_AND_BLOCKED_JUMP"),FString::Printf(TEXT("former leak %d moved %.1f cm; position %s"),VisualShotIndex,Moved,*Position.ToString())))return;
+  if(!Expect(Moved>10.f&&Moved<250.f&&FMath::Abs(Position.Z-MoveStart.Z)<45.f,TEXT("SEALED_EXIT_WALK_AND_JUMP"),FString::Printf(TEXT("former leak %d moved %.1f cm; position %s"),VisualShotIndex,Moved,*Position.ToString())))return;
   ++VisualShotIndex;Next(16);return;
  }
  }

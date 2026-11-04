@@ -1692,9 +1692,9 @@ void AVanthexGameMode::AdvanceSelfTest()
 	case EVanthexSelfTestStage::JumpWait:
 	{
 		const bool bAirborne = Character && Character->GetCharacterMovement() && (Character->GetCharacterMovement()->IsFalling() || Character->GetCharacterMovement()->Velocity.Z > 10.f);
-		if (++SelfTestTicks > 10)
+		if (++SelfTestTicks >= 2)
 		{
-			SelfTestExpect(!bAirborne && Character && !Character->CanJump(), TEXT("jump_disabled"), TEXT("jump request leaves character grounded"));
+			SelfTestExpect(bAirborne, TEXT("jump"), TEXT("jump left the ground"));
 			Character->StopJumping();
 			SelfTestStage = EVanthexSelfTestStage::PlayerDeath;
 		}

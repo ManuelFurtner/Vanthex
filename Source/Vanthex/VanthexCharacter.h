@@ -27,7 +27,7 @@ public:
 
 public:
 	AVanthexCharacter();
-	virtual bool CanJumpInternal_Implementation() const override { return false; }
+	virtual bool CanJumpInternal_Implementation() const override;
 	void NextWeapon();
 	void PreviousWeapon();
 

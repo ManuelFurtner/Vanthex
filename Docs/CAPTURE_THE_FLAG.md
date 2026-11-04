@@ -7,6 +7,7 @@ Im Spielmenue unter Spielen **CAPTURE THE FLAG / 5 GEGEN 5** zweimal waehlen (Si
 ## Regeln
 
 - Fuenf Spieler pro Team, zwei Flaggen in den eigenen Basen.
+- Springen mit der Leertaste waehrend der aktiven Spielzeit, auch mit getragener Flagge.
 - 15 Minuten aktive Spielzeit nach der Vorbereitung. Jede gegnerische Flagge, die in die eigene Basis gebracht wird, zaehlt einen Punkt. Die eigene Flagge muss dort stehen.
 - Nach einem Punkt geht die eroberte Flagge zurueck zur gegnerischen Basis. Das Match und die Uhr laufen weiter.
 - Bei Gleichstand nach 15 Minuten gibt es einmalig volle drei Minuten Nachspielzeit. Danach gewinnt das Team mit mehr Punkten; bei erneutem Gleichstand endet das Match unentschieden.
