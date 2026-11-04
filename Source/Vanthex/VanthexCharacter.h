@@ -171,6 +171,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float SprintSpeed = 900.f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Movement", meta = (ClampMin = "0.1", ClampMax = "1.0"))
+	float WeaponMovementScale = .85f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float LookSensitivity = 1.f;
 

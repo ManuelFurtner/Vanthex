@@ -402,9 +402,11 @@ void AVanthexCharacter::RefreshMovementSpeed()
 {
  if(!GetCharacterMovement()) return;
  const float Scale=IsAiming()&&Weapon?VanthexWeaponPresentation::Aim(Weapon->GetWeaponId()).MovementScale:1.f;
- const float KnifeScale=Equipment&&Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Equipment->IsSwitching()?1.15f:1.f;
- GetCharacterMovement()->MaxWalkSpeed=(bSprintWanted?SprintSpeed:WalkSpeed)*Scale*KnifeScale;
- GetCharacterMovement()->MaxWalkSpeedCrouched=280.f*(IsAiming()?.7f:1.f);
+ // Full speed only after the knife draw finishes; switching cannot bypass the weapon penalty.
+ const bool bKnifeReady=Equipment&&Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Equipment->IsSwitching();
+ const float EquipmentScale=!Equipment||bKnifeReady?1.f:FMath::Clamp(WeaponMovementScale,.1f,1.f);
+ GetCharacterMovement()->MaxWalkSpeed=(bSprintWanted?SprintSpeed:WalkSpeed)*Scale*EquipmentScale;
+ GetCharacterMovement()->MaxWalkSpeedCrouched=280.f*(IsAiming()?.7f:1.f)*EquipmentScale;
 }
 void AVanthexCharacter::TickAiming(float Delta)
 {
@@ -440,7 +442,7 @@ void AVanthexCharacter::SetSprinting(bool bNewSprinting)
 	if (bNewSprinting && bIsCrouched)
 	{
 		bSprintWanted = false;
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+		RefreshMovementSpeed();
 		return;
 	}
 
@@ -460,7 +462,7 @@ void AVanthexCharacter::SetCrouching(bool bNewCrouching)
 	if (bNewCrouching)
 	{
 		bSprintWanted = false;
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+		RefreshMovementSpeed();
 		Crouch();
 	}
 	else
@@ -622,7 +624,7 @@ void AVanthexCharacter::PrepareForRound(const FTransform& Spawn)
 	{
 		Movement->StopMovementImmediately();
 		Movement->SetMovementMode(MOVE_Walking);
-		Movement->MaxWalkSpeed = WalkSpeed;
+		RefreshMovementSpeed();
 	}
 
 	const FVector Location = Spawn.GetLocation();

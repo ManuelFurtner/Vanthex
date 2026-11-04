@@ -88,7 +88,7 @@ void VanthexRunAimTest(AVanthexGameMode* Mode)
   Check(Pawn->bIsCrouched&&Pawn->IsAiming()&&Pawn->GetCharacterMovement()->MaxWalkSpeedCrouched<280,TEXT("crouch remains compatible with ADS and reduced speed"));
   Pawn->SetCrouching(false); Pawn->SetAiming(false); Next(); return;
  case 3:
-  Check(!Pawn->IsAiming()&&Pawn->GetAimBlend()<.001f&&FMath::IsNearlyEqual(Pawn->GetFirstPersonCamera()->FieldOfView,90.f,.1f)&&FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,600.f),TEXT("release restores camera and movement"));
+  Check(!Pawn->IsAiming()&&Pawn->GetAimBlend()<.001f&&FMath::IsNearlyEqual(Pawn->GetFirstPersonCamera()->FieldOfView,90.f,.1f)&&FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,510.f),TEXT("release restores camera and firearm movement speed"));
   Pawn->SetAiming(true); Pawn->SetSprinting(true); Check(!Pawn->IsAiming(),TEXT("sprint cancels ADS"));
   Pawn->SetAiming(true); Check(!Pawn->IsAiming(),TEXT("ADS cannot bypass active sprint")); Pawn->SetSprinting(false);
   Pawn->SetAiming(true); W->SetMagazineAmmo(2); W->StartReload(); Check(W->IsReloading()&&!Pawn->IsAiming(),TEXT("actual weapon reload cancels ADS"));

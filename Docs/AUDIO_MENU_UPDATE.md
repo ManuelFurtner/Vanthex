@@ -119,3 +119,7 @@ Vor Übernahme nach main erforderlich:
 ## Maus-Empfindlichkeit
 
 Unter Einstellungen laesst sich die Maus-Empfindlichkeit von 0,10 bis 5,00 per Ziehen oder Zahleneingabe in 0,01-Schritten einstellen. 1,00 behaelt die bisherige Geschwindigkeit. Die Einstellung wirkt sofort auf beide Mausachsen, wird lokal gespeichert und kann mit MAUS AUF STANDARD zurueckgesetzt werden. Die bestehende Zoom-Skalierung bleibt erhalten.
+
+## Bewegung mit Waffen und Messer
+
+Gezogene Schusswaffen reduzieren Gehen, Sprinten und Ducken um 15 %. Das Messer verwendet nach dem vollstaendigen Ziehen die Standardgeschwindigkeit, ohne den bisherigen 15-%-Bonus. Basiswerte: Messer 600/900/280 cm/s (Gehen/Sprinten/Ducken), Schusswaffe 510/765/238 cm/s. Die bestehende ADS-Verlangsamung gilt zusaetzlich. Waffenwechsel bleiben bis zum Ende der Ziehanimation verlangsamt. Der Faktor WeaponMovementScale ist fuer Balancing am Character einstellbar.

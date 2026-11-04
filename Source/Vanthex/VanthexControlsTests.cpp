@@ -63,15 +63,18 @@ void VanthexRunControlsTest(AVanthexGameMode* Mode)
   for(TActorIterator<AVanthexCharacter> It(Mode->GetWorld());It;++It)if(auto* Bot=Cast<AVanthexBotController>(It->GetController()))Bot->SetActorTickEnabled(false);
   E->SyncLoadout(NAME_None,TEXT("Pistol"),true);E->SelectRoundWeapon(); Pawn->NextWeapon();Advance();return;
  case 1:
+  Check(FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,600.f)&&FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeedCrouched,280.f),TEXT("drawn knife uses standard walk and crouch speed"));
   Check(E->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&W->GetWeaponId()==TEXT("Knife"),TEXT("wheel down selects knife during buy phase"));
   E->Attack();Check(!E->IsSwinging(),TEXT("buy phase still forbids knife attacks"));Pawn->NextWeapon();Advance();return;
  case 2:
+  Check(FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,510.f)&&FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeedCrouched,238.f),TEXT("pistol reduces walk and crouch speed by fifteen percent"));
   Check(E->GetSelectedSlot()==EVanthexWeaponSlot::Pistol&&W->GetWeaponId()==TEXT("Pistol"),TEXT("wheel wraps and skips absent primary"));
   {const int32 Ammo=W->GetAmmoInMagazine(); W->FireShot();Check(W->GetAmmoInMagazine()==Ammo,TEXT("buy phase still forbids firearm shots"));}
   {auto* PS=Pawn->GetPlayerState<AVanthexPlayerState>();PS->AwardCredits(4000);
    Check(PS->TryPurchase(TEXT("M4"),901)&&PS->TryPurchase(TEXT("P250"),902),TEXT("preparation buys actual primary and sidearm"));Pawn->SyncEconomyLoadout(false);}
   Pawn->PreviousWeapon();Advance();return;
  case 3:
+  Check(FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,510.f),TEXT("rifle uses reduced movement speed"));
   Check(E->GetSelectedSlot()==EVanthexWeaponSlot::Rifle&&W->GetWeaponId()==TEXT("M4"),TEXT("wheel up selects owned primary"));Pawn->PreviousWeapon();Advance();return;
  case 4:
   Check(E->GetSelectedSlot()==EVanthexWeaponSlot::Knife,TEXT("wheel up wraps primary to knife"));E->SelectPistol();Advance();return;
