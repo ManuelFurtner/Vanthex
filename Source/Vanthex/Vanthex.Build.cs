@@ -11,7 +11,7 @@ public class Vanthex : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
-			"Core", "Voice",
+			"Core", "Voice", "MoviePlayer",
 			"CoreUObject",
 			"Engine",
 			"InputCore",

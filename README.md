@@ -45,6 +45,7 @@ Ein Match beginnt mit **800 CR**, Standardpistole und Messer. Vor jeder 180-Seku
 
 ## Dokumentation und Prüfungen
 
+- [VANTHEX-Ladeanimation: Start, Kartenwechsel und Prüfschritte](Docs/LOADING_SCREEN.md)
 - [Textchat und Team-Voice: Bedienung, Grenzen und ausstehende Prüfungen](Docs/COMMUNICATION.md)
 - [Audio und Menü: neue Bedienung, Einstellungen und Prüfstand](Docs/AUDIO_MENU_UPDATE.md)
 
