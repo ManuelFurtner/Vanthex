@@ -103,7 +103,12 @@ void VanthexRunControlsTest(AVanthexGameMode* Mode)
    Enemy->GetHealthComponent()->ResetHealth();FVanthexDamageRequest Hit;Hit.DamageKind=EVanthexDamageKind::Melee;Hit.Damage=35;Hit.InstigatorActor=Ally;Hit.InstigatorController=Ally->GetController();Enemy->GetHealthComponent()->ApplyDamage(Hit);
    Hit.Damage=100;Hit.InstigatorActor=Pawn;Hit.InstigatorController=PC;Enemy->GetHealthComponent()->ApplyDamage(Hit);
    Check(H->GetKills()==K+1&&A->GetAssists()==Assists+1&&B->GetDeaths()==D+1,TEXT("real kill credits public K/A/D exactly once"));
-   Enemy->GetHealthComponent()->ApplyDamage(Hit);Check(H->GetKills()==K+1&&B->GetDeaths()==D+1,TEXT("corpse hits cannot inflate scoreboard"));
+   const auto* Match=Mode->GetWorld()->GetGameState<AVanthexGameState>();
+   const int32 FeedCount=Match->GetEliminations().Num();
+   Check(FeedCount>0&&Match->GetEliminations().Last().KillerId==H->GetPlayerId()&&Match->GetEliminations().Last().VictimId==B->GetPlayerId(),TEXT("lethal damage publishes the actual killer and victim"));
+   Enemy->GetHealthComponent()->ApplyDamage(Hit);
+   Check(Match->GetEliminations().Num()==FeedCount,TEXT("corpse hits cannot duplicate elimination messages"));
+   Check(H->GetKills()==K+1&&B->GetDeaths()==D+1,TEXT("corpse hits cannot inflate scoreboard"));
    Enemy->PrepareForRound(Enemy->GetActorTransform());Check(B->GetDeaths()==D+1,TEXT("round respawn preserves match statistics"));}
   Finish();return;
  }

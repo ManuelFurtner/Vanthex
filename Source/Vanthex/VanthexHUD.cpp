@@ -266,10 +266,33 @@ void AVanthexHUD::DrawHUD()
   Text(Prompt,CX,H*.5f+72,13,White,true);
   if(Interaction>=0)Bar(CX-175,H*.5f+99,350,3,Interaction,Accent);
  }
+ if(Match) {
+  int32 Row=0;
+  const auto& Feed=Match->GetEliminations();
+  for(int32 I=Feed.Num()-1;I>=0&&Row<4;--I) {
+   const auto& Entry=Feed[I];
+   if(Match->GetServerWorldTimeSeconds()-Entry.ServerTime>8.f) continue;
+   const bool Own=PlayerState&&(Entry.KillerId==PlayerState->GetPlayerId()||Entry.VictimId==PlayerState->GetPlayerId());
+   const float Y=96.f+Row*44.f;
+   Panel(W-350,Y,326,40,Own?Accent:Muted);
+   Text(Entry.Killer+TEXT("  >  ")+Entry.Victim,W-337,Y+5,12,White);
+   Text(Entry.KillerId==Entry.VictimId?TEXT("SELBST ELIMINIERT"):TEXT("ELIMINIERUNG"),W-337,Y+23,9,Muted);
+   ++Row;
+  }
+ }
  if(bDead){
-  Panel(CX-225,H*.5f-101,450,61,Red);
+  FString Cause=TEXT("Todesinfo wird geladen...");
+  if(Match&&PlayerState) {
+   const auto& Feed=Match->GetEliminations();
+   for(int32 I=Feed.Num()-1;I>=0;--I) if(Feed[I].VictimId==PlayerState->GetPlayerId()) {
+    Cause=Feed[I].KillerId==Feed[I].VictimId?TEXT("Selbst eliminiert"):TEXT("Eliminiert von: ")+Feed[I].Killer;
+    break;
+   }
+  }
+  Panel(CX-225,H*.5f-101,450,86,Red);
+  Text(Cause,CX,H*.5f-64,15,Red,true);
   Text(TEXT("ELIMINIERT"),CX,H*.5f-94,23,White,true);
-  Text(TEXT("Du steigst in der naechsten Runde wieder ein."),CX,H*.5f-62,12,Muted,true);
+  Text(TEXT("Du steigst in der naechsten Runde wieder ein."),CX,H*.5f-37,12,Muted,true);
  }
 
 	if (!Match)

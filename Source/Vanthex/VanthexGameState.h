@@ -5,6 +5,19 @@
 #include "VanthexTypes.h"
 #include "VanthexGameState.generated.h"
 
+class AVanthexPlayerState;
+
+USTRUCT()
+struct FVanthexElimination
+{
+ GENERATED_BODY()
+ UPROPERTY() FString Killer;
+ UPROPERTY() FString Victim;
+ UPROPERTY() int32 KillerId = INDEX_NONE;
+ UPROPERTY() int32 VictimId = INDEX_NONE;
+ UPROPERTY() float ServerTime = 0.f;
+};
+
 UCLASS()
 class AVanthexGameState : public AGameStateBase
 {
@@ -12,6 +25,8 @@ class AVanthexGameState : public AGameStateBase
 
 public:
 	virtual void BeginPlay() override;
+ void PublishElimination(const AVanthexPlayerState* Killer, const AVanthexPlayerState* Victim);
+ const TArray<FVanthexElimination>& GetEliminations() const { return Eliminations; }
  void PublishRound(
 		EVanthexRoundPhase NewPhase,
 		int32 NewAlphaScore,
@@ -37,6 +52,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+ UPROPERTY(Replicated) TArray<FVanthexElimination> Eliminations;
 	UPROPERTY(Replicated)
 	EVanthexRoundPhase Phase = EVanthexRoundPhase::Waiting;
 

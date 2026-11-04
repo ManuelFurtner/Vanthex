@@ -6,6 +6,7 @@
 #include "VanthexCharacter.h"
 #include "VanthexPlayerState.h"
 #include "VanthexGameMode.h"
+#include "VanthexGameState.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Actor.h"
@@ -78,6 +79,11 @@ void UHealthComponent::ApplyDamage(const FVanthexDamageRequest& Request)
 	if (Health <= 0.f)
 	{
 		bDead = true;
+  if(Character) if(auto* Match=GetWorld()->GetGameState<AVanthexGameState>()) {
+   const auto* Killer=Request.InstigatorController?Request.InstigatorController->GetPlayerState<AVanthexPlayerState>():nullptr;
+   if(!Killer) if(const auto* Attacker=Cast<AVanthexCharacter>(Request.InstigatorActor)) Killer=Attacker->GetPlayerState<AVanthexPlayerState>();
+   Match->PublishElimination(Killer,Character->GetPlayerState<AVanthexPlayerState>());
+  }
 		// Disable the whole character immediately; corpses must never absorb the
 		// next bullet while the cosmetic collapse continues to animate.
 		OnRep_Dead();

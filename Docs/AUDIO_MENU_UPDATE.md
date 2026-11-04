@@ -123,3 +123,7 @@ Unter Einstellungen laesst sich die Maus-Empfindlichkeit von 0,10 bis 5,00 per Z
 ## Bewegung mit Waffen und Messer
 
 Gezogene Schusswaffen reduzieren Gehen, Sprinten und Ducken um 15 %. Das Messer verwendet nach dem vollstaendigen Ziehen die Standardgeschwindigkeit, ohne den bisherigen 15-%-Bonus. Basiswerte: Messer 600/900/280 cm/s (Gehen/Sprinten/Ducken), Schusswaffe 510/765/238 cm/s. Die bestehende ADS-Verlangsamung gilt zusaetzlich. Waffenwechsel bleiben bis zum Ende der Ziehanimation verlangsamt. Der Faktor WeaponMovementScale ist fuer Balancing am Character einstellbar.
+
+## Eliminierungen und Todesanzeige
+
+Das HUD zeigt rechts bis zu vier Eliminierungen (Taeter > Opfer), jeweils acht Sekunden lang. Nach dem eigenen Tod nennt das mittige Panel den Taeter bis zum Rundenwechsel. Selbst-Eliminierungen und Umgebungsschaden werden gesondert benannt. Der Server veroeffentlicht die Meldungen einmal pro Tod; neue Runden leeren die Liste. Namen werden bereinigt und auf 24 Zeichen begrenzt.
