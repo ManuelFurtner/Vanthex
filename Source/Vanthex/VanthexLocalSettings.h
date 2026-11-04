@@ -18,6 +18,8 @@ public:
 	UPROPERTY(Config) float RoomVolume = .65f;
  UPROPERTY(Config) float VoiceVolume = .8f;
  UPROPERTY(Config) bool bVoiceEnabled = true;
+ UPROPERTY(Config) float MouseSensitivity = 1.f;
+ float GetMouseSensitivity() const;
  UPROPERTY(Config) float CrosshairThickness = 1.5f;
  UPROPERTY(Config) float CrosshairLength = 8.f;
  UPROPERTY(Config) float CrosshairGap = 0.f;

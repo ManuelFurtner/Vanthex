@@ -1,4 +1,5 @@
 #include "VanthexCharacter.h"
+#include "VanthexLocalSettings.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexGadgetComponent.h"
 #include "VanthexWeaponAudioComponent.h"
@@ -312,7 +313,8 @@ void AVanthexCharacter::MoveInput(const FInputActionValue& Value)
 void AVanthexCharacter::LookInput(const FInputActionValue& Value)
 {
 	const FVector2D Look = Value.Get<FVector2D>();
-	DoAim(Look.X, Look.Y);
+	const float MouseSensitivity = UVanthexLocalSettings::Get()->GetMouseSensitivity();
+	DoAim(Look.X * MouseSensitivity, Look.Y * MouseSensitivity);
 }
 
 void AVanthexCharacter::StartSprint()

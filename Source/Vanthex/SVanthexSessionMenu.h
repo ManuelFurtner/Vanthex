@@ -33,7 +33,7 @@ private:
 	TSharedRef<SWidget> SettingsPage();
 	TSharedRef<SWidget> ControlsPage();
  TSharedRef<SWidget> CrosshairPage();
- TSharedRef<SWidget> CrosshairRow(const FString& Label,float* Value,float Min,float Max,float Fallback);
+ TSharedRef<SWidget> NumberRow(const FString& Label,float* Value,float Min,float Max,float Fallback,float Step = 0.f);
 	TSharedRef<SWidget> Button(const FString& Label, TFunction<FReply()> Action, bool Primary=false, int32 Tab=-1);
 	TSharedRef<SWidget> VolumeRow(const FString& Label, float* Value);
 	void ShowPage(int32 Page);

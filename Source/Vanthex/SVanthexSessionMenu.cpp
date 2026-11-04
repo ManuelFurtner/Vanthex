@@ -8,7 +8,7 @@
 #include "VanthexGameState.h"
 #include "VanthexMapLayout.h"
 #include "Engine/Engine.h"
-#include "Engine/GameUserSettings.h"
+#include "GameFramework/GameUserSettings.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SEditableTextBox.h"
@@ -127,6 +127,9 @@ TSharedRef<SWidget> SVanthexSessionMenu::SettingsPage()
 	[Button(Names[I],[this,I](){Quality=I; Feedback->SetText(FText::FromString(TEXT("Grafik ausgewaehlt. Mit Grafik anwenden bestaetigen."))); return FReply::Handled();})];
 	return SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,18)[Text(TEXT("DEIN SETUP"),27)]
+	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[NumberRow(TEXT("Maus-Empfindlichkeit"),&Settings->MouseSensitivity,.1f,5.f,1.f,.01f)]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Text(TEXT("0,10 - 5,00 | 1,00 = Standard. Wird automatisch gespeichert."),12)]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Button(TEXT("MAUS AUF STANDARD"),[Settings](){Settings->MouseSensitivity=1.f; Settings->Persist(); return FReply::Handled();})]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Gesamtlautstaerke"),&Settings->MasterVolume)]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen & Bewegung"),&Settings->CombatVolume)]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Menue & Kaufhinweise"),&Settings->UIVolume)]
@@ -227,13 +230,13 @@ public:
 };
 }
 
-TSharedRef<SWidget> SVanthexSessionMenu::CrosshairRow(const FString& Label,float* Value,float Min,float Max,float Fallback)
+TSharedRef<SWidget> SVanthexSessionMenu::NumberRow(const FString& Label,float* Value,float Min,float Max,float Fallback,float Step)
 {
  return SNew(SHorizontalBox)
   +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Text(Label,15)]
   +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(140)
    [SNew(SSpinBox<float>).MinValue(Min).MaxValue(Max).MinSliderValue(Min).MaxSliderValue(Max)
-    .Delta(Max<=1?.01f:.5f).MinFractionalDigits(0).MaxFractionalDigits(2)
+    .Delta(Step>0?Step:(Max<=1?.01f:.5f)).MinFractionalDigits(0).MaxFractionalDigits(2)
     .Value_Lambda([Value,Min,Max,Fallback](){return FVanthexCrosshairStyle::Safe(*Value,Min,Max,Fallback);})
     .OnValueChanged_Lambda([Value,Min,Max,Fallback](float V){*Value=FVanthexCrosshairStyle::Safe(V,Min,Max,Fallback);})
     .OnValueCommitted_Lambda([Value,Min,Max,Fallback](float V,ETextCommit::Type){*Value=FVanthexCrosshairStyle::Safe(V,Min,Max,Fallback); UVanthexLocalSettings::Get()->Persist();})
@@ -258,14 +261,14 @@ TSharedRef<SWidget> SVanthexSessionMenu::CrosshairPage()
  Rows->AddSlot().AutoHeight().Padding(0,0,0,16)[Text(TEXT("DEIN FADENKREUZ"),27)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBox).HeightOverride(140)[SNew(SCrosshairPreview)]];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,20)[Text(TEXT("Live-Vorschau auf dunklem und hellem Hintergrund. Aenderungen gelten sofort und werden lokal gespeichert."),13,Muted)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[CrosshairRow(TEXT("Dicke (1-8 px)"),&Settings->CrosshairThickness,1,8,1.5f)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[CrosshairRow(TEXT("Laenge pro Strich (2-32 px)"),&Settings->CrosshairLength,2,32,8)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,20)[CrosshairRow(TEXT("Abstand zur Mitte (0-24 px)"),&Settings->CrosshairGap,0,24,0)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[NumberRow(TEXT("Dicke (1-8 px)"),&Settings->CrosshairThickness,1,8,1.5f)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[NumberRow(TEXT("Laenge pro Strich (2-32 px)"),&Settings->CrosshairLength,2,32,8)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,20)[NumberRow(TEXT("Abstand zur Mitte (0-24 px)"),&Settings->CrosshairGap,0,24,0)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[Text(TEXT("FARBE"),13,Cyan)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,14)[Presets];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[CrosshairRow(TEXT("Rot (0-1)"),&Settings->CrosshairColor.R,0,1,1)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[CrosshairRow(TEXT("Gruen (0-1)"),&Settings->CrosshairColor.G,0,1,1)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,18)[CrosshairRow(TEXT("Blau (0-1)"),&Settings->CrosshairColor.B,0,1,1)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[NumberRow(TEXT("Rot (0-1)"),&Settings->CrosshairColor.R,0,1,1)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[NumberRow(TEXT("Gruen (0-1)"),&Settings->CrosshairColor.G,0,1,1)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,18)[NumberRow(TEXT("Blau (0-1)"),&Settings->CrosshairColor.B,0,1,1)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,14)[Button(TEXT("FADENKREUZ ZURUECKSETZEN"),[Settings](){Settings->ResetCrosshair();return FReply::Handled();})];
  Rows->AddSlot().AutoHeight()[Text(TEXT("Betrifft das normale Fadenkreuz beim Schiessen ohne Visier. Reflexpunkt, Zielfernrohr und Trefferanzeige behalten ihre eigene Darstellung. Der Abstand wird von der Mitte bis zur inneren Strichkante gemessen."),12,Muted)];
  return SNew(SScrollBox)+SScrollBox::Slot()[Rows];

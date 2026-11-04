@@ -115,3 +115,7 @@ Vor Übernahme nach main erforderlich:
 5. Eigene AUG/MP7-Bank reimportieren; direkten Schuss, Nachbarraum und obere Plattform
    hören. Abbruch beim Nachladen und 3v3-Mix prüfen. Reflexionen dürfen keine
    zusätzliche Schussfolge vortäuschen. Tatsächliche Mixeraufnahme auf Clipping prüfen.
+
+## Maus-Empfindlichkeit
+
+Unter Einstellungen laesst sich die Maus-Empfindlichkeit von 0,10 bis 5,00 per Ziehen oder Zahleneingabe in 0,01-Schritten einstellen. 1,00 behaelt die bisherige Geschwindigkeit. Die Einstellung wirkt sofort auf beide Mausachsen, wird lokal gespeichert und kann mit MAUS AUF STANDARD zurueckgesetzt werden. Die bestehende Zoom-Skalierung bleibt erhalten.
