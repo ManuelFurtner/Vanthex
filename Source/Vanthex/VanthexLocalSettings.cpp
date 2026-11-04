@@ -20,6 +20,16 @@ void UVanthexLocalSettings::ApplyAudio(UWorld* World)
 
 void UVanthexLocalSettings::Persist() { SaveConfig(); }
 
+FVanthexCrosshairStyle UVanthexLocalSettings::GetCrosshairStyle() const
+{
+ return FVanthexCrosshairStyle::Make(CrosshairThickness,CrosshairLength,CrosshairGap,CrosshairColor);
+}
+void UVanthexLocalSettings::ResetCrosshair()
+{
+ CrosshairThickness=1.5f; CrosshairLength=8.f; CrosshairGap=0.f; CrosshairColor=FLinearColor::White;
+ Persist();
+}
+
 bool UVanthexLocalSettings::ValidateAddress(const FString& Input, FString& Address, FString& Error)
 {
 	Address.Reset(); Error.Reset();

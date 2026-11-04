@@ -2,9 +2,11 @@ VANTHEX – Integration des Partnerstands vom 4. November 2026
 
 Zusammengeführt:
 - Eigener Stand / main: e319908 (Industrial Finish für 25 GRID-V4-Räume).
-- Partnerzweig origin/codex/audio-menu-polish: 5b6e84b.
-- Vier Partnercommits: 37db735, 08cae63, fa501db, 5b6e84b.
+- Partnerzweig origin/codex/audio-menu-polish: e29d289.
+- Fünf Partnercommits: 37db735, 08cae63, fa501db, 5b6e84b, e29d289.
 - Audio-/Sitzungsmenü, Teamchat/Push-to-talk, Ladeanzeige und Schattensystem.
+- Während der Prüfung neu eingetroffen: konfigurierbares Fadenkreuz mit Vorschau,
+  gespeicherter Farbe, Strichlänge, Abstand und Stärke. Ebenfalls zusammengeführt.
 
 Die Zusammenführung hatte keine Git-Konflikte. Der erste echte Editor-Build
 entdeckte einen ungültigen Include im Sitzungsmenü. Engine/GameUserSettings.h
@@ -34,3 +36,5 @@ Grenzen: Kein echter Mikrofon-/Headset-Test zwischen zwei PCs, kein WAN-/Jitter-
 Test und kein vollständiger manueller Durchlauf aller Menüauflösungen. Die
 Automation bestätigt Regeln und Codec, keine fertige Voice-Qualität. Keine neue
 Dedicated-Server-/Edgegap-Bereitstellung. Fab-Abhängigkeiten bleiben lokal nötig.
+
+Abschluss nach Fadenkreuz-Integration: Editor/Game erneut erfolgreich gebaut; alle 33 Automationstests erneut bestanden. Zuvor nach dem Sound-Reimport vier Audio-Tests bestanden. Normaler Spielstart lud GRID V4, erzeugte die echte Egoansicht mit HUD/Fadenkreuz und endete mit Exitcode 0. Bild visuell geprüft; kein GPU-Benchmark, da parallel Automation lief. Belege: Docs/Validation/GitSync/final-integration.json und first-person-after-sync.png.

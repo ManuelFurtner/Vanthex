@@ -6,7 +6,7 @@ räumlichem Waffen-Audio. Dieser Umbau ist auf `codex/audio-menu-polish`.
 ## Menü
 
 Escape öffnet ein natives Slate-Menü mit dunklen Flächen, türkiser Navigation,
-Runden-/Spielstand und drei Bereichen: Spielen, Einstellungen und Steuerung.
+Runden-/Spielstand und vier Bereichen: Spielen, Einstellungen, Steuerung und Fadenkreuz.
 Das Layout skaliert bei kleinen Viewports herunter; Inhaltsseiten sind scrollbar.
 Aktive Navigation wird hervorgehoben. Buttons und Slider sind per Tastatur bedienbar.
 Escape schließt auch dann, wenn ein Eingabefeld den Fokus hat.
@@ -23,6 +23,29 @@ Während das Menü offen ist, besitzt es exklusiven UI-Eingabefokus. Waffenfeuer
 Sprint und ADS werden beim Öffnen beendet; Bewegung und Blick sind gesperrt.
 Die Online-Runde läuft weiter. Beim Schließen kehren Maus und Spieleingabe zurück.
 Das vorhandene Kaufmenü bleibt erhalten und wird beim Öffnen des Sitzungsmenüs geschlossen.
+
+### Fadenkreuz
+
+Unter **Escape → Fadenkreuz** lassen sich Dicke (1–8 px), Länge pro Strich
+(2–32 px) und Abstand von der Mitte bis zur inneren Strichkante (0–24 px)
+per Ziehen oder Zahleneingabe einstellen. Sechs Farbvorgaben und einzelne
+RGB-Werte (0–1) erlauben die Farbauswahl. Eine Live-Vorschau zeigt dieselbe
+Geometrie wie das HUD auf hellem und dunklem Hintergrund; die Menüskalierung
+kann die physische Vorschaugröße verändern. HUD-Werte sind Bildschirm-Pixel.
+
+Änderungen gelten sofort, werden nach Zahleneingabe/Loslassen des Reglers sowie
+beim Schließen des Menüs lokal gespeichert und bleiben nach Neustart erhalten.
+Zurücksetzen betrifft nur das Fadenkreuz. Standard: weiß, Dicke 1,5, Länge 8,
+Abstand 0. Reflexvisier, Zielfernrohr, Trefferanzeige und die bisherigen
+Sichtbarkeitsregeln beim Zielen/Tod sind unverändert. Werte aus beschädigten
+Konfigurationsdateien werden beim Zeichnen begrenzt; NaN/Inf fallen auf Standards zurück.
+
+Prüfstand dieser Ergänzung: statische Klammer- und Whitespace-Prüfung bestanden.
+Der Buildversuch mit der inzwischen vorhandenen UE-5.8-Installation meldet
+`Unable to find valid SDK(s) for Win64`; ein erfolgreicher C++-Build oder
+gerenderter Test liegt weiterhin nicht vor. Nach Einrichtung der C++-Toolchain
+prüfen: alle Regler/Farben, direkte Zahleneingabe, Escape, Neustart/Persistenz,
+Zurücksetzen sowie unveränderte Visierdarstellung.
 
 ## Einstellungen und Mix
 

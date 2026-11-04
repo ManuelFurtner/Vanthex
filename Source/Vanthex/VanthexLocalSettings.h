@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "VanthexCrosshair.h"
 #include "VanthexLocalSettings.generated.h"
 
 class UWorld;
@@ -17,6 +18,12 @@ public:
 	UPROPERTY(Config) float RoomVolume = .65f;
  UPROPERTY(Config) float VoiceVolume = .8f;
  UPROPERTY(Config) bool bVoiceEnabled = true;
+ UPROPERTY(Config) float CrosshairThickness = 1.5f;
+ UPROPERTY(Config) float CrosshairLength = 8.f;
+ UPROPERTY(Config) float CrosshairGap = 0.f;
+ UPROPERTY(Config) FLinearColor CrosshairColor = FLinearColor::White;
+ FVanthexCrosshairStyle GetCrosshairStyle() const;
+ void ResetCrosshair();
 	UPROPERTY(Config) FString LastAddress = TEXT("127.0.0.1:7777");
 	static UVanthexLocalSettings* Get();
 	void ApplyAudio(UWorld* World);

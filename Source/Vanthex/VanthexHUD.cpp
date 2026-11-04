@@ -1,4 +1,5 @@
 #include "VanthexHUD.h"
+#include "VanthexLocalSettings.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexGadgetComponent.h"
 #include "VanthexGadgetActor.h"
@@ -69,8 +70,8 @@ void AVanthexHUD::DrawHUD()
   }
  }
  if(AimBlend<.08f&&Health&&!Health->IsDead()) {
-  DrawLine(CenterX-8,CenterY,CenterX+8,CenterY,FLinearColor::White,1.5f);
-  DrawLine(CenterX,CenterY-8,CenterX,CenterY+8,FLinearColor::White,1.5f);
+  const auto Crosshair=UVanthexLocalSettings::Get()->GetCrosshairStyle();
+  for(const auto& R:Crosshair.Rects()) DrawRect(Crosshair.Color,CenterX+R.X,CenterY+R.Y,R.Z,R.W);
  } else if(Weapon) {
   const auto Sight=VanthexWeaponPresentation::Aim(Weapon->GetWeaponId());
   if(Sight.Sight==EVanthexSight::Reflex&&AimBlend>.8f) {
