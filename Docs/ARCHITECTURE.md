@@ -77,7 +77,7 @@ The local human is Alpha slot 0. `AVanthexBotController` fills the other five sl
 
 `VanthexPlayerController` owns player input routing and restart/test commands. It does not own movement simulation.
 
-`VanthexCharacter` owns first-person presentation and movement: camera, WASD, mouse look, jump, crouch, sprint. It holds a `HealthComponent` and equips one weapon. It does not calculate weapon damage.
+`VanthexCharacter` owns first-person presentation and movement: camera, WASD, mouse look, crouch, sprint. It holds a `HealthComponent` and equips one weapon. It does not calculate weapon damage.
 
 `HealthComponent` is the only place that stores health, applies damage, and broadcasts death. Actors that can be shot (the player and the test target) use this component instead of private health variables.
 
@@ -123,7 +123,7 @@ There is no saved gameplay map. `GameDefaultMap` is `/Engine/Maps/Entry`. `Vanth
 
 Visual Pass 03 keeps that rule. The hitscan debug line is not drawn. New dress is still no-collision. `-VanthexVisualShots` writes eighteen 1920×1080 frames. Limits and the missing external assets are in `Docs/HIGH_FIDELITY_PIPELINE.md`.
 
-Input actions and the mapping context are created in C++ at runtime. Defaults: walk 600, sprint 900, crouch 280, jump Z 520, FOV 90, magazine 30 with an infinite reserve, fire interval 0.15 s, reload 1.6 s, body damage 40, headshot multiplier 2, max health 100. Controls: WASD, mouse, Shift sprint, Ctrl crouch (crouch wins), Space jump, left mouse fire, R reload, E pickup, G drop, Q throw, F5 match restart.
+Input actions and the mapping context are created in C++ at runtime. Defaults: walk 600, sprint 900, crouch 280, jump disabled, FOV 90, magazine 30 with an infinite reserve, fire interval 0.15 s, reload 1.6 s, body damage 40, headshot multiplier 2, max health 100. Controls: WASD, mouse, Shift sprint, Ctrl crouch (crouch wins), mouse wheel weapon cycle, Tab scoreboard, left mouse fire, R reload, E pickup, G drop, Q throw, F5 match restart.
 
 `-VanthexSelfTest` runs the M1 combat checks, the M2 roster, friendly fire, enemy damage, timeout, elimination, reset, score, and match checks, and the M3 core checks: spawn, pickup, single carrier, drop, death drop, throw, teammate catch, enemy intercept, settle, both extractions, extraction cancel, round reset, and F5. It writes `Saved/VanthexSelfTest.txt` and exits. The self-test shortens the round-end and intermission waits. It does not shorten the 180 second rule or the 15 second extraction hold. The timeout check calls the same timeout resolution the clock uses.
 

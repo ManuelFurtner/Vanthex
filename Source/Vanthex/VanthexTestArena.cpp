@@ -40,6 +40,12 @@ void AVanthexTestArena::Build()
 		return;
 	}
 
+if(VanthexMap::IsGridV4(World)){
+  const bool Baked=World->GetMapName().EndsWith(TEXT("GridV4"))&&!FParse::Param(FCommandLine::Get(),TEXT("BakeGridV4"));
+  if(!Baked)BuildGridV4();BuildGridV4Gameplay();
+  if(FParse::Param(FCommandLine::Get(),TEXT("GridV4Test"))){FTimerHandle Handle;World->GetTimerManager().SetTimer(Handle,this,&AVanthexTestArena::ValidateGridV4,2.f,false);}
+  return;
+ }
 if (VanthexMap::IsGridV3(World)) {
   const bool bBaked = World->GetMapName().EndsWith(TEXT("GridV3")) && !FParse::Param(FCommandLine::Get(),TEXT("BakeGridV3"));
   if (!bBaked) BuildGridV3();

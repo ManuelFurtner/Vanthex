@@ -167,6 +167,15 @@ void AVanthexGameMode::PerformSessionReset()
 void AVanthexGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+ if(FParse::Param(FCommandLine::Get(),TEXT("ExtractionRulesTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunExtractionRulesTest(AVanthexGameMode*); VanthexRunExtractionRulesTest(this); }),.05f,true,1.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("LooseCoreExtractionTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunLooseCoreExtractionTest(AVanthexGameMode*); VanthexRunLooseCoreExtractionTest(this); }),.05f,true,1.f);
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("ControlsTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunControlsTest(AVanthexGameMode*); VanthexRunControlsTest(this); }),.05f,true,1.f);
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("WeaponProfileTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunWeaponProfileTest(AVanthexGameMode*); VanthexRunWeaponProfileTest(this); }),.05f,true,2.f);
  }
@@ -201,6 +210,8 @@ void AVanthexGameMode::BeginPlay()
   GetWorldTimerManager().SetTimer(VisualShotTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunOperatorShots(AVanthexGameMode*); VanthexRunOperatorShots(this); }),.1f,true,3.f);
  }
  if (FParse::Param(FCommandLine::Get(),TEXT("VanthexMapShots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceMapShots,4.f,true,8.f);
+ if (FParse::Param(FCommandLine::Get(),TEXT("GridV4Shots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceGridV4Shots,4.f,true,12.f);
+ if (FParse::Param(FCommandLine::Get(),TEXT("GridV4GameTest"))) GetWorldTimerManager().SetTimer(SelfTestTimer,this,&AVanthexGameMode::AdvanceGridV4GameTest,0.05f,true,3.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceGridV3Shots,4.f,true,12.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV3GameTest"))) GetWorldTimerManager().SetTimer(SelfTestTimer,this,&AVanthexGameMode::AdvanceGridV3GameTest,0.05f,true,3.f);
 	UE_LOG(LogVanthex, Display, TEXT("VANTHEX M2 ready"));
@@ -418,8 +429,6 @@ void AVanthexGameMode::NotifyCombatantDied(AVanthexCharacter* Combatant)
 	if (Core && Combatant && Core->GetCarrier() == Combatant)
 	{
 		Core->DropFromDeath();
-		ExtractionElapsed = 0.f;
-		ActiveExtraction = EVanthexExtractionId::None;
 		RefreshCoreReadout();
 	}
 
@@ -436,6 +445,15 @@ void AVanthexGameMode::NotifyCombatantDied(AVanthexCharacter* Combatant)
 	EvaluateElimination();
 }
 
+bool AVanthexGameMode::HasDepositedCore() const
+{
+	if (!Core || !Arena || Core->GetCarrier() || Core->GetExtractionTeam() == EVanthexTeam::None
+		|| Core->GetCoreState() == EVanthexCoreState::Extracted) return false;
+	for (const auto Id : {EVanthexExtractionId::A, EVanthexExtractionId::B})
+		if (const auto* Zone = Arena->GetExtractionZone(Id); Zone && Zone->Contains(Core->GetActorLocation())) return true;
+	return false;
+}
+
 void AVanthexGameMode::EvaluateElimination()
 {
 	if (Phase != EVanthexRoundPhase::RoundActive)
@@ -447,6 +465,10 @@ void AVanthexGameMode::EvaluateElimination()
 	const int32 BravoAlive = CountAlive(EVanthexTeam::Bravo);
 	const bool bAlphaOut = AlphaAlive == 0;
 	const bool bBravoOut = BravoAlive == 0;
+	// Inspect the real Core position, including a death drop before the next clock tick.
+	// A deposited objective gets its full countdown even when nobody remains alive.
+	bEliminationDeferred = (bAlphaOut || bBravoOut) && HasDepositedCore();
+	if (bEliminationDeferred) return;
 	if (bAlphaOut && bBravoOut)
 	{
 		EndRound(EVanthexTeam::None);
@@ -565,8 +587,8 @@ void AVanthexGameMode::ActivateRound()
 	Phase = EVanthexRoundPhase::RoundActive;
 	for (AVanthexCharacter* Combatant : Combatants) if (Combatant) {
 		Combatant->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		// Keep the weapon selected during preparation when combat begins.
 		Combatant->SyncEconomyLoadout(true);
-		if (auto* Equipment = Combatant->GetEquipment()) Equipment->SelectRoundWeapon();
 	}
 	TimeRemaining = RoundDuration;
 	PublishMatch();
@@ -590,6 +612,7 @@ void AVanthexGameMode::TickRoundClock()
 	}
 
 	UpdateExtraction(0.1f);
+	if (bEliminationDeferred) EvaluateElimination();
 	if (Phase != EVanthexRoundPhase::RoundActive)
 	{
 		return;
@@ -597,7 +620,7 @@ void AVanthexGameMode::TickRoundClock()
 
 	TimeRemaining = FMath::Max(0.f, TimeRemaining - 0.1f);
 	PublishMatch();
-	if (TimeRemaining <= 0.f)
+	if (TimeRemaining <= 0.f && !HasDepositedCore())
 	{
 		if (UWorld* World = GetWorld())
 		{
@@ -609,7 +632,7 @@ void AVanthexGameMode::TickRoundClock()
 
 void AVanthexGameMode::ResolveTimeout()
 {
-	if (Phase != EVanthexRoundPhase::RoundActive)
+	if (Phase != EVanthexRoundPhase::RoundActive || HasDepositedCore())
 	{
 		return;
 	}
@@ -727,6 +750,9 @@ void AVanthexGameMode::ResetCombatants()
 
 	ExtractionElapsed = 0.f;
 	ActiveExtraction = EVanthexExtractionId::None;
+	ExtractionTeam = EVanthexTeam::None;
+	ExtractionPossessionRevision = 0;
+	bEliminationDeferred = false;
 	RefreshCoreReadout();
 }
 
@@ -770,6 +796,14 @@ void AVanthexGameMode::RefreshCoreReadout()
 		}
 	}
 
+	// Extraction is an objective process, independent of the Core's flight/rest
+	// state. Keep motion and pickup enabled while publishing the same countdown.
+	if (Core && Phase == EVanthexRoundPhase::RoundActive && ActiveExtraction != EVanthexExtractionId::None
+		&& Core->GetCoreState() != EVanthexCoreState::Extracted)
+	{
+		Readout = ActiveExtraction == EVanthexExtractionId::B ? EVanthexCoreReadout::ExtractingB : EVanthexCoreReadout::ExtractingA;
+		Remaining = FMath::Max(0.f, ExtractionDuration - ExtractionElapsed);
+	}
 	if (AVanthexGameState* Match = GetGameState<AVanthexGameState>())
 	{
 		Match->PublishCore(Readout, Remaining, ExtractionDuration);
@@ -782,6 +816,8 @@ void AVanthexGameMode::UpdateExtraction(float DeltaSeconds)
 	{
 		ExtractionElapsed = 0.f;
 		ActiveExtraction = EVanthexExtractionId::None;
+		ExtractionTeam = EVanthexTeam::None;
+		ExtractionPossessionRevision = 0;
 		if (Core && Core->GetCoreState() == EVanthexCoreState::Extracting)
 		{
 			Core->SetExtracting(false);
@@ -790,14 +826,13 @@ void AVanthexGameMode::UpdateExtraction(float DeltaSeconds)
 		return;
 	}
 
-	AVanthexCharacter* Carrier = Core->GetCarrier();
-	const bool bHeld = Carrier && (Core->GetCoreState() == EVanthexCoreState::Carried || Core->GetCoreState() == EVanthexCoreState::Extracting);
+	const EVanthexTeam Team = Core->GetExtractionTeam();
 	AVanthexExtractionZone* Zone = nullptr;
-	if (bHeld && Arena)
+	if (Team != EVanthexTeam::None && Core->GetCoreState() != EVanthexCoreState::Extracted && Arena)
 	{
 		if (AVanthexExtractionZone* ZoneA = Arena->GetExtractionZone(EVanthexExtractionId::A))
 		{
-			if (ZoneA->Contains(Carrier->GetActorLocation()))
+			if (ZoneA->Contains(Core->GetActorLocation()))
 			{
 				Zone = ZoneA;
 			}
@@ -806,7 +841,7 @@ void AVanthexGameMode::UpdateExtraction(float DeltaSeconds)
 		{
 			if (AVanthexExtractionZone* ZoneB = Arena->GetExtractionZone(EVanthexExtractionId::B))
 			{
-				if (ZoneB->Contains(Carrier->GetActorLocation()))
+				if (ZoneB->Contains(Core->GetActorLocation()))
 				{
 					Zone = ZoneB;
 				}
@@ -818,6 +853,8 @@ void AVanthexGameMode::UpdateExtraction(float DeltaSeconds)
 	{
 		ExtractionElapsed = 0.f;
 		ActiveExtraction = EVanthexExtractionId::None;
+		ExtractionTeam = EVanthexTeam::None;
+		ExtractionPossessionRevision = 0;
 		if (Core->GetCoreState() == EVanthexCoreState::Extracting)
 		{
 			Core->SetExtracting(false);
@@ -837,13 +874,21 @@ void AVanthexGameMode::UpdateExtraction(float DeltaSeconds)
 		return;
 	}
 
+	// A new zone or opponent possession starts a fresh countdown. A same-team
+	// handoff/drop/throw preserves it, including release while still airborne.
+	if (ActiveExtraction != Zone->GetId() || ExtractionTeam != Team || ExtractionPossessionRevision != Core->GetPossessionRevision())
+		ExtractionElapsed = 0.f;
 	ActiveExtraction = Zone->GetId();
+	ExtractionTeam = Team;
+	ExtractionPossessionRevision = Core->GetPossessionRevision();
+	for (EVanthexExtractionId Id : {EVanthexExtractionId::A, EVanthexExtractionId::B})
+		if (auto* OtherZone = Arena->GetExtractionZone(Id); OtherZone && OtherZone != Zone) OtherZone->SetCharge(0.f);
 	Core->SetExtracting(true);
 	ExtractionElapsed += DeltaSeconds;
 	Zone->SetCharge(ExtractionElapsed / FMath::Max(ExtractionDuration, 0.01f));
 	if (ExtractionElapsed + 0.02f >= ExtractionDuration)
 	{
-		const EVanthexTeam Winner = Core->GetCarrierTeam();
+		const EVanthexTeam Winner = ExtractionTeam;
 		Core->MarkExtracted();
 		RefreshCoreReadout();
 		EndRound(Winner);
@@ -1229,14 +1274,14 @@ void AVanthexGameMode::AdvanceCoreSelfTest()
 		}
 		if (Core->GetCarrier() == Human && Core->GetCoreState() == EVanthexCoreState::Carried && ActiveExtraction == EVanthexExtractionId::None && Phase == EVanthexRoundPhase::RoundActive)
 		{
-			Pass(TEXT("EXTRACTION_CANCEL_LEAVE"), TEXT("left the zone"), EVanthexCoreTest::CancelDrop);
+			Pass(TEXT("EXTRACTION_CANCEL_LEAVE"), TEXT("left the zone"), EVanthexCoreTest::ContinueDrop);
 		}
 		else if (++SelfTestTicks > 40)
 		{
 			Fail(TEXT("EXTRACTION_CANCEL_LEAVE"), TEXT("extraction still active"));
 		}
 		return;
-	case EVanthexCoreTest::CancelDrop:
+	case EVanthexCoreTest::ContinueDrop:
 		if (CoreTestMark == 0)
 		{
 			Place(Human, FVector(-850.f, 850.f, 105.f), 0.f);
@@ -1257,27 +1302,27 @@ void AVanthexGameMode::AdvanceCoreSelfTest()
 			}
 			else if (++SelfTestTicks > 40)
 			{
-				Fail(TEXT("EXTRACTION_CANCEL_DROP"), TEXT("extraction did not start"));
+				Fail(TEXT("EXTRACTION_CONTINUE_DROP"), TEXT("extraction did not start"));
 			}
 			return;
 		}
-		if (!Core->GetCarrier() && ActiveExtraction == EVanthexExtractionId::None && Core->GetCoreState() != EVanthexCoreState::Extracting)
+		if (!Core->GetCarrier() && ActiveExtraction == EVanthexExtractionId::A && Core->GetCoreState() != EVanthexCoreState::Extracting)
 		{
-			Pass(TEXT("EXTRACTION_CANCEL_DROP"), TEXT("drop cleared extraction"), EVanthexCoreTest::CancelDeath);
+			Pass(TEXT("EXTRACTION_CONTINUE_DROP"), TEXT("drop retains extraction"), EVanthexCoreTest::ContinueDeath);
 		}
 		else if (++SelfTestTicks > 40)
 		{
-			Fail(TEXT("EXTRACTION_CANCEL_DROP"), TEXT("extraction still active"));
+			Fail(TEXT("EXTRACTION_CONTINUE_DROP"), TEXT("extraction still active"));
 		}
 		return;
-	case EVanthexCoreTest::CancelDeath:
+	case EVanthexCoreTest::ContinueDeath:
 		if (CoreTestMark == 0)
 		{
 			if (Core->GetCoreState() != EVanthexCoreState::AtRest || Core->GetCarrier())
 			{
 				if (++SelfTestTicks > 80)
 				{
-					Fail(TEXT("EXTRACTION_CANCEL_DEATH"), TEXT("core did not settle"));
+					Fail(TEXT("EXTRACTION_CONTINUE_DEATH"), TEXT("core did not settle"));
 				}
 				return;
 			}
@@ -1285,7 +1330,7 @@ void AVanthexGameMode::AdvanceCoreSelfTest()
 			Place(Alpha2, Core->GetActorLocation(), 0.f);
 			if (!Alpha2 || !Core->TryPickup(Alpha2))
 			{
-				Fail(TEXT("EXTRACTION_CANCEL_DEATH"), TEXT("pickup failed"));
+				Fail(TEXT("EXTRACTION_CONTINUE_DEATH"), TEXT("pickup failed"));
 				return;
 			}
 			Place(Alpha2, FVector(-850.f, 850.f, 105.f), 0.f);
@@ -1298,19 +1343,19 @@ void AVanthexGameMode::AdvanceCoreSelfTest()
 			FVanthexDamageRequest Request;
 			Request.Damage = Alpha2->GetHealthComponent()->GetMaxHealth();
 			Alpha2->GetHealthComponent()->ApplyDamage(Request);
-			if (!Core->GetCarrier() && ActiveExtraction == EVanthexExtractionId::None && Phase == EVanthexRoundPhase::RoundActive)
+			if (!Core->GetCarrier() && ActiveExtraction == EVanthexExtractionId::A && Phase == EVanthexRoundPhase::RoundActive)
 			{
-				Pass(TEXT("EXTRACTION_CANCEL_DEATH"), TEXT("death dropped core and cancelled"), EVanthexCoreTest::ExtractionA);
+				Pass(TEXT("EXTRACTION_CONTINUE_DEATH"), TEXT("death drops Core while team extraction continues"), EVanthexCoreTest::ExtractionA);
 			}
 			else
 			{
-				Fail(TEXT("EXTRACTION_CANCEL_DEATH"), TEXT("extraction or carrier remained"));
+				Fail(TEXT("EXTRACTION_CONTINUE_DEATH"), TEXT("extraction or carrier remained"));
 			}
 			return;
 		}
 		if (++SelfTestTicks > 40)
 		{
-			Fail(TEXT("EXTRACTION_CANCEL_DEATH"), TEXT("extraction did not start"));
+			Fail(TEXT("EXTRACTION_CONTINUE_DEATH"), TEXT("extraction did not start"));
 		}
 		return;
 	case EVanthexCoreTest::ExtractionA:
@@ -1603,15 +1648,10 @@ void AVanthexGameMode::AdvanceSelfTest()
 	case EVanthexSelfTestStage::JumpWait:
 	{
 		const bool bAirborne = Character && Character->GetCharacterMovement() && (Character->GetCharacterMovement()->IsFalling() || Character->GetCharacterMovement()->Velocity.Z > 10.f);
-		if (bAirborne)
-		{
-			SelfTestExpect(true, TEXT("jump"), TEXT("left the ground"));
-			SelfTestStage = EVanthexSelfTestStage::PlayerDeath;
-			return;
-		}
 		if (++SelfTestTicks > 10)
 		{
-			SelfTestExpect(false, TEXT("jump"), TEXT("stayed on the ground"));
+			SelfTestExpect(!bAirborne && Character && !Character->CanJump(), TEXT("jump_disabled"), TEXT("jump request leaves character grounded"));
+			Character->StopJumping();
 			SelfTestStage = EVanthexSelfTestStage::PlayerDeath;
 		}
 		return;

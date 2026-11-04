@@ -16,6 +16,38 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 
+namespace
+{
+// Short downward delivery, using the Core's sphere, gravity and sliding loss.
+// Reject wall contacts and edge landings; if no safe throw exists the bot walks closer.
+bool SafeCoreDelivery(AVanthexCharacter* Pawn, AVanthexCore* Core, AVanthexExtractionZone* Zone, const FVector& Direction)
+{
+ auto* World=Pawn->GetWorld();
+ FVector Position=Pawn->GetActorLocation()+FVector(0,0,60)+Direction*90;
+ FVector Velocity=Direction*Core->GetThrowSpeed();
+ FCollisionQueryParams Query(SCENE_QUERY_STAT(BotCoreDelivery),false,Core);
+ Query.AddIgnoredActor(Pawn); Query.AddIgnoredActor(Pawn->GetWeapon());
+ FCollisionObjectQueryParams Objects; Objects.AddObjectTypesToQuery(ECC_WorldStatic); Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
+ FHitResult Hit;
+ if(World->SweepSingleByObjectType(Hit,Pawn->GetActorLocation(),Position,FQuat::Identity,Objects,FCollisionShape::MakeSphere(20),Query))return false;
+ for(int32 Step=0;Step<100;++Step) {
+  Velocity.Z-=980.f*.02f;
+  const FVector Next=Position+Velocity*.02f;
+  if(World->SweepSingleByObjectType(Hit,Position,Next,FQuat::Identity,Objects,FCollisionShape::MakeSphere(20),Query)) {
+   if(Hit.bStartPenetrating||Hit.Normal.Z<.65f)return false;
+   Position=Hit.Location+Hit.Normal*.5f;
+   Velocity=FVector::VectorPlaneProject(Velocity,Hit.Normal)*.5f;
+   if(Velocity.Size()<60.f) {
+    for(const FVector Margin:{FVector(45,0,0),FVector(-45,0,0),FVector(0,45,0),FVector(0,-45,0)})
+     if(!Zone->Contains(Position+Margin))return false;
+    return true;
+   }
+  } else Position=Next;
+ }
+ return false;
+}
+}
+
 AVanthexBotController::AVanthexBotController()
 {
  PrimaryActorTick.bCanEverTick=true;
@@ -74,7 +106,7 @@ void AVanthexBotController::Tick(float DeltaSeconds)
  if(FParse::Param(FCommandLine::Get(),TEXT("CoreEconomyTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("EconomyTest")) || FParse::Param(FCommandLine::Get(),TEXT("EconomyNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("WeaponAudioPlaybackTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("EquipmentNetworkTest"))) return;
- if(FParse::Param(FCommandLine::Get(),TEXT("GridV3Test")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3GameTest")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioPlaybackTest"))) return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("GridV4Test")) || FParse::Param(FCommandLine::Get(),TEXT("GridV4GameTest")) || FParse::Param(FCommandLine::Get(),TEXT("GridV4Shots")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3Test")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3GameTest")) || FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioNetworkTest")) || FParse::Param(FCommandLine::Get(),TEXT("BulletAudioPlaybackTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexEnergyTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexNetworkProbe")) || FParse::Param(FCommandLine::Get(),TEXT("VanthexMapTest"))) return;
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexMapShots"))) return;
@@ -89,8 +121,20 @@ void AVanthexBotController::Tick(float DeltaSeconds)
   if(Equipment->HasSlot(EVanthexWeaponSlot::Rifle)) Equipment->SelectRifle(); else Equipment->SelectPistol();
  }
  const float Now=GetWorld()->GetTimeSeconds();
+ auto* Core=Mode->GetCore(); if(!Core)return;
+ const auto* State=BotCharacter->GetPlayerState<AVanthexPlayerState>();
+ const bool Deposited=Mode->HasDepositedCore();
+ const bool FriendlyDeposit=Deposited&&State&&Core->GetExtractionTeam()==State->GetTeam();
+ AVanthexExtractionZone* DeliveryZone=nullptr; float DeliveryDistance=TNumericLimits<float>::Max();
+ if(Core->GetCarrier()==BotCharacter)for(TActorIterator<AVanthexExtractionZone> It(GetWorld());It;++It) {
+  const float Distance=FVector::DistSquared(BotCharacter->GetActorLocation(),It->GetActorLocation());
+  if(Distance<DeliveryDistance){DeliveryDistance=Distance;DeliveryZone=*It;}
+ }
+ // Recover an enemy deposit before fighting; finish a nearby delivery under pressure.
+ const bool UrgentObjective=(Deposited&&!FriendlyDeposit)||(DeliveryZone&&DeliveryDistance<FMath::Square(600.f));
  AVanthexCharacter* Enemy=nullptr; float Best=2200;
  for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) {
+  if(UrgentObjective)break;
   if(*It==BotCharacter || It->GetHealthComponent()->IsDead() || !Mode->CanDamage(BotCharacter,*It)) continue;
   float Distance=FVector::Dist(BotCharacter->GetActorLocation(),It->GetActorLocation()); if(Distance>=Best) continue;
   // A retained visible target can cross the periphery, but new targets must be
@@ -110,7 +154,6 @@ void AVanthexBotController::Tick(float DeltaSeconds)
   TurnToward(Chest+Right*FMath::Sin(Now*1.7f+Phase)*Error+FVector(0,0,FMath::Sin(Now*1.1f+Phase)*Error*.3f),DeltaSeconds);
   const bool Facing=FVector::DotProduct(BotCharacter->GetActorForwardVector(),(Chest-BotCharacter->GetActorLocation()).GetSafeNormal2D())>.985f;
   if(Facing&&Now-TargetVisibleSince>2.f&&Now>=NextGadgetUse&&Best>500.f&&Best<1100.f){
-   const auto* State=BotCharacter->GetPlayerState<AVanthexPlayerState>();
    if(State&&State->GetEconomy().Gadgets.Num()){
     const FName Gadget=State->GetEconomy().Gadgets[0];
     if(Gadget!=TEXT("Smoke")||BotCharacter->GetHealthComponent()->GetHealth()<65.f||BotCharacter->IsCarryingCore()){
@@ -134,15 +177,32 @@ void AVanthexBotController::Tick(float DeltaSeconds)
   MoveSafely(Travel,.45f);
   return;
  } else Weapon->StopFire();
- auto* Core=Mode->GetCore(); if(!Core) return;
  FVector Goal=Core->GetActorLocation();
- if(Core->GetCarrier()==BotCharacter) {
-  float Closest=TNumericLimits<float>::Max();
-  for(TActorIterator<AVanthexExtractionZone> It(GetWorld());It;++It) {
-   const float Distance=FVector::DistSquared(BotCharacter->GetActorLocation(),It->GetActorLocation());
-   if(Distance<Closest) { Closest=Distance; Goal=It->GetActorLocation()+FVector(0,0,80); }
+ if(DeliveryZone) {
+  Goal=DeliveryZone->GetActorLocation()+FVector(0,0,96);
+  if(FVector::Dist2D(BotCharacter->GetActorLocation(),Goal)<550.f&&FMath::Abs(BotCharacter->GetActorLocation().Z-Goal.Z)<100.f) {
+   FVector Toward=(Goal-BotCharacter->GetActorLocation()).GetSafeNormal2D();
+   if(Toward.IsNearlyZero())Toward=BotCharacter->GetActorForwardVector();
+   for(float Slope:{.75f,1.5f,3.f,8.f}) {
+    const FVector Direction=(Toward-FVector(0,0,Slope)).GetSafeNormal();
+    if(!SafeCoreDelivery(BotCharacter,Core,DeliveryZone,Direction))continue;
+    BotCharacter->GetCharacterMovement()->StopMovementImmediately();
+    TurnToward(BotCharacter->GetPawnViewLocation()+Direction*500,DeltaSeconds);
+    if(FVector::DotProduct(GetControlRotation().Vector(),Direction)>.9998f) {Core->Throw();Route.Reset();NextRouteTime=0;}
+    return;
+   }
   }
- } else if(!Core->GetCarrier()) BotCharacter->TryPickupCore();
+ } else if(FriendlyDeposit) {
+  // Do not undo a teammate's delivery or catch it again: step back and watch approaches.
+  const FVector Away=(BotCharacter->GetActorLocation()-Goal).GetSafeNormal2D();
+  if(FVector::Dist2D(BotCharacter->GetActorLocation(),Goal)<300.f)MoveSafely(Away,.65f);
+  TurnToward(BotCharacter->GetPawnViewLocation()+BotCharacter->GetActorForwardVector().RotateAngleAxis(35.f*DeltaSeconds,FVector::UpVector)*500,DeltaSeconds);
+  return;
+ } else if(!Core->GetCarrier()) {
+  BotCharacter->TryPickupCore();
+  // A resting Core sits at floor height; route to standing height for the final approach.
+  Goal.Z+=76.f;
+ }
  else Goal=Core->GetCarrier()->GetActorLocation()+FVector(250,0,0);
  if(FVector::Dist2D(BotCharacter->GetActorLocation(),Goal)<90 && FMath::Abs(BotCharacter->GetActorLocation().Z-Goal.Z)<140) return;
  if(Now>=NextRouteTime) { PlanRoute(Goal); NextRouteTime=Now+1.5f; if(FParse::Param(FCommandLine::Get(),TEXT("VanthexBotRouteProbe"))) UE_LOG(LogTemp,Display,TEXT("BotRoute %s position=%s route=%d next=%s"),*GetName(),*BotCharacter->GetActorLocation().ToString(),Route.Num(),Route.Num()?*Route[0].ToString():TEXT("none")); }

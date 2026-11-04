@@ -311,7 +311,8 @@ void AVanthexHUD::DrawHUD()
     DrawText(TEXT("SENSOR"),Tint,Screen.X+12,Screen.Y-6,nullptr,.8f);
    }
   }
+  DrawTacticalHUD();
   const float Flash=Gadgets->GetFlashOpacity();
   if(Flash>0.f)DrawRect(FLinearColor(.94f,.96f,1.f,Flash),0,0,Canvas->SizeX,Canvas->SizeY);
- }
+ } else DrawTacticalHUD();
 }

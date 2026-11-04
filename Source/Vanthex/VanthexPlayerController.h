@@ -25,6 +25,9 @@ public:
 	UFUNCTION(Exec)
 	void RestartTest();
  bool IsSessionMenuOpen() const { return SessionMenu.IsValid(); }
+ bool IsScoreboardOpen() const { return bScoreboardHeld; }
+ void ShowScoreboard() { bScoreboardHeld=true; }
+ void HideScoreboard() { bScoreboardHeld=false; }
  UFUNCTION(Client, Unreliable) void ClientConfirmHit(bool bHeadshot);
  float HitMarkerUntil=0.f;
  bool bHitMarkerHead=false;
@@ -33,6 +36,8 @@ public:
  UFUNCTION(Exec) void LeaveGame();
 
 protected:
+ bool bScoreboardHeld=false;
+ TSharedPtr<class IInputProcessor> ScoreboardKeyRelease;
  UPROPERTY(VisibleAnywhere, Category="Audio") TObjectPtr<UVanthexBulletAudioComponent> BulletAudio;
  UPROPERTY(VisibleAnywhere, Category="Audio") TObjectPtr<UVanthexWeaponAudioComponent> WeaponAudio;
  UPROPERTY(VisibleAnywhere, Category="Economy") TObjectPtr<UVanthexBuyMenuComponent> BuyMenu;

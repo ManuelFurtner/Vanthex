@@ -61,7 +61,7 @@ The first map is **GRID**.
 
 M3 adds the Energy Core on top of the M2 round. The rifle loop is unchanged. There is still no Shift, operator, or online matchmaking.
 
-A neutral core spawns off the center shot lane. Either team can pick it up with E, carry it, drop it with G, or throw it with Q. A thrown core can be caught by a teammate or intercepted by an enemy. Holding either extraction zone for 15 seconds wins the round through the existing round score. Eliminating a team still wins the round as well. The carrier keeps normal movement and the rifle for this prototype.
+A neutral core spawns off the center shot lane. Either team can pick it up with E, carry it, drop it with G, or throw it with Q. A thrown core can be caught by a teammate or intercepted by an enemy. Keeping the Core inside either extraction zone for 15 seconds wins the round for its last possessing team, including when dropped or thrown into the zone. A deposited Core keeps extracting even after either or both teams are eliminated or the round clock expires; opponents must recover it to stop that team's countdown. Normal elimination applies when no Core is deposited. Bots throw into safe landing areas, defend friendly deposits and recover opposing deposits.
 
 A match is first to 7 rounds. Each round lasts 180 seconds. Players do not respawn while the round is active. If both teams are wiped by the same resolution, the round is a draw and the score does not change. If the timer expires, the team with more living players wins. Equal numbers of living players is a draw. F5 restarts the whole match, including the core. It does not respawn one player inside an active round.
 
@@ -73,7 +73,7 @@ The local roster is one human on Alpha and five standing bots so the 3v3 rules c
 - Temporary debug visuals only. No final art.
 - Single local player. Networking is a design constraint on the code, not a feature of this milestone.
 - A simple arena built at runtime, not a finished GRID layout.
-- Walk 600, sprint 900, crouch 280, jump Z 520, FOV 90.
+- Walk 600, sprint 900; fully drawn knife grants +15% (690 / 1035). No bonus during weapon switches. Crouch 280, jump disabled, FOV 90.
 - Magazine 30, infinite reserve, fire interval 0.15 s, reload 1.6 s.
 - Body damage 40, headshot multiplier 2 (80), player and target health 100.
 - Head hit: component tag `Head`, or a bone whose name contains `head`. Otherwise body.

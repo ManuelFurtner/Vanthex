@@ -1,0 +1,4 @@
+H:\Vanthex\Saved\TacticalHUD-editor-build.log:52:Result: Succeeded
+H:\Vanthex\Saved\TacticalHUD-editor-build.log:53:Total execution time: 30.01 seconds
+H:\Vanthex\Saved\TacticalHUD-game-build.log:51:Result: Succeeded
+H:\Vanthex\Saved\TacticalHUD-game-build.log:52:Total execution time: 29.60 seconds

@@ -33,6 +33,8 @@ public:
 	EVanthexCoreState GetCoreState() const { return State; }
 	AVanthexCharacter* GetCarrier() const { return Carrier; }
 	EVanthexTeam GetCarrierTeam() const;
+	EVanthexTeam GetExtractionTeam() const { return LastPossessingTeam; }
+	uint32 GetPossessionRevision() const { return PossessionRevision; }
 	FVector GetHome() const { return Home; }
 	FVector GetVelocity() const { return Velocity; }
 	bool IsAtHome() const;
@@ -72,6 +74,10 @@ private:
 
 	UPROPERTY(Replicated)
 	TObjectPtr<AVanthexCharacter> Carrier;
+	// A released Core retains team attribution without retaining a living carrier.
+	UPROPERTY(Replicated)
+	EVanthexTeam LastPossessingTeam = EVanthexTeam::None;
+	uint32 PossessionRevision = 0;
 
 	UPROPERTY()
 	TObjectPtr<AVanthexCharacter> Thrower;

@@ -1,0 +1,4 @@
+H:\Vanthex\Saved\CombatCollision-fixed-build.log:62:Result: Succeeded
+H:\Vanthex\Saved\CombatCollision-fixed-build.log:63:Total execution time: 38.63 seconds
+H:\Vanthex\Saved\CombatCollision-game-build.log:61:Result: Succeeded
+H:\Vanthex\Saved\CombatCollision-game-build.log:62:Total execution time: 35.19 seconds

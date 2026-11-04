@@ -1,0 +1,31 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" VanthexEditor Win64 Development -Project=H:\Vanthex\Vanthex.uproject -WaitMutex
+Log file: C:\Users\manuf\AppData\Local\UnrealBuildTool\Log.txt
+Determining max actions to execute in parallel (6 physical cores, 12 logical cores)
+  Executing up to 6 processes, one per physical core
+Using 'git status' to determine working set for adaptive non-unity build (H:\Vanthex).
+UbaServer - Listening on 0.0.0.0:1345
+Creating makefile for VanthexEditor (command line arguments changed)
+Building VanthexEditor...
+===== Toolchain Information =====
+Using ISPC compiler (H:\epic\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35229 toolchain (H:\VS2022BuildTools\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+[Adaptive Build] Excluded from Vanthex unity file: HealthComponent.cpp, VanthexAimNetworkTest.cpp, VanthexAimShots.cpp, VanthexBakeFoundry.cpp, VanthexBotController.cpp, VanthexBuildArtCommandlet.cpp, VanthexBulletAudioNetworkTest.cpp, VanthexBulletAudioPlaybackTest.cpp, VanthexBuyMenuComponent.cpp, VanthexCharacter.cpp, VanthexCombatCollisionNetworkTest.cpp, VanthexCombatCollisionTests.cpp, VanthexControlsTests.cpp, VanthexCore.cpp, VanthexCoreEconomyTest.cpp, VanthexEconomyIntegrationTest.cpp, VanthexEconomyNetworkTest.cpp, VanthexEconomyShots.cpp, VanthexEnergyTest.cpp, VanthexEquipmentComponent.cpp, VanthexEquipmentNetworkTest.cpp, VanthexEquipmentTest.cpp, VanthexExtractionRulesTest.cpp, VanthexExtractionZone.cpp, VanthexFacility.cpp, VanthexFoundryMap.cpp, VanthexGadgetIntegrationTest.cpp, VanthexGadgetNetworkTest.cpp, VanthexGadgetShots.cpp, VanthexGameMode.cpp, VanthexGridMap.cpp, VanthexGridV3.cpp, VanthexGridV3Gameplay.cpp, VanthexGridV3GameTest.cpp, VanthexGridV3Shots.cpp, VanthexGridV3Validation.cpp, VanthexGridV4.cpp, VanthexGridV4EnvelopeTest.cpp, VanthexGridV4Gameplay.cpp, VanthexGridV4GameTest.cpp, VanthexGridV4Shots.cpp, VanthexGridV4Validation.cpp, VanthexHUD.cpp, VanthexLooseCoreExtractionTest.cpp, VanthexLooseCoreNetworkTest.cpp, VanthexMapShots.cpp, VanthexMatchEconomy.cpp, VanthexNavigation.cpp, VanthexOperatorShots.cpp, VanthexOperatorValidation.cpp, VanthexPlayerController.cpp, VanthexPlayerState.cpp, VanthexStairInspection.cpp, VanthexTacticalHUD.cpp, VanthexTestArena.cpp, VanthexWeaponAudioAcoustics.cpp, VanthexWeaponAudioPlaybackTest.cpp, VanthexWeaponModelShots.cpp, VanthexWeaponProfile.cpp, VanthexWeaponProfileTests.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 4 action(s)
+  CPU 6 physical cores, 12 logical cores
+  Memory 31.16 GB physical, 33.76 GB/51.16 GB committed
+  UBA Storage capacity 40 GB
+[1/4] Compile [x64] VanthexBotController.cpp
+[2/4] Link [x64] UnrealEditor-Vanthex.lib
+   Bibliothek "H:/Vanthex/Intermediate/Build/Win64/x64/UnrealEditor/Development/Vanthex/UnrealEditor-Vanthex.lib" und Objekt "H:/Vanthex/Intermediate/Build/Win64/x64/UnrealEditor/Development/Vanthex/UnrealEditor-Vanthex.exp" werden erstellt.
+[3/4] Link [x64] UnrealEditor-Vanthex.dll
+[4/4] WriteMetadata VanthexEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 4.43 seconds
+Output binary: H:\epic\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 6.78 seconds
+Trace written to file C:\Users\manuf\AppData\Local\UnrealBuildTool\Trace.uba with size 5.9kb

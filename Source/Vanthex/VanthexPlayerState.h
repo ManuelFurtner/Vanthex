@@ -18,6 +18,12 @@ public:
 	EVanthexTeam GetTeam() const { return Team; }
 	int32 GetSpawnSlot() const { return SpawnSlot; }
 	bool IsAlive() const { return bAlive; }
+	int32 GetKills() const { return Kills; }
+	int32 GetDeaths() const { return Deaths; }
+	int32 GetAssists() const { return Assists; }
+	void RecordKill() { if(HasAuthority()) { ++Kills; ForceNetUpdate(); } }
+	void RecordDeath() { if(HasAuthority()) { ++Deaths; ForceNetUpdate(); } }
+	void RecordAssist() { if(HasAuthority()) { ++Assists; ForceNetUpdate(); } }
 	const FVanthexEconomyState& GetEconomy() const { return Economy; }
 	void ResetEconomyForMatch();
 	void CopyEconomyFrom(const AVanthexPlayerState* PreviousOwner);
@@ -32,6 +38,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+	UPROPERTY(Replicated) int32 Kills = 0;
+	UPROPERTY(Replicated) int32 Deaths = 0;
+	UPROPERTY(Replicated) int32 Assists = 0;
 	UPROPERTY(Replicated)
 	FVanthexEconomyState Economy;
 	// Reliable requests are ordered per owner. A high-water mark rejects replay with bounded memory.

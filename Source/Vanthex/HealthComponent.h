@@ -33,13 +33,17 @@ public:
 	FVanthexDeathSignature OnDeath;
 
 protected:
+	/** Keep corpse collision in sync on the server and when death/reset replicates. */
+	UFUNCTION()
+	void OnRep_Dead();
+
 	UPROPERTY(EditDefaultsOnly, Category = "Health")
 	float MaxHealth = 100.f;
 
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
 	float Health = 100.f;
 
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")
+	UPROPERTY(ReplicatedUsing = OnRep_Dead, VisibleAnywhere, Category = "Health")
 	bool bDead = false;
 
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Health")

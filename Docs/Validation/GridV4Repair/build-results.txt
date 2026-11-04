@@ -1,0 +1,4 @@
+H:\Vanthex\Saved\GridV4-repair-build.log:28:Result: Succeeded
+H:\Vanthex\Saved\GridV4-repair-game-build.log:27:Result: Succeeded
+H:\Vanthex\Saved\GridV4-repair-bake.log:1615:[2026.11.04-14.03.20:101][  0]LogVanthex: Display: GRIDV4 AEGIS rooms=25 connections=46 vertical=6 kitGroups=27 instances=11802 proxies=1753 lights=194 missing=0
+H:\Vanthex\Saved\GridV4-repair-bake.log:1619:[2026.11.04-14.03.20:621][  0]LogTemp: Display: GridV4 authored level: 1780 component groups, saved=1 at ../../../../../Vanthex/Content/Vanthex/Maps/GridV4.umap

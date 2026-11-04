@@ -1,0 +1,4 @@
+H:\Vanthex\Saved\LooseCore-editor-build.log:32:Result: Succeeded
+H:\Vanthex\Saved\LooseCore-editor-build.log:33:Total execution time: 7.04 seconds
+H:\Vanthex\Saved\LooseCore-game-build.log:71:Result: Succeeded
+H:\Vanthex\Saved\LooseCore-game-build.log:72:Total execution time: 42.09 seconds

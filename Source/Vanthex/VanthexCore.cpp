@@ -168,6 +168,8 @@ void AVanthexCore::SetHome(const FVector& InHome)
 
 void AVanthexCore::ResetToSpawn()
 {
+	LastPossessingTeam = EVanthexTeam::None;
+	++PossessionRevision;
 	bRewardEligible = false;
 	if (Carrier)
 	{
@@ -211,6 +213,8 @@ bool AVanthexCore::IsAtHome() const
 void AVanthexCore::AttachToCarrier(AVanthexCharacter* Character)
 {
 	Carrier = Character;
+	const EVanthexTeam Team = GetCarrierTeam();
+	if (Team != LastPossessingTeam) { LastPossessingTeam = Team; ++PossessionRevision; }
 	Thrower = nullptr;
 	Velocity = FVector::ZeroVector;
 	bCatchEnabled = false;
@@ -351,7 +355,7 @@ void AVanthexCore::EnterAtRest()
 	bCatchEnabled = false;
 	Carrier = nullptr;
 	FVector Rest = GetActorLocation();
-	if (!VanthexMap::IsGridV3(GetWorld())) Rest.Z = FMath::Max(Rest.Z, 40.f);
+	if (!VanthexMap::IsFacility(GetWorld())) Rest.Z = FMath::Max(Rest.Z, 40.f);
 	SetActorLocation(Rest);
 }
 
@@ -413,7 +417,7 @@ void AVanthexCore::RecoverIfOutOfBounds(float DeltaSeconds)
 	}
 
 	const FVector Location = GetActorLocation();
-	const float RecoveryFloor = VanthexMap::IsGridV3(GetWorld()) ? -1800.f : -100.f;
+	const float RecoveryFloor = VanthexMap::IsFacility(GetWorld()) ? -1800.f : -100.f;
 	const bool bOutside = Location.Z < RecoveryFloor || Location.Z > 2500.f || FMath::Abs(Location.X) > VanthexMap::Extent(GetWorld()).X + 300.f || FMath::Abs(Location.Y) > VanthexMap::Extent(GetWorld()).Y + 300.f;
 	if (!bOutside)
 	{
@@ -471,7 +475,7 @@ void AVanthexCore::Tick(float DeltaSeconds)
 				TryCatch();
 				continue;
 			}
-			if (!VanthexMap::IsGridV3(GetWorld()) && Next.Z <= 40.f && Velocity.Z <= 0.f)
+			if (!VanthexMap::IsFacility(GetWorld()) && Next.Z <= 40.f && Velocity.Z <= 0.f)
 			{
 				Next.Z = 40.f;
 				Velocity.Z = 0.f;
@@ -510,4 +514,5 @@ void AVanthexCore::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
  Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  DOREPLIFETIME(AVanthexCore, State);
  DOREPLIFETIME(AVanthexCore, Carrier);
+ DOREPLIFETIME(AVanthexCore, LastPossessingTeam);
 }

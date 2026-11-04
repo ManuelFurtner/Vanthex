@@ -42,10 +42,10 @@ bool Clear(UWorld* World, FVector A, FVector B, const FCollisionQueryParams& Q)
 {
  return !World->LineTraceTestByChannel(A,B,ECC_Visibility,Q);
 }
-int32 Room(FVector Position)
+int32 Room(UWorld* World,FVector Position)
 {
  int32 Best=-1; double Height=DBL_MAX;
- for(const auto& R:GridV3::Rooms()) {
+ for(const auto& R:VanthexMap::Rooms(World)) {
   const FVector D=Position-R.Center;
   if(FMath::Abs(D.X)<=R.Size.X*.5 && FMath::Abs(D.Y)<=R.Size.Y*.5 && D.Z>=-30. && D.Z<R.Size.Z
    && FMath::Abs(D.Z-145.)<Height) { Best=R.Id; Height=FMath::Abs(D.Z-145.); }
@@ -65,10 +65,10 @@ FVanthexWeaponAcousticRoute VanthexWeaponAcoustics::Route(UWorld* World,FVector 
  R.ApparentPosition=Source; R.Distance=float(FVector::Distance(Source,Listener));
  if(!World) return R;
  const auto Q=Query(World,SourceActor);
- if(VanthexMap::IsGridV3(World)) {
-  R.SourceRoom=Room(Source); R.ListenerRoom=Room(Listener);
+ if(VanthexMap::IsFacility(World)) {
+  R.SourceRoom=Room(World,Source); R.ListenerRoom=Room(World,Listener);
   if(R.SourceRoom>=0) {
-   const auto& Size=GridV3::Rooms()[R.SourceRoom].Size;
+   const auto& Size=VanthexMap::Rooms(World)[R.SourceRoom].Size;
    R.ReflectionDelay=FMath::Clamp(float((Size.X+Size.Y)/137200.),.012f,.045f);
   }
  }
@@ -76,11 +76,11 @@ FVanthexWeaponAcousticRoute VanthexWeaponAcoustics::Route(UWorld* World,FVector 
  if(R.bDirect) return R;
  // Transmission is a quiet, low-passed fallback when no physically open path exists.
  R.Transmission=.075f; R.LowPassHz=850.f;
- if(!VanthexMap::IsGridV3(World)) return R;
+ if(!VanthexMap::IsFacility(World)) return R;
  if(Graph.World.Get()!=World) {
   Graph=FGraph(); Graph.World=World;
-  for(const auto& C:GridV3::Connections()) for(int32 I=1; I<C.Points.Num(); ++I) Graph.Segment(C.Points[I-1],C.Points[I]);
-  for(const auto& V:GridV3::VerticalLinks()) Graph.Segment(V.Bottom,V.Top);
+  for(const auto& C:VanthexMap::Connections(World)) for(int32 I=1; I<C.Points.Num(); ++I) Graph.Segment(C.Points[I-1],C.Points[I]);
+  for(const auto& V:VanthexMap::VerticalLinks(World)) Graph.Segment(V.Bottom,V.Top);
  }
  const float Now=World->GetTimeSeconds();
  if(Now-Graph.LastTrace>.10f || Now<Graph.LastTrace) {

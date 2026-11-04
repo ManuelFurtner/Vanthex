@@ -1,0 +1,111 @@
+OVERALL PASS CHECKS 110 FAILURES 0
+PASS case 0: claim
+PASS case 0: physical drop settles in pad
+PASS case 0: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 0: zero round time cannot end deposit
+PASS case 0: countdown advances without early victory
+PASS case 0: full fifteen seconds awards depositing team
+PASS case 1: claim
+PASS case 1: physical drop settles in pad
+PASS case 1: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 1: zero round time cannot end deposit
+PASS case 1: countdown advances without early victory
+PASS case 1: full fifteen seconds awards depositing team
+PASS case 2: claim
+PASS case 2: physical drop settles in pad
+PASS case 2: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 2: zero round time cannot end deposit
+PASS case 2: countdown advances without early victory
+PASS case 2: full fifteen seconds awards depositing team
+PASS case 3: claim
+PASS case 3: physical drop settles in pad
+PASS case 3: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 3: zero round time cannot end deposit
+PASS case 3: countdown advances without early victory
+PASS case 3: full fifteen seconds awards depositing team
+PASS case 4: claim
+PASS case 4: physical drop settles in pad
+PASS case 4: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 4: zero round time cannot end deposit
+PASS case 4: countdown advances without early victory
+PASS case 4: full fifteen seconds awards depositing team
+PASS case 5: claim
+PASS case 5: physical drop settles in pad
+PASS case 5: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 5: zero round time cannot end deposit
+PASS case 5: countdown advances without early victory
+PASS case 5: full fifteen seconds awards depositing team
+PASS case 6: claim
+PASS case 6: physical drop settles in pad
+PASS case 6: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 6: zero round time cannot end deposit
+PASS case 6: countdown advances without early victory
+PASS case 6: full fifteen seconds awards depositing team
+PASS case 7: claim
+PASS case 7: physical drop settles in pad
+PASS case 7: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 7: zero round time cannot end deposit
+PASS case 7: countdown advances without early victory
+PASS case 7: full fifteen seconds awards depositing team
+PASS case 8: claim
+PASS case 8: physical drop settles in pad
+PASS case 8: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 8: zero round time cannot end deposit
+PASS case 8: countdown advances without early victory
+PASS case 8: full fifteen seconds awards depositing team
+PASS case 9: claim
+PASS case 9: physical drop settles in pad
+PASS case 9: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 9: zero round time cannot end deposit
+PASS case 9: countdown advances without early victory
+PASS case 9: full fifteen seconds awards depositing team
+PASS case 10: claim
+PASS case 10: physical drop settles in pad
+PASS case 10: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 10: zero round time cannot end deposit
+PASS case 10: countdown advances without early victory
+PASS case 10: full fifteen seconds awards depositing team
+PASS case 11: claim
+PASS case 11: physical drop settles in pad
+PASS case 11: eliminated depositing/opposing/both teams cannot end deposit
+PASS case 11: zero round time cannot end deposit
+PASS case 11: countdown advances without early victory
+PASS case 11: full fifteen seconds awards depositing team
+PASS recovery setup
+PASS dead depositing team still has pending objective
+PASS opponent recovers deposited Core
+PASS recovery ends deferred elimination for survivors
+PASS normal elimination without deposit unchanged
+PASS exit setup
+PASS Core leaving/resetting resolves deferred elimination
+PASS drawn knife gives 15 percent walk bonus
+PASS knife sprint receives 15 percent bonus
+PASS crouch remains unchanged
+PASS holstering knife immediately removes bonus
+PASS pistol returns to normal speed
+PASS pistol sprint unchanged
+PASS drawing knife does not grant early bonus
+PASS case 0: bot claims Core
+PASS case 0: real bot tick turns and throws
+PASS case 0: bot throw settles safely in zone and is not repicked
+PASS case 0: bot delivery starts countdown
+PASS case 0: enemy bot prioritizes recovery
+PASS case 0: recovery cancels old team countdown
+PASS case 1: bot claims Core
+PASS case 1: real bot tick turns and throws
+PASS case 1: bot throw settles safely in zone and is not repicked
+PASS case 1: bot delivery starts countdown
+PASS case 1: enemy bot prioritizes recovery
+PASS case 1: recovery cancels old team countdown
+PASS case 2: bot claims Core
+PASS case 2: real bot tick turns and throws
+PASS case 2: bot throw settles safely in zone and is not repicked
+PASS case 2: bot delivery starts countdown
+PASS case 2: enemy bot prioritizes recovery
+PASS case 2: recovery cancels old team countdown
+PASS case 3: bot claims Core
+PASS case 3: real bot tick turns and throws
+PASS case 3: bot throw settles safely in zone and is not repicked
+PASS case 3: bot delivery starts countdown
+PASS case 3: enemy bot prioritizes recovery
+PASS case 3: recovery cancels old team countdown

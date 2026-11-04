@@ -49,7 +49,7 @@ void VanthexRunEconomyIntegrationTest(AVanthexGameMode* Mode)
  auto* A = Mode->GetVanthexPlayerState(Ally);
  auto* B = Mode->GetVanthexPlayerState(Enemy);
  uint32 Purchase = 0;
- Check(Mode->IsBuyPhase() && Mode->TimeRemaining > 22.f && Mode->TimeRemaining <= 25.f,TEXT("initial 25-second buy phase"));
+ Check(Mode->IsBuyPhase() && Mode->TimeRemaining > 9.f && Mode->TimeRemaining <= 12.f,TEXT("initial 12-second buy phase"));
  Check(Human->GetCharacterMovement()->MovementMode == MOVE_None,TEXT("buy phase freezes movement at spawn"));
  Check(H->GetEconomy().Credits==800 && H->GetEconomy().PrimaryWeapon.IsNone() && H->GetEconomy().Sidearm==TEXT("Pistol") && H->GetArmorPoints()==0,TEXT("match starts with 800 CR pistol knife no armor"));
  const int32 Ammo = Human->GetWeapon()->GetAmmoInMagazine();

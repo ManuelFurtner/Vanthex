@@ -57,8 +57,8 @@ enum class EVanthexCoreTest : uint8
 	Intercept,
 	Settle,
 	CancelLeave,
-	CancelDrop,
-	CancelDeath,
+	ContinueDrop,
+	ContinueDeath,
 	ExtractionA,
 	RoundReset,
 	ExtractionB,
@@ -72,6 +72,9 @@ enum class EVanthexCoreTest : uint8
 UCLASS()
 class AVanthexGameMode : public AGameModeBase
 {
+	friend void VanthexRunControlsTest(AVanthexGameMode*);
+	friend void VanthexRunLooseCoreExtractionTest(AVanthexGameMode*);
+	friend void VanthexRunExtractionRulesTest(AVanthexGameMode*);
 	GENERATED_BODY()
 
 public:
@@ -86,6 +89,7 @@ public:
 	bool HandOverPlayerSlot(AController* Exiting);
  void RestartTest();
 	void NotifyCombatantDied(AVanthexCharacter* Combatant);
+	bool HasDepositedCore() const;
 
 	bool IsRoundActive() const { return Phase == EVanthexRoundPhase::RoundActive; }
 	bool IsBuyPhase() const { return Phase == EVanthexRoundPhase::BuyPhase; }
@@ -136,6 +140,7 @@ protected:
 	AVanthexCharacter* FindCombatant(EVanthexTeam Team, int32 Slot) const;
 	AVanthexPlayerState* GetVanthexPlayerState(const AActor* Actor) const;
 	void EvaluateElimination();
+	bool bEliminationDeferred = false;
 	void UpdateExtraction(float DeltaSeconds);
 	void AdvanceCoreSelfTest();
 
@@ -149,6 +154,8 @@ protected:
 	UPROPERTY() TObjectPtr<AActor> EquipmentTestWall;
 	void AdvanceVisualShots();
  void AdvanceMapShots();
+ void AdvanceGridV4Shots();
+ void AdvanceGridV4GameTest();
  void AdvanceGridV3Shots();
  void AdvanceGridV3GameTest();
 	void SelfTestExpect(bool bCondition, const TCHAR* Name, const FString& Detail);
@@ -178,7 +185,7 @@ protected:
 	int32 RoundIndex = 0;
 	float TimeRemaining = 0.f;
 	float RoundDuration = 180.f;
-	float BuyDuration = 25.f;
+	float BuyDuration = 12.f;
 	int32 AlphaLossStreak = 0, BravoLossStreak = 0;
 	int32 LastSettledRound = -1;
 	struct FDamageCredit { int32 Attacker = -1; float HP = 0.f; double Time = 0.; };
@@ -195,6 +202,8 @@ protected:
  float ExtractionDuration = 15.f;
 	float ExtractionElapsed = 0.f;
 	EVanthexExtractionId ActiveExtraction = EVanthexExtractionId::None;
+	EVanthexTeam ExtractionTeam = EVanthexTeam::None;
+	uint32 ExtractionPossessionRevision = 0;
 	bool bAllowFriendlyFire = false;
 	bool bRosterReady = false;
 	bool bMatchStarted = false;

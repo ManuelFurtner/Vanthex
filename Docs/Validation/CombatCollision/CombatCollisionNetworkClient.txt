@@ -1,0 +1,1 @@
+PASS role=client deaths=2 revivals=2 initial_alive=1 collision_and_traces=1 timeout=0

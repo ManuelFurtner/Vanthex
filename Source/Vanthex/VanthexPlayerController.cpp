@@ -7,6 +7,26 @@
 #include "VanthexMapLayout.h"
 #include "VanthexBuyMenuComponent.h"
 #include "Engine/World.h"
+#include "Framework/Application/IInputProcessor.h"
+#include "Framework/Application/SlateApplication.h"
+
+namespace {
+// A Tab press can originate in Slate while its release occurs after the menu
+// closes. Observe that release before widget/viewport routing can consume it.
+class FScoreboardKeyRelease final : public IInputProcessor
+{
+public:
+ explicit FScoreboardKeyRelease(AVanthexPlayerController* PC):Owner(PC) {}
+ virtual void Tick(float,FSlateApplication&,TSharedRef<ICursor>) override {}
+ virtual bool HandleKeyUpEvent(FSlateApplication&,const FKeyEvent& Event) override {
+  if(Event.GetKey()==EKeys::Tab) if(auto* PC=Owner.Get();PC&&PC->IsScoreboardOpen()) {
+   PC->HideScoreboard();return true;
+  }
+  return false;
+ }
+ TWeakObjectPtr<AVanthexPlayerController> Owner;
+};
+}
 
 AVanthexPlayerController::AVanthexPlayerController()
 {
@@ -21,6 +41,17 @@ AVanthexPlayerController::AVanthexPlayerController()
 void AVanthexPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+ if(FParse::Param(FCommandLine::Get(),TEXT("LooseCoreNetworkTest"))) {
+  extern void VanthexStartLooseCoreNetworkTest(AVanthexPlayerController* PC);VanthexStartLooseCoreNetworkTest(this);
+ }
+ if(IsLocalController()&&FSlateApplication::IsInitialized()) {
+  ScoreboardKeyRelease=MakeShared<FScoreboardKeyRelease>(this);
+  FSlateApplication::Get().RegisterInputPreProcessor(ScoreboardKeyRelease);
+ }
+	if(FParse::Param(FCommandLine::Get(),TEXT("CombatCollisionNetworkTest"))) {
+		extern void VanthexStartCombatCollisionNetworkTest(AVanthexPlayerController* PC);
+		VanthexStartCombatCollisionNetworkTest(this);
+	}
 	if(FParse::Param(FCommandLine::Get(),TEXT("WeaponAudioPlaybackTest"))) {
 		extern void VanthexStartWeaponAudioPlaybackTest(AVanthexPlayerController* PC);
 		VanthexStartWeaponAudioPlaybackTest(this);
@@ -86,9 +117,9 @@ void AVanthexPlayerController::PawnLeavingGame()
 
 
 #include "Kismet/GameplayStatics.h"
-void AVanthexPlayerController::HostGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::IsGridV3(GetWorld())?TEXT("/Game/Vanthex/Maps/GridV3"):TEXT("/Game/Vanthex/Maps/Foundry")), true, "listen"); }
+void AVanthexPlayerController::HostGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::CurrentMap(GetWorld())), true, "listen"); }
 void AVanthexPlayerController::JoinGame(const FString& Address) { if (IsLocalController() && !Address.IsEmpty() && !Address.Contains(TEXT("?"))) ClientTravel(Address, TRAVEL_Absolute); }
-void AVanthexPlayerController::LeaveGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::IsGridV3(GetWorld())?TEXT("/Game/Vanthex/Maps/GridV3"):TEXT("/Game/Vanthex/Maps/Foundry"))); }
+void AVanthexPlayerController::LeaveGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::CurrentMap(GetWorld()))); }
 
 
 #include "Engine/GameViewportClient.h"
@@ -103,13 +134,20 @@ void AVanthexPlayerController::SetupInputComponent() {
  Super::SetupInputComponent();
  InputComponent->BindKey(EKeys::Escape,IE_Pressed,this,&AVanthexPlayerController::ToggleSessionMenu);
  InputComponent->BindKey(EKeys::B,IE_Pressed,BuyMenu.Get(),&UVanthexBuyMenuComponent::Toggle);
+ InputComponent->BindKey(EKeys::Tab,IE_Pressed,this,&AVanthexPlayerController::ShowScoreboard);
+ InputComponent->BindKey(EKeys::Tab,IE_Released,this,&AVanthexPlayerController::HideScoreboard);
 }
 void AVanthexPlayerController::CloseSessionMenu() {
  if(SessionMenu.IsValid() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(SessionMenu.ToSharedRef());
  SessionMenu.Reset(); AddressBox.Reset(); bShowMouseCursor=false; SetInputMode(FInputModeGameOnly()); SetIgnoreMoveInput(false); SetIgnoreLookInput(false);
 }
-void AVanthexPlayerController::EndPlay(const EEndPlayReason::Type Reason) { if(IsLocalController()) CloseSessionMenu(); Super::EndPlay(Reason); }
+void AVanthexPlayerController::EndPlay(const EEndPlayReason::Type Reason) {
+ if(ScoreboardKeyRelease&&FSlateApplication::IsInitialized()) FSlateApplication::Get().UnregisterInputPreProcessor(ScoreboardKeyRelease);
+ ScoreboardKeyRelease.Reset();HideScoreboard();
+ if(IsLocalController()) CloseSessionMenu(); Super::EndPlay(Reason);
+}
 void AVanthexPlayerController::ToggleSessionMenu() {
+ HideScoreboard();
  if(BuyMenu) BuyMenu->Close();
  if(!IsLocalController() || !GetWorld()->GetGameViewport()) return;
  if(SessionMenu.IsValid()) { CloseSessionMenu(); return; }
@@ -123,7 +161,7 @@ void AVanthexPlayerController::ToggleSessionMenu() {
  +SVerticalBox::Slot().AutoHeight().Padding(8)[SAssignNew(AddressBox,SEditableTextBox).Font(FCoreStyle::GetDefaultFontStyle("Regular",22)).HintText(FText::FromString(TEXT("Host-IP, z. B. 192.168.1.10:7777")))]
  +SVerticalBox::Slot().AutoHeight().Padding(8)[SNew(SButton).TextStyle(&MenuText).ContentPadding(FMargin(16)).Text(FText::FromString(TEXT("Beitreten"))).OnClicked_Lambda([this](){const FString Address=AddressBox->GetText().ToString().TrimStartAndEnd();if(!Address.IsEmpty()){CloseSessionMenu();JoinGame(Address);}return FReply::Handled();})]
  +SVerticalBox::Slot().AutoHeight().Padding(8)[SNew(SButton).TextStyle(&MenuText).ContentPadding(FMargin(16)).Text(FText::FromString(TEXT("Verlassen / lokales Spiel"))).OnClicked_Lambda([this](){CloseSessionMenu();LeaveGame();return FReply::Handled();})]
- +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(STextBlock).TextStyle(&MenuText).Text(FText::FromString(VanthexMap::IsGridV3(GetWorld())?TEXT("E: Core aufnehmen | G: Ablegen | Q: Werfen\nOnline laeuft die Runde bei offenem Menue weiter."):TEXT("F: Shift bedienen | C: ARC-Fernsteuerung\nOnline laeuft die Runde bei offenem Menue weiter.")))]
+ +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(STextBlock).TextStyle(&MenuText).Text(FText::FromString(VanthexMap::IsFacility(GetWorld())?TEXT("E: Core aufnehmen | G: Ablegen | Q: Werfen\nOnline laeuft die Runde bei offenem Menue weiter."):TEXT("F: Shift bedienen | C: ARC-Fernsteuerung\nOnline laeuft die Runde bei offenem Menue weiter.")))]
  ]];
  GetWorld()->GetGameViewport()->AddViewportWidgetContent(SessionMenu.ToSharedRef(),100);
  bShowMouseCursor=true; SetIgnoreMoveInput(true); SetIgnoreLookInput(true); FInputModeGameAndUI Mode; Mode.SetWidgetToFocus(SessionMenu); SetInputMode(Mode);
@@ -170,11 +208,11 @@ void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
  for(TActorIterator<AVanthexShiftDevice> It(GetWorld());It;++It) { ++Devices; Offline+=!It->bPowered; PowerCorrect &= It->bPowered==(It->Circuit!=1); }
  const auto* PS=GetPlayerState<AVanthexPlayerState>(); const auto* GS=GetWorld()->GetGameState<AVanthexGameState>();
  const float Moved=FVector::Dist2D(ProbeOrigin,ProbeCharacter->GetActorLocation());
- const bool bGridV3=VanthexMap::IsGridV3(GetWorld());
+ const bool bGridV3=VanthexMap::IsFacility(GetWorld());
  bool Pass=Characters==6 && Operators==6 && Cores==1 && Devices==(bGridV3?0:15) && Offline==(bGridV3?0:3) && PowerCorrect && PS && PS->GetTeam()!=EVanthexTeam::None && GS && GS->GetRoundIndex()>0 && Moved>100 && ProbeCharacter->GetWeapon()->GetAmmoInMagazine()<30 && (HasAuthority() || FMath::IsNearlyEqual(ProbeCharacter->GetHealthComponent()->GetHealth(),60.f));
  const FString Report=FString::Printf(TEXT("%s netmode=%d characters=%d operators=%d cores=%d devices=%d offline=%d team=%d moved=%.1f health=%.0f ammo=%d"),Pass?TEXT("PASS"):TEXT("FAIL"),int32(GetNetMode()),Characters,Operators,Cores,Devices,Offline,PS?int32(PS->GetTeam()):-1,Moved,ProbeCharacter->GetHealthComponent()->GetHealth(),ProbeCharacter->GetWeapon()->GetAmmoInMagazine());
  FString Name=HasAuthority()?TEXT("NetworkHost.txt"):TEXT("NetworkClient.txt");
- if(bGridV3) Name=TEXT("GridV3")+Name;
+ if(bGridV3) Name=FString(VanthexMap::IsGridV4(GetWorld())?TEXT("GridV4"):TEXT("GridV3"))+Name;
  FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/Name)); bProbeReported=true;
 }
 

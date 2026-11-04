@@ -22,6 +22,8 @@ void UHealthComponent::ResetHealth()
  if (!GetOwner() || !GetOwner()->HasAuthority()) return;
 	Health = MaxHealth;
 	bDead = false;
+	OnRep_Dead();
+	GetOwner()->ForceNetUpdate();
 	LastDamage = 0.f;
 	LastAppliedHPDamage = 0.f;
 	bLastHitWasHeadshot = false;
@@ -75,8 +77,21 @@ void UHealthComponent::ApplyDamage(const FVanthexDamageRequest& Request)
 	if (Health <= 0.f)
 	{
 		bDead = true;
+		// The death pose moves only the visual skeleton. Disable all character
+		// collision now so upright hidden hit proxies cannot absorb the next shot.
+		OnRep_Dead();
+		GetOwner()->ForceNetUpdate();
 		UE_LOG(LogVanthex, Display, TEXT("%s died"), *GetNameSafe(GetOwner()));
 		OnDeath.Broadcast(GetOwner());
+	}
+}
+
+void UHealthComponent::OnRep_Dead()
+{
+	// Leave non-character targets and their individual collision policies alone.
+	if (auto* Character = Cast<AVanthexCharacter>(GetOwner()))
+	{
+		Character->SetActorEnableCollision(!bDead);
 	}
 }
 

@@ -72,7 +72,7 @@ void VanthexRunWeaponModelShots(AVanthexGameMode* Mode)
  if(S.Index>=UE_ARRAY_COUNT(ModelIds)) { Finish(true,TEXT("12 fresh first-person and crouched-operator model views")); return; }
  const bool Third=S.Index>=10; auto* Pawn=Third?Other:Human; const FName Id(ModelIds[S.Index]);
  if(S.Settled<0) {
-  Mode->Phase=EVanthexRoundPhase::BuyPhase; Mode->TimeRemaining=25; Mode->PublishMatch();
+  Mode->Phase=EVanthexRoundPhase::BuyPhase; Mode->TimeRemaining=12; Mode->PublishMatch();
   auto* PS=Pawn->GetPlayerState<AVanthexPlayerState>(); if(!PS) return;
   PS->ResetEconomyForMatch(); PS->SetAlive(true); PS->AwardCredits(6200);
   if(Id!=TEXT("Pistol")&&Id!=TEXT("Knife")&&!PS->TryPurchase(Id,44001+S.Index)) { Finish(false,TEXT("purchase rejected")); return; }

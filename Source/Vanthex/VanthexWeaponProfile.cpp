@@ -42,8 +42,8 @@ const TArray<FVanthexWeaponProfile>& VanthexWeapons::All()
    if(Shape==EVanthexFirearmShape::Shotgun) { P.TraceRange=5000.f; P.bSupersonic=false; }
    Result.Add(P);
   };
-  Add(TEXT("Pistol"),true,false,EVanthexFirearmShape::Pistol,12,48,28,3,.22f,1.35f,1500,4500,.55f,.10f,.8f,.8f,.08f);
-  Add(TEXT("P250"),true,false,EVanthexFirearmShape::Pistol,13,52,36,2.5f,.20f,1.55f,1800,5000,.60f,.12f,.9f,1.2f,.12f);
+  Add(TEXT("Pistol"),true,false,EVanthexFirearmShape::Pistol,12,48,28,3,.176f,1.35f,1500,4500,.55f,.10f,.8f,.8f,.08f);
+  Add(TEXT("P250"),true,false,EVanthexFirearmShape::Pistol,13,52,36,2.5f,.16f,1.55f,1800,5000,.60f,.12f,.9f,1.2f,.12f);
   Add(TEXT("MP5"),false,true,EVanthexFirearmShape::SMG,30,120,24,2,.086f,2.1f,1200,3500,.50f,.35f,1.2f,.45f,.18f);
   Add(TEXT("MP7"),false,true,EVanthexFirearmShape::SMG,40,160,22,2.1f,.0625f,1.9f,1000,3200,.45f,.30f,1.f,.35f,.15f);
   Add(TEXT("M4"),false,true,EVanthexFirearmShape::Rifle,30,90,34,2.5f,.10f,2.2f,2500,9000,.65f,.12f,1.3f,.7f,.15f);

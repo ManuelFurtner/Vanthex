@@ -71,7 +71,7 @@ void VanthexRunEconomyShots(AVanthexGameMode* Mode)
   if(PS->GetEconomy().Credits!=800 || !PS->GetEconomy().PrimaryWeapon.IsNone()) { Finish(false,TEXT("initial player inventory is not the real 800 CR start")); return; }
   // Freeze only this diagnostic's phase clock; normal purchases and activation still use their real paths.
   Mode->GetWorldTimerManager().ClearTimer(Mode->FlowTimer);
-  Mode->TimeRemaining=25.f; Mode->PublishMatch();
+  Mode->TimeRemaining=12.f; Mode->PublishMatch();
   PC->SetIgnoreMoveInput(true); PC->SetIgnoreLookInput(true); PC->SetViewTarget(Pawn);
   if(PC->GetHUD()) PC->GetHUD()->bShowHUD=true;
   if(VanthexMap::IsGridV3(World)) {
@@ -103,7 +103,7 @@ void VanthexRunEconomyShots(AVanthexGameMode* Mode)
   } else {
    PC->GetBuyMenu()->Close();
    if(State.View==3) {
-    Mode->Phase=EVanthexRoundPhase::BuyPhase; Mode->TimeRemaining=25.f; Mode->PublishMatch();
+    Mode->Phase=EVanthexRoundPhase::BuyPhase; Mode->TimeRemaining=12.f; Mode->PublishMatch();
     if(!PS->TryPurchase(TEXT("MP7"),31003)) { Finish(false,TEXT("diagnostic MP7 purchase was rejected")); return; }
     Pawn->SyncEconomyLoadout(false);
    }

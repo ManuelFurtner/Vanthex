@@ -1,0 +1,60 @@
+OVERALL PASS CHECKS 59 FAILURES 0
+PASS case 0 (Alpha / A): pickup
+PASS case 0 (Alpha / A): held extraction starts
+PASS case 0 (Alpha / A): release keeps progress while physics remains active
+PASS case 0 (Alpha / A): actual dropped Core settles inside pad
+PASS case 0 (Alpha / A): loose Core advances countdown and HUD
+PASS case 0 (Alpha / A): extracting loose Core remains pickable
+PASS case 0 (Alpha / A): same-team pickup preserves progress
+PASS case 0 (Alpha / A): changing pads resets progress
+PASS case 0 (Alpha / A): leaving pad cancels countdown
+PASS case 0 (Alpha / A): actual throw from outside lands inside pad: X=-4328.984 Y=4800.000 Z=620.500
+PASS case 0 (Alpha / A): throw starts extraction for last carrier team
+PASS case 0 (Alpha / A): cannot win before fifteen seconds
+PASS case 0 (Alpha / A): loose Core completes and credits correct team
+PASS case 1 (Bravo / A): pickup
+PASS case 1 (Bravo / A): held extraction starts
+PASS case 1 (Bravo / A): release keeps progress while physics remains active
+PASS case 1 (Bravo / A): actual dropped Core settles inside pad
+PASS case 1 (Bravo / A): loose Core advances countdown and HUD
+PASS case 1 (Bravo / A): extracting loose Core remains pickable
+PASS case 1 (Bravo / A): same-team pickup preserves progress
+PASS case 1 (Bravo / A): changing pads resets progress
+PASS case 1 (Bravo / A): leaving pad cancels countdown
+PASS case 1 (Bravo / A): actual throw from outside lands inside pad: X=-4328.989 Y=4800.000 Z=620.500
+PASS case 1 (Bravo / A): throw starts extraction for last carrier team
+PASS case 1 (Bravo / A): cannot win before fifteen seconds
+PASS case 1 (Bravo / A): loose Core completes and credits correct team
+PASS case 2 (Alpha / B): pickup
+PASS case 2 (Alpha / B): held extraction starts
+PASS case 2 (Alpha / B): release keeps progress while physics remains active
+PASS case 2 (Alpha / B): actual dropped Core settles inside pad
+PASS case 2 (Alpha / B): loose Core advances countdown and HUD
+PASS case 2 (Alpha / B): extracting loose Core remains pickable
+PASS case 2 (Alpha / B): same-team pickup preserves progress
+PASS case 2 (Alpha / B): changing pads resets progress
+PASS case 2 (Alpha / B): leaving pad cancels countdown
+PASS case 2 (Alpha / B): actual throw from outside lands inside pad: X=5270.975 Y=-4100.000 Z=-579.500
+PASS case 2 (Alpha / B): throw starts extraction for last carrier team
+PASS case 2 (Alpha / B): cannot win before fifteen seconds
+PASS case 2 (Alpha / B): loose Core completes and credits correct team
+PASS case 3 (Bravo / B): pickup
+PASS case 3 (Bravo / B): held extraction starts
+PASS case 3 (Bravo / B): release keeps progress while physics remains active
+PASS case 3 (Bravo / B): actual dropped Core settles inside pad
+PASS case 3 (Bravo / B): loose Core advances countdown and HUD
+PASS case 3 (Bravo / B): extracting loose Core remains pickable
+PASS case 3 (Bravo / B): same-team pickup preserves progress
+PASS case 3 (Bravo / B): changing pads resets progress
+PASS case 3 (Bravo / B): leaving pad cancels countdown
+PASS case 3 (Bravo / B): actual throw from outside lands inside pad: X=5271.020 Y=-4100.000 Z=-579.500
+PASS case 3 (Bravo / B): throw starts extraction for last carrier team
+PASS case 3 (Bravo / B): cannot win before fifteen seconds
+PASS case 3 (Bravo / B): loose Core completes and credits correct team
+PASS takeover fixture pickup
+PASS opponent can recover an extracting loose Core
+PASS opponent possession starts a fresh timer
+PASS reset unclaimed Core cannot extract for stale team
+PASS death fixture pickup
+PASS carrier death preserves dropped Core team and progress
+PASS normal round timer finishes remaining twelve seconds after death without a carrier

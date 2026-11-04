@@ -45,6 +45,7 @@ public:
 	void SelectRifle();
  void SelectPistol();
 	void SelectKnife();
+	void CycleWeapon(int32 Direction);
  void SelectRoundWeapon();
  void SyncLoadout(FName PrimaryId, FName SidearmId, bool bRefillAmmo);
  bool HasSlot(EVanthexWeaponSlot Slot) const;
@@ -70,6 +71,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
 	UFUNCTION(Server, Reliable) void ServerSelect(EVanthexWeaponSlot Slot);
+	UFUNCTION(Server, Reliable) void ServerCycleWeapon(int32 Direction);
 	UFUNCTION(Server, Reliable) void ServerAttack();
 	UPROPERTY(Replicated) FVanthexEquipmentState State;
 	UPROPERTY(Transient) TObjectPtr<USceneComponent> KnifeRoot;
@@ -80,6 +82,7 @@ protected:
 	void UpdatePresentation();
 	void BuildKnife();
 	bool CanAct() const;
+	bool CanSelect() const;
 	float ServerTime() const;
 	AVanthexCharacter* Character() const;
 	FTimerHandle StrikeTimer;

@@ -99,8 +99,8 @@ void VanthexRunWeaponProfileTest(AVanthexGameMode* Mode)
   if(!Mode->IsBuyPhase()) return;
   Mode->GetWorldTimerManager().ClearTimer(Mode->FlowTimer);
   Check(W->GetWeaponId()==TEXT("Pistol")&&E->GetSelectedSlot()==EVanthexWeaponSlot::Pistol&&!E->HasSlot(EVanthexWeaponSlot::Rifle),TEXT("free pistol and knife without phantom primary"));
-  W->StartFire(); W->StartReload(); E->SelectKnife();
-  Check(W->GetAmmoInMagazine()==12&&!W->IsReloading()&&!E->IsSwitching(),TEXT("buy phase blocks firing reload and switching"));
+  W->StartFire(); W->StartReload();
+  Check(W->GetAmmoInMagazine()==12&&!W->IsReloading(),TEXT("buy phase blocks firing and reload; weapon selection is tested by ControlsTest"));
   Mode->ActivateRound(); Mode->GetWorldTimerManager().ClearTimer(Mode->FlowTimer);
   for(int32 I=0;I<Mode->Combatants.Num();++I) { auto* Pawn=Mode->Combatants[I].Get(); Pawn->GetCharacterMovement()->StopMovementImmediately(); Pawn->GetCharacterMovement()->SetMovementMode(MOVE_Flying); Pawn->SetActorLocation(FVector(I*500,0,10000),false,nullptr,ETeleportType::TeleportPhysics); }
   Human->GetController()->SetControlRotation(FRotator(60,0,0));

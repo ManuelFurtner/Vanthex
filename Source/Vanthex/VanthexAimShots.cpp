@@ -76,7 +76,7 @@ void VanthexRunAimShots(AVanthexGameMode* Mode)
   if(IFileManager::Get().FileSize(*S.Files.Last())<=0) return;
   S.Pending=false; ++S.Index; S.Pose=-1; S.RequestedAim=false;
  }
- if(S.Index>=(CoreViews?3:HUDViews?6:BodyViews?4:UE_ARRAY_COUNT(AimModels))) { Finish(true,CoreViews?TEXT("3 Energy Core views: pickup, carry, drop"):HUDViews?TEXT("6 HUD states: live, injured, reload, extraction, buy, eliminated"):BodyViews?TEXT("4 actual owner-body views: standing, crouching, walking and forward"):TEXT("9 fresh own-pawn hip, iron, reflex and scope views")); return; }
+ if(S.Index>=(CoreViews?3:HUDViews?7:BodyViews?4:UE_ARRAY_COUNT(AimModels))) { Finish(true,CoreViews?TEXT("3 Energy Core views: pickup, carry, drop"):HUDViews?TEXT("7 HUD states: live, injured, reload, extraction, buy, eliminated, scoreboard"):BodyViews?TEXT("4 actual owner-body views: standing, crouching, walking and forward"):TEXT("9 fresh own-pawn hip, iron, reflex and scope views")); return; }
  const FName Id((BodyViews||HUDViews||CoreViews)?TEXT("M4"):AimModels[S.Index]);
  if(S.Pose<0) {
   Pawn->SetAiming(false); Pawn->SetSprinting(false); Pawn->GetWeapon()->CancelReload();
@@ -93,10 +93,11 @@ void VanthexRunAimShots(AVanthexGameMode* Mode)
    if(S.Index==2)Mode->Core->Drop();
   }
   if(HUDViews){
+   if(S.Index==6)PC->ShowScoreboard();else PC->HideScoreboard();
    Pawn->GetHealthComponent()->ResetHealth();
    PC->SetControlRotation(FRotator(0,0,0));
    auto* Match=World->GetGameState<AVanthexGameState>();
-   Match->PublishRound(S.Index==4?EVanthexRoundPhase::BuyPhase:EVanthexRoundPhase::RoundActive,2,1,4,97,EVanthexTeam::None,EVanthexTeam::None);
+   Match->PublishRound(S.Index==4?EVanthexRoundPhase::BuyPhase:EVanthexRoundPhase::RoundActive,2,1,4,S.Index==4?12:97,EVanthexTeam::None,EVanthexTeam::None);
    Match->PublishCore(S.Index==3?EVanthexCoreReadout::ExtractingA:EVanthexCoreReadout::Center,S.Index==3?8.7f:0.f,15.f);
    if(S.Index==1||S.Index==5){FVanthexDamageRequest D;D.Damage=S.Index==5?500.f:76.f;Pawn->GetHealthComponent()->ApplyDamage(D);}
    if(S.Index==2)Pawn->GetWeapon()->SetMagazineAmmo(7);

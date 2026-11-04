@@ -155,7 +155,7 @@ void AVanthexCharacter::BeginPlay()
 
 	SyncEconomyLoadout(false);
  if(Equipment) Equipment->SelectRoundWeapon();
- UE_LOG(LogVanthex, Display, TEXT("Controls: WASD move, mouse look, Shift sprint, Ctrl crouch, Space jump, LMB fire, R reload, E pickup, G drop, Q throw, F5 restart"));
+ UE_LOG(LogVanthex, Display, TEXT("Controls: WASD move, mouse look, Shift sprint, Ctrl crouch, mouse wheel weapons, Tab scoreboard, LMB fire, R reload, E pickup, G drop, Q throw, F5 restart"));
 }
 
 void AVanthexCharacter::TickEquipmentMovementAudio(float DeltaSeconds)
@@ -235,7 +235,6 @@ void AVanthexCharacter::BuildInput()
 	MapAxis(LookAction, EKeys::MouseX, false, false);
 	MapAxis(LookAction, EKeys::MouseY, true, true);
 
-	MappingContext->MapKey(JumpAction, EKeys::SpaceBar);
 	MappingContext->MapKey(SprintAction, EKeys::LeftShift);
  MappingContext->MapKey(AimAction,EKeys::RightMouseButton);
 	MappingContext->MapKey(CrouchAction, EKeys::LeftControl);
@@ -255,6 +254,8 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AVanthexCharacter::SelectRifle);
  PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AVanthexCharacter::SelectPistol);
 	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AVanthexCharacter::SelectKnife);
+	PlayerInputComponent->BindKey(EKeys::MouseScrollDown, IE_Pressed, this, &AVanthexCharacter::NextWeapon);
+	PlayerInputComponent->BindKey(EKeys::MouseScrollUp, IE_Pressed, this, &AVanthexCharacter::PreviousWeapon);
  PlayerInputComponent->BindKey(EKeys::Four, IE_Pressed, this, &AVanthexCharacter::UseGadgetOne);
  PlayerInputComponent->BindKey(EKeys::Five, IE_Pressed, this, &AVanthexCharacter::UseGadgetTwo);
  PlayerInputComponent->BindKey(EKeys::RightControl, IE_Pressed, this, &AVanthexCharacter::StartCrouchInput);
@@ -286,8 +287,6 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AVanthexCharacter::MoveInput);
 	EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVanthexCharacter::LookInput);
-	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartJump);
-	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopJump);
 	EnhancedInput->BindAction(SprintAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartSprint);
 	EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopSprint);
 	EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartCrouchInput);
@@ -401,7 +400,8 @@ void AVanthexCharacter::RefreshMovementSpeed()
 {
  if(!GetCharacterMovement()) return;
  const float Scale=IsAiming()&&Weapon?VanthexWeaponPresentation::Aim(Weapon->GetWeaponId()).MovementScale:1.f;
- GetCharacterMovement()->MaxWalkSpeed=(bSprintWanted?SprintSpeed:WalkSpeed)*Scale;
+ const float KnifeScale=Equipment&&Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Equipment->IsSwitching()?1.15f:1.f;
+ GetCharacterMovement()->MaxWalkSpeed=(bSprintWanted?SprintSpeed:WalkSpeed)*Scale*KnifeScale;
  GetCharacterMovement()->MaxWalkSpeedCrouched=280.f*(IsAiming()?.7f:1.f);
 }
 void AVanthexCharacter::TickAiming(float Delta)
@@ -700,6 +700,8 @@ void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled)
 void AVanthexCharacter::InteractShift() { ServerUseDevice(false); }
 void AVanthexCharacter::SelectRifle() { SetAiming(false); if (Equipment) Equipment->SelectRifle(); }
 void AVanthexCharacter::SelectPistol() { SetAiming(false); if (Equipment) Equipment->SelectPistol(); }
+void AVanthexCharacter::NextWeapon() { SetAiming(false); if (Equipment) Equipment->CycleWeapon(1); }
+void AVanthexCharacter::PreviousWeapon() { SetAiming(false); if (Equipment) Equipment->CycleWeapon(-1); }
 void AVanthexCharacter::SelectKnife() { SetAiming(false); if (Equipment) Equipment->SelectKnife(); }
 bool AVanthexCharacter::CanUseRifle() const { return CanPerformRoundActions() && (!Health || !Health->IsDead()) && (!Equipment || Equipment->CanUseRifle()); }
 void AVanthexCharacter::UseOperator() { ServerUseDevice(true); }

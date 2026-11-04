@@ -1,0 +1,104 @@
+{
+  "reportCreatedOn": "2026.11.04-12.14.35",
+  "succeeded": 24,
+  "failed": 0,
+  "notRun": 0,
+  "tests": [
+    {
+      "name": "Vanthex.Aim.SightAlignmentAndSpread",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.BulletAudio.ClippedSegmentAndContinuity",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.BulletAudio.DistanceBands",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.BulletAudio.RealWallOcclusion",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Economy.ArmorDamageBoundaries",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Economy.ArmorPurchaseRules",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Economy.AtomicPurchases",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Economy.CatalogAndDefaults",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Economy.CreditCapAndDeath",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Gadgets.BlastFalloff",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Gadgets.Catalog",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Gadgets.FlashFalloff",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Gadgets.PresentationAssets",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Gadgets.SmokeIntersection",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Gadgets.SmokeWallClipping",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.WeaponAudio.CompleteMonoBanks",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.WeaponAudio.EquipmentMovementCadence",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.WeaponAudio.MixPriorities",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.WeaponAudio.PhysicalPortalAndWall",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.WeaponModels.CompleteAuthoredArmory",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.WeaponModels.MagazineAndBoltPresentation",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.WeaponModels.OptionalLicensedBundle",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Weapons.CatalogAndHandling",
+      "state": "Success"
+    },
+    {
+      "name": "Vanthex.Weapons.DeterministicSpreadAndRecoil",
+      "state": "Success"
+    }
+  ]
+}

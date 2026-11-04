@@ -27,6 +27,9 @@ public:
 
 public:
 	AVanthexCharacter();
+	virtual bool CanJumpInternal_Implementation() const override { return false; }
+	void NextWeapon();
+	void PreviousWeapon();
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 

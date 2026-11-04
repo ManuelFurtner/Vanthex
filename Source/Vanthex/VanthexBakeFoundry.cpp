@@ -16,10 +16,10 @@
 #include "Misc/PackageName.h"
 #include "UObject/SavePackage.h"
 
-bool VanthexBakeFoundry(bool bGridV3 = false)
+bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false)
 {
- const FString LevelName=bGridV3?TEXT("GridV3"):TEXT("Foundry");
- const FString Folder=bGridV3?TEXT("GRID V3"):TEXT("FOUNDRY");
+ const FString LevelName=bGridV4?TEXT("GridV4"):bGridV3?TEXT("GridV3"):TEXT("Foundry");
+ const FString Folder=bGridV4?TEXT("GRID V4 AEGIS"):bGridV3?TEXT("GRID V3"):TEXT("FOUNDRY");
  auto* Package=CreatePackage(*(TEXT("/Game/Vanthex/Maps/")+LevelName));
  UWorld::InitializationValues IV; IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false).ShouldSimulatePhysics(false);
  auto* World=UWorld::CreateWorld(EWorldType::Editor,false,FName(*LevelName),Package,true,ERHIFeatureLevel::SM6,&IV);
@@ -31,7 +31,7 @@ bool VanthexBakeFoundry(bool bGridV3 = false)
  int32 Count=0;
  auto CopyMaterials=[](UStaticMeshComponent* From,UStaticMeshComponent* To) {
   for(int32 I=0;I<From->GetNumMaterials();++I) if(auto* M=From->GetMaterial(I))
-   if(M->GetOutermost()->GetName().StartsWith(TEXT("/Game/Materials/"))) To->SetMaterial(I,M);
+   if(M->GetOutermost()->GetName().StartsWith(TEXT("/Game/Materials/"))||M->GetOutermost()->GetName().StartsWith(TEXT("/Game/Vanthex/Materials/"))) To->SetMaterial(I,M);
  };
  for(auto* Part:Parts) {
   if(!Part->GetStaticMesh() || (!Part->IsVisible() && Part->GetCollisionEnabled()==ECollisionEnabled::NoCollision)) continue;

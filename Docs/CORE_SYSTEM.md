@@ -22,7 +22,7 @@ E picks up the core. The player must be alive, the round must be active, the cor
 
 While carried, the core is attached to the carrier's capsule at a local offset of `(50, 0, 30)`. Its mesh does not collide, so it does not block movement or the rifle trace.
 
-The carrier keeps normal movement: walk, sprint, crouch, and jump. The carrier also keeps the rifle. That is a prototype choice so gunplay and the objective can be compared in the same round. It may change after playtesting.
+The carrier keeps normal movement: walk, sprint, and crouch. The carrier also keeps the rifle. That is a prototype choice so gunplay and the objective can be compared in the same round. It may change after playtesting.
 
 ## Drop
 
@@ -50,15 +50,21 @@ The thrower is ignored until the core has traveled 250 cm from the release point
 
 Two zones, A and B, sit in different parts of the greybox. Both teams may use either zone. There is no attacker and no defender.
 
-When a living carrier is inside a zone during `RoundActive`, the game mode starts a 15 second hold. The carrier must stay inside and keep the core. Leaving, dying, dropping, or throwing cancels the hold and clears the timer. The HUD shows `EXTRACTING A` or `EXTRACTING B` and the remaining seconds.
+During `RoundActive`, a Core inside either extraction volume starts a 15-second countdown for the team that last possessed it. The actual Core position is used, whether carried, flying or at rest. Dropping or throwing it inside the zone preserves progress; throwing it into the zone starts extraction. A same-team pickup preserves progress too. A carrier death preserves the dropped Core attribution and countdown if it remains inside.
 
-When the hold completes, the core becomes `Extracted` and the game mode calls the existing `EndRound` for the carrier's team. Score, round reset, and first-to-7 are unchanged. Eliminating a team still wins the round as well. Extraction is an additional victory condition.
+Leaving the zone, changing extraction zones, or opponent possession resets progress. An opponent who picks it up starts a new countdown for their own team. The last possession team is replicated, survives release/disconnection, and is cleared by reset/recovery. An unclaimed neutral Core cannot extract. A server-side possession revision also prevents progress carrying across an intervening enemy possession. The HUD shows `EXTRACTING A` or `EXTRACTING B` and the remaining seconds for loose Cores as well.
+
+The physical states remain `Thrown` and `AtRest` for a loose Core. Extraction does not freeze flight, disable catches, or prevent pickup. The held Core may still use `Extracting`; the objective timer and replicated GameState readout are independent of its physical state.
+
+When the hold completes, the core becomes `Extracted` and the game mode calls the existing `EndRound` for the last possessing team. Score, round reset, and first-to-7 are unchanged. A deposited, team-owned Core inside a zone defers elimination and round timeout: its countdown continues even if the depositing team, the opposing team, or both teams are dead. Opponents must recover the Core to cancel that team's countdown. After recovery or departure from the zone, any deferred elimination is resolved on the next server clock tick. Without a deposited Core, normal elimination and timeout rules still apply.
+
+Bots carry the Core toward a zone and prioritize nearby delivery over combat. They turn toward a short downward throw and check its swept flight and landing margin against map geometry before releasing it. If no safe landing is available, they move closer. Bots defend a friendly deposit without picking it up again, and prioritize recovering an enemy deposit.
 
 The extraction timer is not updated unless the round is active, so a hold cannot start or finish during `RoundEnding`.
 
 ## Reset
 
-Every new round, and F5, calls the arena reset. That puts the core back on its home at `(220, 0, 50)`, clears the carrier, velocity, throw, pickup lock, and extraction timer, and sets the state to `AtRest`. Home is offset from X = 0 so the core does not sit on the M1 shot lane. The core is reset before combatants are moved back to their spawns.
+Every new round, and F5, calls the arena reset. That puts the core back on its home at `(220, 0, 50)`, clears the carrier, last possessing team, velocity, throw, pickup lock, and extraction timer, and sets the state to `AtRest`. Home is offset from X = 0 so the core does not sit on the M1 shot lane. The core is reset before combatants are moved back to their spawns.
 
 ## HUD
 
@@ -89,7 +95,7 @@ The game mode is the future server for objective results. It is the only writer 
 | Catch radius | 180 cm |
 | Thrower ignore distance | 250 cm |
 | Floor rest | Z = 40 |
-| Extraction hold | 5 s |
+| Extraction hold | 15 s |
 | Out-of-bounds recovery | 1 s |
 | Zone A | (-850, 850), half extent (250, 250, 220) |
 | Zone B | (850, -750), half extent (250, 250, 220) |

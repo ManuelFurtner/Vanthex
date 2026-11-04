@@ -16,7 +16,7 @@ bool AVanthexGameMode::UsesLegacyCombatFixture() const
 #if !UE_BUILD_SHIPPING
  // Existing diagnostics explicitly retain the original 40-damage rifle fixture.
  // Real matches and the economy integration/network tests use the purchase rules.
- for (const TCHAR* Flag : {TEXT("VanthexSelfTest"),TEXT("GridV3Test"),TEXT("GridV3GameTest"),TEXT("OperatorTest"),TEXT("OperatorShots"),TEXT("GridV3Shots"),TEXT("VanthexMapShots"),TEXT("VanthexVisualShots"),TEXT("VanthexNetworkProbe"),TEXT("EquipmentNetworkTest"),TEXT("BulletAudioNetworkTest"),TEXT("BulletAudioPlaybackTest"),TEXT("VanthexEnergyTest"),TEXT("VanthexMapTest")})
+ for (const TCHAR* Flag : {TEXT("VanthexSelfTest"),TEXT("GridV4Test"),TEXT("GridV4GameTest"),TEXT("GridV4Shots"),TEXT("GridV3Test"),TEXT("GridV3GameTest"),TEXT("OperatorTest"),TEXT("OperatorShots"),TEXT("GridV3Shots"),TEXT("VanthexMapShots"),TEXT("VanthexVisualShots"),TEXT("VanthexNetworkProbe"),TEXT("EquipmentNetworkTest"),TEXT("BulletAudioNetworkTest"),TEXT("BulletAudioPlaybackTest"),TEXT("VanthexEnergyTest"),TEXT("VanthexMapTest")})
   if (FParse::Param(FCommandLine::Get(), Flag)) return true;
 #endif
  return false;
@@ -110,9 +110,11 @@ void AVanthexGameMode::RecordDamage(AVanthexCharacter* Victim, const FVanthexDam
  if (Enemy) History.Add({Attacker, AppliedHP, Now});
  if (!bKilled) return;
  RewardedDeaths.Add(Victim);
+ if(VictimState) VictimState->RecordDeath();
  // Environmental, friendly and self deaths never pay a killer or an assister.
  if (Enemy) {
   AttackerState->AwardCredits(200);
+  AttackerState->RecordKill();
   TMap<int32, float> Totals;
   TMap<int32, double> Recent;
   for (const auto& Hit : History) {
@@ -128,7 +130,7 @@ void AVanthexGameMode::RecordDamage(AVanthexCharacter* Victim, const FVanthexDam
     || (Entry.Value == Totals.FindRef(Best) && (Recent.FindRef(Entry.Key) > Recent.FindRef(Best)
      || (Recent.FindRef(Entry.Key) == Recent.FindRef(Best) && Entry.Key < Best)))) Best = Entry.Key;
   }
-  if (auto* Assister = EconomyStateForSlot(Best)) Assister->AwardCredits(100);
+  if (auto* Assister = EconomyStateForSlot(Best)) { Assister->AwardCredits(100); Assister->RecordAssist(); }
  }
  DamageHistory.Remove(Victim);
 }

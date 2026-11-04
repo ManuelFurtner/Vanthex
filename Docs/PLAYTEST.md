@@ -18,7 +18,7 @@ Disconnected players are replaced by bots. Leaving the host ends that session.
 
 ## Controls
 
-- WASD / mouse: move and aim; Shift: sprint; Ctrl: crouch; Space: jump.
+- WASD / mouse: move and aim; Shift: sprint; Ctrl: crouch; mouse wheel: weapons; Tab (hold): scoreboard; jumping disabled.
 - Left mouse: fire; R: reload.
 - E: pick up the core; G: drop; Q: throw.
 - F: operate a nearby Shift device while looking toward it (250 cm).
@@ -47,7 +47,7 @@ It disables bot decisions. It is not a substitute for a latency or six-player te
 ## Manual acceptance checks
 
 1. Host and join from separate machines; both see the same arena and six combatants.
-2. Check movement, sprint/crouch transitions, jump and aiming at ordinary latency.
+2. Check movement, sprint/crouch transitions, blocked jumping and aiming at ordinary latency.
 3. Shoot enemies and teammates: enemy health changes, friendly damage is rejected.
 4. Die during reload; observe a teammate; return with full health on the next round.
 5. Pass/intercept the core, throw against walls and platforms, extract at either zone.

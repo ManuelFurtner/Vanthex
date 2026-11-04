@@ -3,6 +3,7 @@
 #if WITH_EDITOR
 #include "Vanthex.h"
 #include "VanthexGridV3Layout.h"
+#include "VanthexMapLayout.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -117,7 +118,7 @@ bool VanthexValidateVisibleStairs(UWorld* World, TArray<FString>& Out)
    else Instances.Add(Component->GetComponentTransform());
   }
  }
- const auto& Links = GridV3::VerticalLinks();
+ const auto& Links = VanthexMap::VerticalLinks(World);
  constexpr int32 SectionsPerLink = 3;
  constexpr int32 SamplesPerLink = 21;
  TArray<int32> Matches;

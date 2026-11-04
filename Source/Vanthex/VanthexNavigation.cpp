@@ -88,7 +88,7 @@ void CandidateFloors(const FVector2D& XY,TArray<float>& Heights)
   for(float Existing:Heights) if(FMath::Abs(Existing-Height)<5.f) return;
   Heights.Add(Height);
  };
- for(const auto& Room:GridV3::Rooms()) {
+ for(const auto& Room:VanthexMap::Rooms(GridCache.World.Get())) {
   if(FMath::Abs(XY.X-Room.Center.X)<=Room.Size.X*0.5f && FMath::Abs(XY.Y-Room.Center.Y)<=Room.Size.Y*0.5f) Add(Room.Center.Z);
  }
  auto Segment=[&](const FVector& A,const FVector& B,float Width) {
@@ -96,8 +96,8 @@ void CandidateFloors(const FVector2D& XY,TArray<float>& Heights)
   const float T=FMath::Clamp(FVector2D::DotProduct(XY-Start,Delta)/FMath::Max(Delta.SizeSquared(),1.f),0.f,1.f);
   if(FVector2D::DistSquared(XY,Start+Delta*T)<=FMath::Square(Width*0.5f)) Add(FMath::Lerp(A.Z,B.Z,T));
  };
- for(const auto& Connection:GridV3::Connections()) for(int32 I=1;I<Connection.Points.Num();++I) Segment(Connection.Points[I-1],Connection.Points[I],Connection.Width);
- for(const auto& Link:GridV3::VerticalLinks()) Segment(Link.Bottom,Link.Top,Link.Width);
+ for(const auto& Connection:VanthexMap::Connections(GridCache.World.Get())) for(int32 I=1;I<Connection.Points.Num();++I) Segment(Connection.Points[I-1],Connection.Points[I],Connection.Width);
+ for(const auto& Link:VanthexMap::VerticalLinks(GridCache.World.Get())) Segment(Link.Bottom,Link.Top,Link.Width);
 }
 
 void BuildGrid(UWorld* World)
@@ -106,15 +106,15 @@ void BuildGrid(UWorld* World)
  GridCache=FGridCache();
  GridCache.World=World;
  FBox2D Bounds(ForceInit);
- for(const auto& Room:GridV3::Rooms()) {
+ for(const auto& Room:VanthexMap::Rooms(GridCache.World.Get())) {
   const FVector2D Center(Room.Center.X,Room.Center.Y),Half(Room.Size.X*0.5f,Room.Size.Y*0.5f);
   Bounds+=Center-Half; Bounds+=Center+Half;
  }
- for(const auto& Connection:GridV3::Connections()) for(const FVector& P:Connection.Points) {
+ for(const auto& Connection:VanthexMap::Connections(GridCache.World.Get())) for(const FVector& P:Connection.Points) {
   Bounds+=FVector2D(P.X-Connection.Width,P.Y-Connection.Width);
   Bounds+=FVector2D(P.X+Connection.Width,P.Y+Connection.Width);
  }
- for(const auto& Link:GridV3::VerticalLinks()) for(const FVector P:{Link.Bottom,Link.Top}) {
+ for(const auto& Link:VanthexMap::VerticalLinks(GridCache.World.Get())) for(const FVector P:{Link.Bottom,Link.Top}) {
   Bounds+=FVector2D(P.X-Link.Width,P.Y-Link.Width);
   Bounds+=FVector2D(P.X+Link.Width,P.Y+Link.Width);
  }
@@ -275,7 +275,7 @@ bool VanthexNavigation::FindRoute(UWorld* World,const FVector& Start,const FVect
 {
  Route.Reset();
  if(!World) return false;
- return VanthexMap::IsGridV3(World)?FindGridV3Route(World,Start,Goal,Route):FindLegacyRoute(World,Start,Goal,Route);
+ return VanthexMap::IsFacility(World)?FindGridV3Route(World,Start,Goal,Route):FindLegacyRoute(World,Start,Goal,Route);
 }
 
 bool VanthexNavigation::CheckWalkableSegment(UWorld* World,const FVector& FloorStart,const FVector& FloorEnd,FString* Failure)
@@ -287,7 +287,7 @@ bool VanthexNavigation::FindRouteLength(UWorld* World,const FVector& Start,const
 {
  Length=0.f;
  TArray<FVector> Route;
- const bool Grid=VanthexMap::IsGridV3(World);
+ const bool Grid=VanthexMap::IsFacility(World);
  if(Grid ? !FindGridV3Route(World,Start,Goal,Route,true) : !FindRoute(World,Start,Goal,Route)) return false;
  FVector Previous=Start;
  if(Grid) { if(Anchor(World,Start,Previous,true)==INDEX_NONE) return false; }
@@ -299,7 +299,7 @@ bool VanthexNavigation::FindRouteLength(UWorld* World,const FVector& Start,const
 void VanthexNavigation::GridV3GraphStats(UWorld* World,int32& NodeCount,int32& EdgeCount,int32& ComponentCount)
 {
  NodeCount=EdgeCount=ComponentCount=0;
- if(!World || !VanthexMap::IsGridV3(World)) return;
+ if(!World || !VanthexMap::IsFacility(World)) return;
  BuildGrid(World);
  NodeCount=GridCache.Nodes.Num();
  for(const FNavNode& Node:GridCache.Nodes) EdgeCount+=Node.Neighbours.Num();

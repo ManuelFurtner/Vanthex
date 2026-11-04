@@ -15,6 +15,27 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Text/STextBlock.h"
 
+namespace {
+// Slate normally consumes Tab for button focus. Give the match scoreboard
+// priority even while the purchase UI owns keyboard focus.
+class SVanthexBuyMenuBorder : public SBorder
+{
+public:
+ using FArguments = SBorder::FArguments;
+ void Construct(const FArguments& Args) { SBorder::Construct(Args); }
+ virtual bool SupportsKeyboardFocus() const override { return true; }
+ TWeakObjectPtr<AVanthexPlayerController> OwnerController;
+ virtual FReply OnPreviewKeyDown(const FGeometry& Geometry,const FKeyEvent& Event) override
+ {
+  if(Event.GetKey()==EKeys::Tab) if(auto* PC=OwnerController.Get()) {
+   PC->GetBuyMenu()->Close();
+   PC->ShowScoreboard(); return FReply::Handled();
+  }
+  return SBorder::OnPreviewKeyDown(Geometry,Event);
+ }
+};
+}
+
 UVanthexBuyMenuComponent::UVanthexBuyMenuComponent()
 {
  SetIsReplicatedByDefault(true);
@@ -83,12 +104,13 @@ void UVanthexBuyMenuComponent::Open()
   const auto* PC = Cast<AVanthexPlayerController>(GetOwner()); const auto* PS = PC ? PC->GetPlayerState<AVanthexPlayerState>() : nullptr;
   if (!PS) return FText::GetEmpty(); const auto& E = PS->GetEconomy();
   return FText::FromString(FString::Printf(TEXT("1  %s     2  %s     3  Messer\nRuestung %.0f     |     Gadgets %d / 2"), E.PrimaryWeapon.IsNone() ? TEXT("Kein Primaer") : *E.PrimaryWeapon.ToString(), *E.Sidearm.ToString(), E.ArmorPoints, E.Gadgets.Num())); })]
- +SVerticalBox::Slot().AutoHeight().Padding(12,2)[SNew(STextBlock).TextStyle(&Small).Text(FText::FromString(TEXT("4 / 5: Gadget werfen. Flash blendet auch Verbuendete. Ersatzkaeufe ohne Erstattung.")))]
+ +SVerticalBox::Slot().AutoHeight().Padding(12,2)[SNew(STextBlock).TextStyle(&Small).Text(FText::FromString(TEXT("B schliesst. Danach: Mausrad oder 1 / 2 / 3 zum Waffenwechsel, auch in der Kaufzeit. 4 / 5: Gadgets im Gefecht.")))]
  +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(STextBlock).TextStyle(&Text).Text_Lambda([this]() { return FText::FromString(Feedback); })]
  +SVerticalBox::Slot().AutoHeight().Padding(12)[SNew(SButton).ContentPadding(FMargin(12,8)).OnClicked_Lambda([this]() { Close(); return FReply::Handled(); })[SNew(STextBlock).TextStyle(&Text).Text(FText::FromString(TEXT("Bereit / Schliessen")))]];
- Menu = SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.012f,.022f,.035f,.98f)).HAlign(HAlign_Center).VAlign(VAlign_Center)
+ Menu = SNew(SVanthexBuyMenuBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.012f,.022f,.035f,.98f)).HAlign(HAlign_Center).VAlign(VAlign_Center)
   [SNew(SBox).WidthOverride(1170).MaxDesiredHeight(900)[SNew(SScrollBox)+SScrollBox::Slot()[Contents]]];
  Viewport->AddViewportWidgetContent(Menu.ToSharedRef(), 90);
+ StaticCastSharedPtr<SVanthexBuyMenuBorder>(Menu)->OwnerController=PC;
  PC->bShowMouseCursor = true;
  PC->SetIgnoreLookInput(true);
  FInputModeGameAndUI Mode; Mode.SetWidgetToFocus(Menu); Mode.SetHideCursorDuringCapture(false); PC->SetInputMode(Mode);

@@ -1,0 +1,27 @@
+[2026.11.04-15.01.40:080][592]LogAutomationController: Display: Test Completed. Result={Success} Name={SightAlignmentAndSpread} Path={Vanthex.Aim.SightAlignmentAndSpread}
+[2026.11.04-15.01.40:095][594]LogAutomationController: Display: Test Completed. Result={Success} Name={ClippedSegmentAndContinuity} Path={Vanthex.BulletAudio.ClippedSegmentAndContinuity}
+[2026.11.04-15.01.40:112][596]LogAutomationController: Display: Test Completed. Result={Success} Name={DistanceBands} Path={Vanthex.BulletAudio.DistanceBands}
+[2026.11.04-15.01.40:133][598]LogAutomationController: Display: Test Completed. Result={Success} Name={RealWallOcclusion} Path={Vanthex.BulletAudio.RealWallOcclusion}
+[2026.11.04-15.01.40:153][600]LogAutomationController: Display: Test Completed. Result={Success} Name={SequentialKillsAndCorpseCollision} Path={Vanthex.Combat.SequentialKillsAndCorpseCollision}
+[2026.11.04-15.01.40:165][602]LogAutomationController: Display: Test Completed. Result={Success} Name={ArmorDamageBoundaries} Path={Vanthex.Economy.ArmorDamageBoundaries}
+[2026.11.04-15.01.40:190][605]LogAutomationController: Display: Test Completed. Result={Success} Name={ArmorPurchaseRules} Path={Vanthex.Economy.ArmorPurchaseRules}
+[2026.11.04-15.01.40:207][607]LogAutomationController: Display: Test Completed. Result={Success} Name={AtomicPurchases} Path={Vanthex.Economy.AtomicPurchases}
+[2026.11.04-15.01.40:224][609]LogAutomationController: Display: Test Completed. Result={Success} Name={CatalogAndDefaults} Path={Vanthex.Economy.CatalogAndDefaults}
+[2026.11.04-15.01.40:249][612]LogAutomationController: Display: Test Completed. Result={Success} Name={CreditCapAndDeath} Path={Vanthex.Economy.CreditCapAndDeath}
+[2026.11.04-15.01.40:265][614]LogAutomationController: Display: Test Completed. Result={Success} Name={BlastFalloff} Path={Vanthex.Gadgets.BlastFalloff}
+[2026.11.04-15.01.40:290][617]LogAutomationController: Display: Test Completed. Result={Success} Name={Catalog} Path={Vanthex.Gadgets.Catalog}
+[2026.11.04-15.01.40:307][619]LogAutomationController: Display: Test Completed. Result={Success} Name={FlashFalloff} Path={Vanthex.Gadgets.FlashFalloff}
+[2026.11.04-15.01.40:324][621]LogAutomationController: Display: Test Completed. Result={Success} Name={PresentationAssets} Path={Vanthex.Gadgets.PresentationAssets}
+[2026.11.04-15.01.40:340][623]LogAutomationController: Display: Test Completed. Result={Success} Name={SmokeIntersection} Path={Vanthex.Gadgets.SmokeIntersection}
+[2026.11.04-15.01.40:361][625]LogAutomationController: Display: Test Completed. Result={Success} Name={SmokeWallClipping} Path={Vanthex.Gadgets.SmokeWallClipping}
+[2026.11.04-15.01.40:374][627]LogAutomationController: Display: Test Completed. Result={Success} Name={MinimapNoEnemies} Path={Vanthex.HUD.MinimapNoEnemies}
+[2026.11.04-15.01.40:424][630]LogAutomationController: Display: Test Completed. Result={Success} Name={CompleteMonoBanks} Path={Vanthex.WeaponAudio.CompleteMonoBanks}
+[2026.11.04-15.01.40:441][632]LogAutomationController: Display: Test Completed. Result={Success} Name={EquipmentMovementCadence} Path={Vanthex.WeaponAudio.EquipmentMovementCadence}
+[2026.11.04-15.01.40:466][635]LogAutomationController: Display: Test Completed. Result={Success} Name={MixPriorities} Path={Vanthex.WeaponAudio.MixPriorities}
+[2026.11.04-15.01.40:486][637]LogAutomationController: Display: Test Completed. Result={Success} Name={PhysicalPortalAndWall} Path={Vanthex.WeaponAudio.PhysicalPortalAndWall}
+[2026.11.04-15.01.40:613][640]LogAutomationController: Display: Test Completed. Result={Success} Name={CompleteAuthoredArmory} Path={Vanthex.WeaponModels.CompleteAuthoredArmory}
+[2026.11.04-15.01.40:630][642]LogAutomationController: Display: Test Completed. Result={Success} Name={MagazineAndBoltPresentation} Path={Vanthex.WeaponModels.MagazineAndBoltPresentation}
+[2026.11.04-15.01.40:646][644]LogAutomationController: Display: Test Completed. Result={Success} Name={OptionalLicensedBundle} Path={Vanthex.WeaponModels.OptionalLicensedBundle}
+[2026.11.04-15.01.40:663][646]LogAutomationController: Display: Test Completed. Result={Success} Name={CatalogAndHandling} Path={Vanthex.Weapons.CatalogAndHandling}
+[2026.11.04-15.01.40:680][648]LogAutomationController: Display: Test Completed. Result={Success} Name={DeterministicSpreadAndRecoil} Path={Vanthex.Weapons.DeterministicSpreadAndRecoil}
+[2026.11.04-15.01.40:680][649]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 26 tests performed.

@@ -40,6 +40,32 @@ void AVanthexExtractionZone::Setup(EVanthexExtractionId InId, const FVector& InH
 		}
 		Pad->SetVisibility(false);
 
+  if(VanthexMap::IsGridV4(GetWorld())) {
+   // A flush kit platform leaves the full capture footprint open. Corner
+   // beacons show live charge without the legacy gate obscuring either door.
+   const FLinearColor Accent=bA?FLinearColor(.1f,.85f,.55f):FLinearColor(.75f,.25f,1.f);
+   auto* ChargeGlow=VanthexArt::MakeEnergy(this,Accent,.7f);
+   ChargeMaterials.Reset(); if(ChargeGlow) ChargeMaterials.Add(ChargeGlow);
+   const FVector Floor=GetActorLocation()-FVector(0,0,20);
+   auto Kit=[&](const TCHAR* Name,FVector Center,FVector Size,UMaterialInterface* Override=nullptr){
+    const FString Path=FString::Printf(TEXT("/Game/Meshes/%s.%s"),Name,Name);
+    auto* Mesh=LoadObject<UStaticMesh>(nullptr,*Path); if(!Mesh)return;
+    const FBox Bounds=Mesh->GetBoundingBox(); const FVector Native=Bounds.GetSize();
+    const FVector Scale(Size.X/FMath::Max(1.,Native.X),Size.Y/FMath::Max(1.,Native.Y),Size.Z/FMath::Max(1.,Native.Z));
+    VanthexArt::AddMesh(this,SceneRoot,Mesh,Floor+Center-Bounds.GetCenter()*Scale,FRotator::ZeroRotator,Scale,Override,false);
+   };
+   Kit(TEXT("SM_Platform_01"),FVector(0,0,-8),FVector(440,440,16));
+   for(float Side:{-1.f,1.f}) {
+    Kit(TEXT("SM_MetalBeam01"),FVector(Side*215,0,2),FVector(7,430,3),ChargeGlow);
+    Kit(TEXT("SM_MetalBeam01"),FVector(0,Side*215,2),FVector(430,7,3),ChargeGlow);
+    for(float Other:{-1.f,1.f}) {
+     Kit(TEXT("SM_Column_02"),FVector(Side*255,Other*255,72),FVector(16,16,144));
+     Kit(TEXT("SM_MetalBeam01"),FVector(Side*255,Other*255,145),FVector(18,18,5),ChargeGlow);
+    }
+   }
+   return;
+  }
+
 		UStaticMesh* Cylinder = VanthexArt::LoadCylinder();
 		UStaticMesh* BaseMesh = VanthexArt::LoadKit(TEXT("SM_TransferBase"));
 		UStaticMesh* PylonMesh = VanthexArt::LoadKit(TEXT("SM_Pylon"));
@@ -47,7 +73,7 @@ void AVanthexExtractionZone::Setup(EVanthexExtractionId InId, const FVector& InH
 		UMaterialInterface* Metal = VanthexArt::MakeSurface(this, FLinearColor(0.1f, 0.11f, 0.12f), 0.4f, 0.72f, FLinearColor::Black, 0.f, EVanthexSurface::PaintedSteel);
   // The legacy objective meshes have procedural UVs. World-space coated steel
   // keeps their details readable without stretching an unrelated kit UV atlas.
-  if(VanthexMap::IsGridV3(GetWorld())) Metal=VanthexArt::MakeSurface(this,FLinearColor(.35f,.39f,.43f),.75f,.15f,FLinearColor::Black,0.f,EVanthexSurface::PaintedSteel);
+  if(VanthexMap::IsFacility(GetWorld())) Metal=VanthexArt::MakeSurface(this,FLinearColor(.35f,.39f,.43f),.75f,.15f,FLinearColor::Black,0.f,EVanthexSurface::PaintedSteel);
 		UMaterialInstanceDynamic* Glow = VanthexArt::MakeEnergy(this, Energy, 0.55f);
 		UMaterialInstanceDynamic* Ring = VanthexArt::MakeEnergy(this, Energy, 0.7f);
 		ChargeMaterials.Reset();

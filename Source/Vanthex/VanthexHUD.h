@@ -15,4 +15,5 @@ public:
  UPROPERTY() TObjectPtr<UFont> DisplayFont;
  float PreviousHealth=100.f;
  float DamageFlashUntil=0.f;
+ void DrawTacticalHUD();
 };

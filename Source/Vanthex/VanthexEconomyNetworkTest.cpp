@@ -5,6 +5,7 @@
 #include "VanthexBotController.h"
 #include "VanthexBuyMenuComponent.h"
 #include "VanthexCharacter.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexGameState.h"
 #include "VanthexPlayerState.h"
 #include "VanthexWeaponAudioComponent.h"
@@ -77,6 +78,7 @@ struct FEconomyNetworkProbe
  float Moved=0.f, MovementYaw=0.f, BuyMoved=-1.f;
  bool Seeded=false, NormalBuy=false, Joined=false, SentPurchases=false, Purchased=false;
  bool BuyChecked=false, BuyBlocked=false, Privacy=false, Profile=false;
+ bool SawBuyKnife=false, SawBuyReturn=false; int32 WheelStage=0;
  bool SentShot=false, SawShot=false, SawMovement=false, SawAudio=false, ReturnedToBot=false, Finished=false, MovementLane=false;
 
  void Finish(UWorld* World,bool Host,bool TimedOut)
@@ -84,9 +86,9 @@ struct FEconomyNetworkProbe
   if(Finished) return;
   Finished=true;
   if(auto* Pawn=Participant.Get()) Pawn->SetHoldForward(false);
-  const bool Pass=!TimedOut && Joined && Purchased && BuyChecked && BuyBlocked && Privacy && Profile && SawShot && SawMovement && SawAudio
+  const bool Pass=!TimedOut && Joined && Purchased && BuyChecked && BuyBlocked && Privacy && Profile && SawShot && SawMovement && SawAudio && SawBuyKnife && SawBuyReturn
    && (Host ? Seeded && NormalBuy && ReturnedToBot : SentPurchases && SentShot && MovementLane);
-  const FString Report=FString::Printf(TEXT("%s role=%s joined_seed1577=%d purchases827=%d buy_checked=%d buy_blocked=%d owner_private=%d p250_profile=%d shot=%d movement=%d audio=%d bot_return=%d host_seed=%d normal_buy25=%d sent_purchases=%d sent_shot=%d credits=%d ammo=%d moved_cm=%.1f lane_checked=%d move_yaw=%.1f buy_mode=%d buy_moved_cm=%.1f buy_ammo_before=%d buy_ammo_after=%d audio_before=%u audio_after=%u phase=%d elapsed=%.2f timeout=%d\n"),
+  const FString Report=FString::Printf(TEXT("%s role=%s joined_seed1577=%d purchases827=%d buy_checked=%d buy_blocked=%d owner_private=%d p250_profile=%d shot=%d movement=%d audio=%d bot_return=%d host_seed=%d normal_buy12=%d sent_purchases=%d sent_shot=%d credits=%d ammo=%d moved_cm=%.1f lane_checked=%d move_yaw=%.1f buy_mode=%d buy_moved_cm=%.1f buy_ammo_before=%d buy_ammo_after=%d audio_before=%u audio_after=%u phase=%d elapsed=%.2f timeout=%d\n"),
    Pass?TEXT("PASS"):TEXT("FAIL"),Host?TEXT("host"):TEXT("client"),Joined,Purchased,BuyChecked,BuyBlocked,Privacy,Profile,SawShot,SawMovement,SawAudio,ReturnedToBot,Seeded,NormalBuy,SentPurchases,SentShot,LastCredits,LastAmmo,Moved,MovementLane,MovementYaw,BuyMovementMode,BuyMoved,BuyAmmo,BuyAmmoAfter,AudioBefore,AudioAfter,Phase,World->GetTimeSeconds()-Started,TimedOut);
   const FString File=FPaths::ProjectSavedDir()/(Host?TEXT("EconomyNetworkHost.txt"):TEXT("EconomyNetworkClient.txt"));
   const bool Saved=FFileHelper::SaveStringToFile(Report,*File);
@@ -133,7 +135,7 @@ void VanthexStartEconomyNetworkTest(AVanthexPlayerController* Controller)
    const bool OwnBought=Own->TryPurchase(TEXT("ArmorLight"),1);
    BotState->AwardCredits(777);
    Probe->Seeded=OwnBought && Own->GetEconomy().Credits==511 && BotState->GetEconomy().Credits==1577;
-   Probe->NormalBuy=GS->GetTimeRemaining()>20.f && GS->GetTimeRemaining()<=25.f;
+   Probe->NormalBuy=GS->GetTimeRemaining()>7.f && GS->GetTimeRemaining()<=12.f;
    Probe->Privacy=Own->GetEconomy().Credits==511 && Own->GetArmorPoints()==40.f;
    Probe->Participant=BotPawn;
    UE_LOG(LogVanthex,Display,TEXT("ECONOMY_NETWORK seeded host=%d bravo0=%d seconds=%.1f"),Own->GetEconomy().Credits,BotState->GetEconomy().Credits,GS->GetTimeRemaining());
@@ -220,6 +222,15 @@ void VanthexStartEconomyNetworkTest(AVanthexPlayerController* Controller)
    }
   }
 
+  if(Buy&&Probe->BuyChecked) {
+   auto* E=Pawn->GetEquipment();
+   if(E&&!E->IsSwitching()) {
+    if(Weapon->GetWeaponId()==TEXT("Knife")) Probe->SawBuyKnife=true;
+    if(Probe->SawBuyKnife&&Weapon->GetWeaponId()==TEXT("P250")) Probe->SawBuyReturn=true;
+    if(!Host&&Probe->WheelStage==0) { Pawn->NextWeapon();++Probe->WheelStage; }
+    else if(!Host&&Probe->WheelStage==1&&Probe->SawBuyKnife) { Pawn->PreviousWeapon();++Probe->WheelStage; }
+   }
+  }
   if(!Active || !Probe->Purchased) return;
   auto* Audio=Host ? Probe->RemoteController->GetWeaponAudio() : PC->GetWeaponAudio();
   if(!Audio) return;

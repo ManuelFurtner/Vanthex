@@ -84,6 +84,26 @@ void UVanthexEquipmentComponent::SelectRifle() { Select(EVanthexWeaponSlot::Rifl
 void UVanthexEquipmentComponent::SelectPistol() { Select(EVanthexWeaponSlot::Pistol); }
 void UVanthexEquipmentComponent::SelectKnife() { Select(EVanthexWeaponSlot::Knife); }
 
+bool UVanthexEquipmentComponent::CanSelect() const
+{
+ const auto* C=Character(); const auto* Mode=GetWorld()?GetWorld()->GetAuthGameMode<AVanthexGameMode>():nullptr;
+ return C&&C->HasAuthority()&&C->GetController()&&C->GetHealthComponent()&&!C->GetHealthComponent()->IsDead()
+  &&Mode&&(Mode->IsBuyPhase()||Mode->IsRoundActive());
+}
+void UVanthexEquipmentComponent::CycleWeapon(int32 Direction)
+{
+ if(Direction!=1&&Direction!=-1) return;
+ if(!GetOwner()->HasAuthority()) { ServerCycleWeapon(Direction); return; }
+ if(!CanSelect()||IsSwitching()) return;
+ const EVanthexWeaponSlot Slots[]={EVanthexWeaponSlot::Rifle,EVanthexWeaponSlot::Pistol,EVanthexWeaponSlot::Knife};
+ int32 Current=0; for(int32 I=0;I<3;++I) if(Slots[I]==State.Selected) Current=I;
+ for(int32 Offset=1;Offset<3;++Offset) {
+  const auto Slot=Slots[(Current+Direction*Offset+6)%3];
+  if(HasSlot(Slot)) { Select(Slot); return; }
+ }
+}
+void UVanthexEquipmentComponent::ServerCycleWeapon_Implementation(int32 Direction) { CycleWeapon(Direction); }
+
 FName UVanthexEquipmentComponent::GetSlotWeaponId(EVanthexWeaponSlot Slot) const
 {
  if(Slot==EVanthexWeaponSlot::Knife) return TEXT("Knife");
@@ -145,14 +165,14 @@ void UVanthexEquipmentComponent::SelectRoundWeapon()
 }
 void UVanthexEquipmentComponent::CommitSwitch()
 {
- if(!CanAct()) return;
+ if(!CanSelect()) return;
  ApplySelectedWeapon();
  UVanthexWeaponAudioComponent::DispatchEvent(GetOwner(),GetSlotWeaponId(State.Selected),EVanthexWeaponAudioEvent::Draw,SwitchActionId);
 }
 void UVanthexEquipmentComponent::Select(EVanthexWeaponSlot Slot)
 {
  if(!GetOwner()->HasAuthority()) { ServerSelect(Slot); return; }
- if(!HasSlot(Slot)||!CanAct()||IsSwitching()||IsSwinging()||Slot==State.Selected) return;
+ if(!HasSlot(Slot)||!CanSelect()||IsSwitching()||IsSwinging()||Slot==State.Selected) return;
  CaptureAmmo();
  if(auto* W=Character()->GetWeapon()) { W->StopFire(); W->CancelReload(); }
  SwitchActionId=++AudioActionSequence;

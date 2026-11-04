@@ -440,13 +440,14 @@ bool BuildSign()
 int32 UVanthexBuildArtCommandlet::Main(const FString& Params)
 {
 #if WITH_EDITOR
-	extern bool VanthexBakeFoundry(bool bGridV3);
+	extern bool VanthexBakeFoundry(bool bGridV3,bool bGridV4);
+ if(Params.Contains(TEXT("BakeGridV4")))return VanthexBakeFoundry(false,true)?0:1;
 	if(FParse::Param(*Params,TEXT("RepairSurfaceUsage"))) return RepairSurfaceSkeletalUsage()?0:1;
 	if(Params.Contains(TEXT("InspectStairs"))) { extern bool VanthexInspectStairs(); return VanthexInspectStairs()?0:1; }
 	if(Params.Contains(TEXT("InspectOperator"))) { extern bool VanthexInspectOperator(); return VanthexInspectOperator()?0:1; }
 	if(Params.Contains(TEXT("BuildOperatorArt"))) { extern bool VanthexBuildOperatorArt(); return VanthexBuildOperatorArt()?0:1; }
-	if(Params.Contains(TEXT("BakeGridV3"))) return VanthexBakeFoundry(true)?0:1;
-	if(Params.Contains(TEXT("BakeFoundry"))) return VanthexBakeFoundry(false)?0:1;
+	if(Params.Contains(TEXT("BakeGridV3"))) return VanthexBakeFoundry(true,false)?0:1;
+	if(Params.Contains(TEXT("BakeFoundry"))) return VanthexBakeFoundry(false,false)?0:1;
 	if(Params.Contains(TEXT("PrepareFactory"))) {
   TArray<FString> Paths; TSet<UMaterialInterface*> Materials; TSet<UMaterial*> Bases;
   FFileHelper::LoadFileToStringArray(Paths,*(FPaths::ProjectSavedDir()/TEXT("FactoryPaths.txt")));

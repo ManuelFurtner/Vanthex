@@ -1,0 +1,2 @@
+H:\Vanthex\Saved\CompactHUD-editor-build.log:30:Result: Succeeded
+H:\Vanthex\Saved\CompactHUD-game-build.log:29:Result: Succeeded

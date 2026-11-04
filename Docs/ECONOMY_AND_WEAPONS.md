@@ -24,14 +24,19 @@ Rüstung sowie höchstens zwei zusätzliche Gadgets.
 
 Eine aktive Runde dauert 180 Sekunden; keine Respawns während dieser Phase.
 Sieben Rundensiege gewinnen das Match. Der neutrale Energy Core kann aufgenommen,
-getragen, abgelegt, geworfen, gefangen und abgefangen werden. Fünf Sekunden
-ununterbrochene Extraction oder die Eliminierung des Gegners gewinnen die Runde.
-Beide Teams dürfen beide Extraktionspunkte benutzen. Bestehende Timeout- und
-Unentschiedenregeln bleiben bestehen.
+getragen, abgelegt, geworfen, gefangen und abgefangen werden. 15 Sekunden
+Extraction oder die Eliminierung des Gegners gewinnen die Runde.
+Beide Teams dürfen beide Extraktionspunkte benutzen. Ein abgelegter Core in der
+Zone läuft auch bei vollständig ausgeschalteten Teams und abgelaufener Rundenzeit
+weiter. Gegner müssen ihn aufnehmen, um den bisherigen Countdown zu stoppen.
+Ohne abgelegten Core gelten die normalen Eliminierungs- und Timeoutregeln.
+
+Mit vollständig gezogenem Messer steigen Geh- und Sprinttempo um 15 Prozent
+(690 / 1035 cm/s). Beim Waffenwechsel entfällt der Bonus; Ducktempo bleibt 280 cm/s.
 
 ## Kaufphase und Inventar – Startvorschlag
 
-- Vor jeder aktiven Runde liegen **25 Sekunden Kaufphase**. Die 180-Sekunden-Uhr
+- Vor jeder aktiven Runde liegen **12 Sekunden Kaufphase**. Die 180-Sekunden-Uhr
   startet danach. Runde 1 hat dieselbe Kaufzeit.
 - Während der Kaufphase bleiben Figuren im jeweiligen Spawn; Bewegung, Schüsse,
   Messerangriffe, Core- und SHIFT-Interaktionen sind gesperrt. Blick und Kaufmenü
