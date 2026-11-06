@@ -1,19 +1,15 @@
-#include "SVanthexSessionMenu.h"
+﻿#include "SVanthexSessionMenu.h"
 #include "VanthexPlayerController.h"
 #include "VanthexLocalSettings.h"
-#include "Kismet/GameplayStatics.h"
-#include "VanthexCommunicationComponent.h"
-#include "VanthexPlayerState.h"
-#include "GameFramework/GameStateBase.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "VanthexMenuStyle.h"
 #include "Engine/World.h"
 #include "VanthexGameState.h"
 #include "VanthexMapLayout.h"
 #include "Engine/Engine.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Widgets/Input/SButton.h"
-#include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SEditableTextBox.h"
-#include "Widgets/Input/SSlider.h"
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/SLeafWidget.h"
 #include "Rendering/DrawElements.h"
@@ -26,33 +22,44 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Styling/CoreStyle.h"
 
-namespace
-{
-const FLinearColor Ink(.012f,.019f,.027f,1), Panel(.024f,.037f,.05f,1), Cyan(.14f,.82f,.78f,1), Muted(.5f,.6f,.65f,1), White(.88f,.93f,.94f,1);
-TSharedRef<STextBlock> Text(const FString& Value, int32 Size=16, FLinearColor Color=White)
-{
-	return SNew(STextBlock).Text(FText::FromString(Value)).Font(FCoreStyle::GetDefaultFontStyle("Regular",Size)).ColorAndOpacity(Color).AutoWrapText(true);
-}
-}
+using namespace VanthexMenuStyle;
 
 void SVanthexSessionMenu::Construct(const FArguments& Args)
 {
-	Controller = Args._Controller; Resume = Args._OnResume;
+	Controller = Args._Controller;
+	Resume = Args._OnResume;
+	bFrontEnd = Controller.IsValid() && Controller->IsFrontEnd();
+	bCaptureTheFlag = Controller.IsValid() && VanthexMap::IsCTF(Controller->GetWorld());
 	if (auto* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr)
 	{
 		Quality = Settings->GetOverallScalabilityLevel();
 		FrameLimit = FMath::RoundToInt(Settings->GetFrameRateLimit()); bVSync = Settings->IsVSyncEnabled();
 	}
-	const FString Map = Controller.IsValid() && VanthexMap::IsGridV4(Controller->GetWorld()) ? TEXT("AEGIS / GRID V4") : TEXT("VANTHEX FACILITY");
+	const FString MenuTitle = bFrontEnd ? TEXT("HAUPTMENÜ") : TEXT("PARTIEMENÜ");
 	auto Navigation = SNew(SVerticalBox);
-	Navigation->AddSlot().AutoHeight().Padding(0,0,0,6)[Text(TEXT("V A N T H E X"),30,Cyan)];
+	Navigation->AddSlot().AutoHeight().Padding(0,0,0,6)[Text(TEXT("VANTHEX"),30,Cyan)];
 	Navigation->AddSlot().AutoHeight().Padding(0,0,0,34)[Text(TEXT("TACTICAL TEAM OPERATIONS"),11,Muted)];
-	const TCHAR* Tabs[] = {TEXT("01   SPIELEN"),TEXT("02   EINSTELLUNGEN"),TEXT("03   STEUERUNG"),TEXT("04   FADENKREUZ")};
-	for (int32 I=0; I<4; ++I)
+	const TCHAR* Tabs[] = {TEXT("SPIELEN"), TEXT("EINSTELLUNGEN"), TEXT("NETZWERK")};
+	for (int32 I = 0; I < UE_ARRAY_COUNT(Tabs); ++I)
 		Navigation->AddSlot().AutoHeight().Padding(0,0,0,10)[Button(Tabs[I],[this,I](){ShowPage(I); return FReply::Handled();},false,I)];
 	Navigation->AddSlot().FillHeight(1)[SNew(SBox)];
 	Navigation->AddSlot().AutoHeight().Padding(0,24,0,10)[Text(TEXT("CORE 3v3 / CAPTURE THE FLAG 5v5"),12,Cyan)];
-	Navigation->AddSlot().AutoHeight()[Text(TEXT("ESC  Zurueck ins Spiel\nDie laufende Runde geht weiter."),12,Muted)];
+	if (bFrontEnd)
+	{
+		Navigation->AddSlot().AutoHeight()[Button(TEXT("SPIEL BEENDEN"), [this]()
+		{
+			if (auto* PC = Controller.Get())
+			{
+				UVanthexLocalSettings::Get()->Persist();
+				UKismetSystemLibrary::QuitGame(PC, PC, EQuitPreference::Quit, false);
+			}
+			return FReply::Handled();
+		})];
+	}
+	else
+	{
+		Navigation->AddSlot().AutoHeight()[Text(TEXT("ESC  Zurück ins Spiel"), 12, Muted)];
+	}
 	ChildSlot[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.003f,.007f,.01f,.96f)).Padding(20)
 	[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
 	[SNew(SBox).WidthOverride(1120).HeightOverride(690)
@@ -60,13 +67,12 @@ void SVanthexSessionMenu::Construct(const FArguments& Args)
 	+SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(290)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Panel).Padding(26)[Navigation]]]
 	+SHorizontalBox::Slot().FillWidth(1).Padding(2,0,0,0)[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Ink).Padding(34)
 	[SNew(SVerticalBox)
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)[Text(Map,13,Cyan)]
+	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)[Text(MenuTitle,13,Cyan)]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,22)[SNew(STextBlock).Text_Lambda([this](){return Status();}).Font(FCoreStyle::GetDefaultFontStyle("Regular",13)).ColorAndOpacity(Muted)]
 	+SVerticalBox::Slot().FillHeight(1)[SAssignNew(Pages,SWidgetSwitcher)
 	+SWidgetSwitcher::Slot()[PlayPage()]
 	+SWidgetSwitcher::Slot()[SettingsPage()]
-	+SWidgetSwitcher::Slot()[ControlsPage()]
- +SWidgetSwitcher::Slot()[CrosshairPage()]]
+	+SWidgetSwitcher::Slot()[NetworkPage()]]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,12,0,0)[SAssignNew(Feedback,STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular",13)).ColorAndOpacity(FLinearColor(1.f,.67f,.27f)).AutoWrapText(true)]
 	]]]]]];
 }
@@ -78,92 +84,136 @@ TSharedRef<SWidget> SVanthexSessionMenu::Button(const FString& Label, TFunction<
 		.OnClicked_Lambda([Action=MoveTemp(Action)](){return Action();})[Text(Label,16)];
 }
 
+TSharedRef<SWidget> SVanthexSessionMenu::ModeCard(bool bCTF)
+{
+    const FLinearColor Accent = bCTF ? FLinearColor(.95f, .67f, .34f) : Cyan;
+    return SNew(SButton)
+        .ButtonStyle(FCoreStyle::Get(), "NoBorder")
+        .ContentPadding(0)
+        .HAlign(HAlign_Fill)
+        .VAlign(VAlign_Fill)
+        .OnClicked_Lambda([this, bCTF]()
+        {
+            bCaptureTheFlag = bCTF;
+            PendingAction.Reset();
+            Feedback->SetText(FText::GetEmpty());
+            return FReply::Handled();
+        })
+        [
+            SNew(SBorder)
+            .BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
+            .BorderBackgroundColor_Lambda([this, bCTF]()
+            {
+                return bCaptureTheFlag == bCTF ? FLinearColor(.04f, .15f, .17f) : Panel;
+            })
+            .Padding(18)
+            [
+                SNew(SVerticalBox)
+                +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+                [Text(bCTF ? TEXT("5 GEGEN 5  /  CROSSROADS") : TEXT("3 GEGEN 3  /  GRID V4"), 12, Accent)]
+                +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+                [Text(bCTF ? TEXT("Capture the Flag") : TEXT("Core"), 25)]
+                +SVerticalBox::Slot().FillHeight(1).Padding(0, 0, 0, 14)
+                [Text(bCTF ? TEXT("Erobere die Flagge in der römischen Arena.") : TEXT("Sichere den Core und bring ihn zur Extraktion."), 15, Muted)]
+                +SVerticalBox::Slot().AutoHeight()
+                [
+                    SNew(STextBlock)
+                    .Font(FCoreStyle::GetDefaultFontStyle("Bold", 11))
+                    .ColorAndOpacity(Accent)
+                    .Text_Lambda([this, bCTF]()
+                    {
+                        return FText::FromString(bCaptureTheFlag == bCTF ? TEXT("AUSGEWÄHLT") : TEXT("AUSWÄHLEN"));
+                    })
+                ]
+            ]
+        ];
+}
+
 TSharedRef<SWidget> SVanthexSessionMenu::PlayPage()
 {
-	return SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,6)[Text(TEXT("BEREIT FUER DIE NAECHSTE RUNDE?"),27)]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Text(TEXT("Core 3v3 oder Capture the Flag 5v5. Waehle deinen Modus."),15,Muted)]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("WEITERSPIELEN"),[this](){Resume.ExecuteIfBound(); return FReply::Handled();},true)]
- +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("CAPTURE THE FLAG / 5 GEGEN 5"),[this](){return RequestTravel(3);})]
- +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("CORE / GRID V4 / 3 GEGEN 3"),[this](){return RequestTravel(4);})]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,22)[Button(TEXT("LAN-SITZUNG HOSTEN"),[this](){return RequestTravel(1);})]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)[Text(TEXT("DIREKT BEITRETEN"),12,Cyan)]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)[SAssignNew(AddressBox,SEditableTextBox)
-		.Font(FCoreStyle::GetDefaultFontStyle("Regular",18)).Padding(FMargin(14,12))
-		.Text(FText::FromString(UVanthexLocalSettings::Get()->LastAddress))
-		.HintText(FText::FromString(TEXT("192.168.1.10:7777 oder Hostname")))
-		.OnTextCommitted_Lambda([this](const FText&,ETextCommit::Type Commit){if(Commit==ETextCommit::OnEnter) Join();})]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("VERBINDEN"),[this](){return Join();})]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Text(TEXT("Direkte IP-Verbindung. Der Host muss erreichbar sein; Port 7777 ist Standard."),12,Muted)]
-	+SVerticalBox::Slot().AutoHeight()[Button(TEXT("SITZUNG VERLASSEN / LOKAL SPIELEN"),[this](){return RequestTravel(2);})]
-	];
+    auto Content = SNew(SVerticalBox);
+    if (!bFrontEnd)
+    {
+        Content->AddSlot().AutoHeight().Padding(0, 0, 0, 22)
+        [Button(TEXT("PARTIE FORTSETZEN"), [this]() { Resume.ExecuteIfBound(); return FReply::Handled(); }, true)];
+    }
+    Content->AddSlot().AutoHeight().Padding(0, 0, 0, 8)[Text(TEXT("Spielmodus wählen"), 30)];
+    Content->AddSlot().AutoHeight().Padding(0, 0, 0, 18)
+    [Text(TEXT("Wähle eine Arena und starte eine lokale Partie mit Bots."), 16, Muted)];
+    Content->AddSlot().AutoHeight().Padding(0, 0, 0, 18)
+    [
+        SNew(SBox).MinDesiredHeight(166)
+        [
+            SNew(SHorizontalBox)
+            +SHorizontalBox::Slot().FillWidth(1).Padding(0, 0, 8, 0)[ModeCard(false)]
+            +SHorizontalBox::Slot().FillWidth(1).Padding(8, 0, 0, 0)[ModeCard(true)]
+        ]
+    ];
+    Content->AddSlot().AutoHeight().Padding(0, 0, 0, 10)
+    [Button(TEXT("PARTIE STARTEN"), [this]() { return RequestTravel(ETravelAction::Play); }, true)];
+    if (!bFrontEnd)
+    {
+        Content->AddSlot().AutoHeight()
+        [Button(TEXT("ZUM HAUPTMENÜ"), [this]() { return RequestTravel(ETravelAction::MainMenu); })];
+    }
+    return SNew(SScrollBox) + SScrollBox::Slot()[Content];
 }
 
-TSharedRef<SWidget> SVanthexSessionMenu::VolumeRow(const FString& Label,float* Value)
+TSharedRef<SWidget> SVanthexSessionMenu::NetworkPage()
 {
-	return SNew(SVerticalBox)
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)[SNew(SHorizontalBox)
-	+SHorizontalBox::Slot().FillWidth(1)[Text(Label,15)]
-	+SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text_Lambda([Value](){return FText::AsPercent(UVanthexLocalSettings::SafeVolume(*Value));}).ColorAndOpacity(Cyan)]]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,20)[SNew(SSlider).Value_Lambda([Value](){return UVanthexLocalSettings::SafeVolume(*Value);})
-		.OnValueChanged_Lambda([this,Value](float NewValue){*Value=NewValue; if(Controller.IsValid()) UVanthexLocalSettings::Get()->ApplyAudio(Controller->GetWorld());})];
-}
-
-TSharedRef<SWidget> SVanthexSessionMenu::SettingsPage()
-{
-	auto* Settings = UVanthexLocalSettings::Get();
- auto Mutes=SNew(SVerticalBox);
- Mutes->AddSlot().AutoHeight().Padding(0,4,0,10)[Text(TEXT("SPIELER STUMMSCHALTEN (TEXT + VOICE)"),12,Cyan)];
- if(Controller.IsValid() && Controller->GetWorld()->GetGameState())
-  for(const auto& State:Controller->GetWorld()->GetGameState()->PlayerArray)
-   if(State && !State->IsABot() && State!=Controller->PlayerState)
-   {
-    const int32 Id=State->GetPlayerId();
-    const FString Name=UVanthexCommunicationComponent::CleanText(State->GetPlayerName(),32);
-    Mutes->AddSlot().AutoHeight().Padding(0,0,0,8)[SNew(SCheckBox)
-     .IsChecked_Lambda([this,Id](){return Controller.IsValid() && Controller->GetCommunication()->IsMuted(Id)?ECheckBoxState::Checked:ECheckBoxState::Unchecked;})
-     .OnCheckStateChanged_Lambda([this,Id](ECheckBoxState){if(Controller.IsValid()) Controller->GetCommunication()->ToggleMute(Id);})[Text(Name,14)]];
-   }
-	auto QualityButtons=SNew(SHorizontalBox);
-	const TCHAR* Names[]={TEXT("Niedrig"),TEXT("Mittel"),TEXT("Hoch"),TEXT("Episch")};
-	for(int32 I=0; I<4; ++I) QualityButtons->AddSlot().FillWidth(1).Padding(0,0,6,0)
-	[Button(Names[I],[this,I](){Quality=I; Feedback->SetText(FText::FromString(TEXT("Grafik ausgewaehlt. Mit Grafik anwenden bestaetigen."))); return FReply::Handled();})];
-	return SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,18)[Text(TEXT("DEIN SETUP"),27)]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[NumberRow(TEXT("Maus-Empfindlichkeit"),&Settings->MouseSensitivity,.1f,5.f,1.f,.01f)]
- +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Text(TEXT("0,10 - 5,00 | 1,00 = Standard. Wird automatisch gespeichert."),12)]
- +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Button(TEXT("MAUS AUF STANDARD"),[Settings](){Settings->MouseSensitivity=1.f; Settings->Persist(); return FReply::Handled();})]
-	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Gesamtlautstaerke"),&Settings->MasterVolume)]
-	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen & Bewegung"),&Settings->CombatVolume)]
-	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Menue & Kaufhinweise"),&Settings->UIVolume)]
-	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen-Raumreflexionen"),&Settings->RoomVolume)]
- +SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Team-Voice"),&Settings->VoiceVolume)]
- +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[SNew(SCheckBox)
-  .IsChecked_Lambda([Settings](){return Settings->bVoiceEnabled?ECheckBoxState::Checked:ECheckBoxState::Unchecked;})
-  .OnCheckStateChanged_Lambda([Settings](ECheckBoxState State){Settings->bVoiceEnabled=State==ECheckBoxState::Checked;})
-  [Text(TEXT("  Voice aktivieren / V zum Sprechen halten"),15)]]
- +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,20)[Mutes]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,20)[Button(TEXT("UI-TESTTON"),[this](){if(Controller.IsValid()) Controller->GetWeaponAudio()->PlayUI(EVanthexWeaponAudioEvent::BuyPhaseStart); return FReply::Handled();})]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)[SNew(STextBlock).Text_Lambda([this](){return FText::FromString(FString::Printf(TEXT("GRAFIKQUALITAET: %s"), Quality<0?TEXT("Benutzerdefiniert"):Quality==0?TEXT("Niedrig"):Quality==1?TEXT("Mittel"):Quality==2?TEXT("Hoch"):TEXT("Episch")));}).ColorAndOpacity(Cyan)]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,16)[QualityButtons]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,14)[SNew(SCheckBox).IsChecked_Lambda([this](){return bVSync?ECheckBoxState::Checked:ECheckBoxState::Unchecked;})
-		.OnCheckStateChanged_Lambda([this](ECheckBoxState State){bVSync=State==ECheckBoxState::Checked;})[Text(TEXT("  VSync"),15)]]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,14)[SNew(SHorizontalBox)
-	+SHorizontalBox::Slot().FillWidth(1)[Button(TEXT("FPS-LIMIT WECHSELN"),[this](){FrameLimit=FrameLimit==60?120:FrameLimit==120?144:FrameLimit==144?240:FrameLimit==240?0:60; return FReply::Handled();})]
-	+SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14,0)[SNew(STextBlock).Text_Lambda([this](){return FText::FromString(FrameLimit>0?FString::Printf(TEXT("%d FPS"),FrameLimit):TEXT("Unbegrenzt"));}).ColorAndOpacity(Cyan)]]
-	+SVerticalBox::Slot().AutoHeight()[Button(TEXT("GRAFIK ANWENDEN"),[this](){
-		if(auto* Video=GEngine?GEngine->GetGameUserSettings():nullptr) {
-			if(Quality>=0) Video->SetOverallScalabilityLevel(Quality);
-			Video->SetVSyncEnabled(bVSync); Video->SetFrameRateLimit(FrameLimit); Video->ApplyNonResolutionSettings(); Video->SaveSettings();
-			Feedback->SetText(FText::FromString(TEXT("Einstellungen gespeichert. Audio wird sofort uebernommen.")));
-		} return FReply::Handled();},true)]
-	];
+    return SNew(SScrollBox) + SScrollBox::Slot()
+    [
+        SNew(SVerticalBox)
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)[Text(TEXT("Multiplayer"), 30)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+        [
+            SNew(STextBlock)
+            .Font(FCoreStyle::GetDefaultFontStyle("Regular", 15))
+            .ColorAndOpacity(Muted)
+            .Text_Lambda([this]()
+            {
+                return FText::FromString(bCaptureTheFlag ? TEXT("Ausgewählter Modus  /  Capture the Flag") : TEXT("Ausgewählter Modus  /  Core"));
+            })
+        ]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 24)
+        [Button(TEXT("LAN-PARTIE HOSTEN"), [this]() { return RequestTravel(ETravelAction::Host); }, true)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)[Text(TEXT("DIREKT BEITRETEN"), 12, Cyan)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+        [
+            SAssignNew(AddressBox, SEditableTextBox)
+            .Font(FCoreStyle::GetDefaultFontStyle("Regular", 18))
+            .Padding(FMargin(14, 12))
+            .Text(FText::FromString(UVanthexLocalSettings::Get()->LastAddress))
+            .HintText(FText::FromString(TEXT("IP-Adresse oder Hostname")))
+            .OnTextCommitted_Lambda([this](const FText&, ETextCommit::Type Commit)
+            {
+                if (Commit == ETextCommit::OnEnter) Join();
+            })
+        ]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+        [Button(TEXT("VERBINDEN"), [this]() { return Join(); })]
+        +SVerticalBox::Slot().AutoHeight()
+        [Text(TEXT("Der Host muss erreichbar sein. Standardport ist 7777."), 13, Muted)]
+    ];
 }
 
 TSharedRef<SWidget> SVanthexSessionMenu::ControlsPage()
 {
-	auto List=SNew(SVerticalBox);
-	List->AddSlot().AutoHeight().Padding(0,0,0,20)[Text(TEXT("BEWEGUNG. TEAMWORK. CORE."),26)];
+	auto List = SNew(SVerticalBox);
+	auto* Settings = UVanthexLocalSettings::Get();
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 14)[Text(TEXT("Maus"), 22)];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 8)
+	[NumberRow(TEXT("Maus-Empfindlichkeit"), &Settings->MouseSensitivity, .1f, 5.f, 1.f, .01f)];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 14)
+	[Text(TEXT("0,10 bis 5,00. Standard ist 1,00."), 13, Muted)];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 24)
+	[Button(TEXT("MAUS AUF STANDARD"), [Settings]()
+	{
+		Settings->MouseSensitivity = 1.f;
+		Settings->Persist();
+		return FReply::Handled();
+	})];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 14)[Text(TEXT("Tastenbelegung"), 22)];
 	const TCHAR* Keys[]={TEXT("W A S D / MAUS"),TEXT("SHIFT / STRG / LEERTASTE"),TEXT("LMB / RMB / R"),TEXT("1 / 2 / 3 / MAUSRAD"),TEXT("E / G / Q"),TEXT("4 / 5"),TEXT("F / C"),TEXT("B / TAB / ESC")};
 	const TCHAR* Actions[]={TEXT("Bewegen / Umsehen"),TEXT("Sprinten / Ducken / Springen"),TEXT("Feuern / Zielen / Nachladen"),TEXT("Primaer / Pistole / Messer / Wechseln"),TEXT("Core aufnehmen / Ablegen / Werfen"),TEXT("Gadget verwenden"),TEXT("SHIFT / Operator-Faehigkeit (wo verfuegbar)"),TEXT("Kaufmenue / Teamstand / Menue")};
 	for(int32 I=0; I<8; ++I) List->AddSlot().AutoHeight().Padding(0,0,0,2)
@@ -175,38 +225,64 @@ TSharedRef<SWidget> SVanthexSessionMenu::ControlsPage()
 
 void SVanthexSessionMenu::ShowPage(int32 Page)
 {
-	ActivePage=Page; PendingAction=0; Pages->SetActiveWidgetIndex(Page);
+	ActivePage = Page;
+	PendingAction.Reset();
+	Pages->SetActiveWidgetIndex(Page);
 	Feedback->SetText(FText::GetEmpty());
 }
 
-FReply SVanthexSessionMenu::OnPreviewKeyDown(const FGeometry& Geometry,const FKeyEvent& Event)
+FReply SVanthexSessionMenu::OnPreviewKeyDown(const FGeometry& Geometry, const FKeyEvent& Event)
 {
-	if(Event.GetKey()==EKeys::Escape) { Resume.ExecuteIfBound(); return FReply::Handled(); }
-	return SCompoundWidget::OnPreviewKeyDown(Geometry,Event);
+    if (Event.GetKey() != EKeys::Escape)
+    {
+        return SCompoundWidget::OnPreviewKeyDown(Geometry, Event);
+    }
+    if (bFrontEnd)
+    {
+        ShowPage(0);
+        return FReply::Handled().SetUserFocus(AsShared());
+    }
+    Resume.ExecuteIfBound();
+    return FReply::Handled();
 }
 
-FReply SVanthexSessionMenu::RequestTravel(int32 Action)
+FReply SVanthexSessionMenu::RequestTravel(ETravelAction Action)
 {
-	if(PendingAction!=Action) { PendingAction=Action; Feedback->SetText(FText::FromString(TEXT("Die aktuelle Sitzung wird verlassen. Zum Bestaetigen dieselbe Schaltflaeche erneut waehlen."))); return FReply::Handled(); }
-	if(auto* PC=Controller.Get()) { Resume.ExecuteIfBound(); if(Action==3||Action==4) UGameplayStatics::OpenLevel(PC,FName(Action==3?TEXT("/Game/Vanthex/Maps/CrossroadsCTF"):TEXT("/Game/Vanthex/Maps/GridV4"))); else if(Action==1) PC->HostGame(); else PC->LeaveGame(); }
-	return FReply::Handled();
+    if (!bFrontEnd && (!PendingAction.IsSet() || PendingAction.GetValue() != Action))
+    {
+        PendingAction = Action;
+        Feedback->SetText(FText::FromString(TEXT("Die aktuelle Partie endet. Wähle dieselbe Schaltfläche erneut, um fortzufahren.")));
+        return FReply::Handled();
+    }
+    if (auto* PC = Controller.Get())
+    {
+        if (Action == ETravelAction::MainMenu) PC->LeaveGame();
+        else PC->StartGame(bCaptureTheFlag, Action == ETravelAction::Host);
+    }
+    return FReply::Handled();
 }
 
 FReply SVanthexSessionMenu::Join()
 {
-	FString Address,Error;
-	if(!UVanthexLocalSettings::ValidateAddress(AddressBox->GetText().ToString(),Address,Error))
-	{ Feedback->SetText(FText::FromString(Error)); return FReply::Handled(); }
-	UVanthexLocalSettings::Get()->LastAddress=Address; UVanthexLocalSettings::Get()->Persist();
-	if(auto* PC=Controller.Get()) { Resume.ExecuteIfBound(); PC->JoinGame(Address); }
-	return FReply::Handled();
+    FString Address, Error;
+    if (!UVanthexLocalSettings::ValidateAddress(AddressBox->GetText().ToString(), Address, Error))
+    {
+        Feedback->SetText(FText::FromString(Error));
+        return FReply::Handled();
+    }
+    if (auto* PC = Controller.Get())
+    {
+        Feedback->SetText(FText::FromString(TEXT("Verbindung wird aufgebaut …")));
+        PC->JoinGame(Address);
+    }
+    return FReply::Handled();
 }
 
 FText SVanthexSessionMenu::Status() const
 {
 	const auto* PC=Controller.Get();
 	const auto* GS=PC&&PC->GetWorld()?PC->GetWorld()->GetGameState<AVanthexGameState>():nullptr;
-	return FText::FromString(GS?FString::Printf(TEXT("ALPHA %d : %d BRAVO     /     RUNDE %d     /     %02d:%02d"),GS->GetAlphaScore(),GS->GetBravoScore(),GS->GetRoundIndex(),FMath::Max(0,FMath::CeilToInt(GS->GetTimeRemaining()))/60,FMath::Max(0,FMath::CeilToInt(GS->GetTimeRemaining()))%60):TEXT("SITZUNG WIRD VORBEREITET"));
+	return FText::FromString(GS?FString::Printf(TEXT("ALPHA %d : %d BRAVO     /     RUNDE %d     /     %02d:%02d"),GS->GetAlphaScore(),GS->GetBravoScore(),GS->GetRoundIndex(),FMath::Max(0,FMath::CeilToInt(GS->GetTimeRemaining()))/60,FMath::Max(0,FMath::CeilToInt(GS->GetTimeRemaining()))%60):TEXT("LOKAL SPIELEN  /  LAN  /  EINSTELLUNGEN"));
 }
 
 namespace

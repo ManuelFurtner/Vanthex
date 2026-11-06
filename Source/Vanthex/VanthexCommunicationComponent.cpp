@@ -81,6 +81,11 @@ void UVanthexCommunicationComponent::BeginPlay()
 {
  Super::BeginPlay();
  auto* PC=Cast<AVanthexPlayerController>(GetOwner());
+ if(PC && PC->IsFrontEnd())
+ {
+  SetComponentTickEnabled(false);
+  return;
+ }
  if(PC && PC->IsLocalController() && GetWorld()->GetGameViewport())
  {
   Overlay=SNew(SVanthexChat).Owner(this);

@@ -1,5 +1,3 @@
-Aktuelle Karte: FOUNDRY, als .umap gespeichert und als Startkarte eingestellt. Details in FOUNDRY.md.
-
 # VANTHEX prototype controls and verification
 
 The November 2026 implementation adds direct-IP listen-server play, server-owned
@@ -10,8 +8,10 @@ the first ARC ability. This is a prototype slice, not matchmaking or a finished 
 
 Open Vanthex.uproject with the installed Unreal Engine 5.8 and play, or launch
 `H:\epic\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe H:\Vanthex\Vanthex.uproject -game`.
-Escape opens the session menu. Host creates a listen server; Join accepts the
-host's IP and optional port (default 7777). Direct internet play needs a reachable
+VANTHEX opens the main menu. Select Core or Capture the Flag under Spielen,
+then start a local match. Einstellungen opens video, audio, controls and crosshair
+options. Netzwerk hosts the selected mode or joins by IP and optional port
+(default 7777). Escape opens the session menu during a match. Direct internet play needs a reachable
 host; no NAT traversal, account service or public matchmaking is implemented.
 Joining players replace bots and inherit their current health and round state.
 Disconnected players are replaced by bots. Leaving the host ends that session.

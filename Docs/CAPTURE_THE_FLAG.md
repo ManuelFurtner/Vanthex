@@ -2,7 +2,7 @@
 
 ## Spielen
 
-Im Spielmenue unter Spielen **CAPTURE THE FLAG / 5 GEGEN 5** zweimal waehlen (Sitzungswechsel bestaetigen). Die Karte liegt unter `/Game/Vanthex/Maps/CrossroadsCTF`. Fuer LAN die Karte zuerst auswaehlen und dann LAN-Sitzung hosten; Mitspieler treten per Host-Adresse bei. Freie Plaetze werden von Bots besetzt. Der Core-Modus bleibt ueber die separate GRID-V4-Auswahl erreichbar.
+VANTHEX startet im Hauptmenue. Unter **Spielen** die Karte **Capture the Flag** waehlen und **Partie starten** klicken. Fuer LAN den Modus waehlen, zu **Netzwerk** wechseln und **LAN-Partie hosten** waehlen. Mitspieler verbinden sich dort ueber die Host-Adresse. Freie Plaetze werden mit Bots besetzt.
 
 ## Regeln
 
