@@ -6,8 +6,10 @@
 #include "VanthexGameState.h"
 #include "VanthexBotController.h"
 #include "VanthexNavigation.h"
+#include "VanthexTestArena.h"
 #include "HealthComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/PlayerStart.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
 #include "Components/DirectionalLightComponent.h"
@@ -83,6 +85,11 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
   Check(BF->TryTouch(Ally)&&BF->GetCarrier()==Ally,TEXT("teammate takes over the dropped flag"));
   Ally->SetActorLocation(AF->Base()+FVector(0,0,100));BF->Tick(0);
   Check(Mode->AlphaScore==1&&BF->IsHome()&&Mode->IsRoundActive(),TEXT("capture adds point and continues match"));
+  const int32 RespawnSlot=A->GetPlayerState<AVanthexPlayerState>()->GetSpawnSlot();
+  if(auto* AssignedStart=Mode->Arena->GetTeamSpawn(EVanthexTeam::Alpha,RespawnSlot))
+   Ally->SetActorLocation(AssignedStart->GetActorLocation());
+  else
+   Check(false,TEXT("assigned team start exists for respawn occupancy test"));
   ++Step;return;
  }
  case 1:
@@ -91,6 +98,8 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
  case 2:
   if(Mode->GetWorld()->GetTimeSeconds()-DiedAt<8.3f)return;
   Check(!A->GetHealthComponent()->IsDead()&&A->GetPlayerState<AVanthexPlayerState>()->IsAlive()&&A->GetActorLocation().Y<-3500,TEXT("automatic alive respawn at own base after eight seconds"));
+  Check(FVector::DistSquared2D(A->GetActorLocation(),Ally->GetActorLocation())>FMath::Square(84.0),
+    TEXT("respawn avoids assigned start occupied by a live ally"));
   Check(A->GetPlayerState<AVanthexPlayerState>()->GetEconomy().PrimaryWeapon==TEXT("M4"),TEXT("respawn restores playable loadout"));
   Ally->SetActorLocation(FVector(1500,1000,100));
   B->SetActorLocation(AF->Base()+FVector(0,0,100));Check(AF->TryTouch(B),TEXT("opposing team can steal own flag"));

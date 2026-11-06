@@ -509,6 +509,7 @@ void AHitscanWeapon::FireShot()
   Request.InstigatorActor=OwnerPawn; Request.InstigatorController=Controller;
   Request.Damage=Profile.DamageAtDistance(Hit.Distance)*(Head?HeadshotMultiplier:1.f);
   Request.bHeadshot=Head; Request.DamageKind=EVanthexDamageKind::Bullet; Request.Hit=Hit;
+  Request.WeaponId=GetWeaponId();
   Request.bDeferHitMarker=true;
   const float PreviousHealth=TargetHealth->GetHealth();
   TargetHealth->ApplyDamage(Request);

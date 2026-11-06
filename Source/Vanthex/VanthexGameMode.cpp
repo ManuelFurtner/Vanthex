@@ -20,6 +20,7 @@
 #include "HealthComponent.h"
 #include "HitscanWeapon.h"
 #include "UnrealClient.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -556,6 +557,7 @@ void AVanthexGameMode::PublishMatch()
 
 void AVanthexGameMode::RestartMatch()
 {
+	ResetPlaytestReport();
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(FlowTimer);
@@ -624,6 +626,7 @@ void AVanthexGameMode::ActivateRound()
 
 	Phase = EVanthexRoundPhase::RoundActive;
 	for (AVanthexCharacter* Combatant : Combatants) if (Combatant) {
+		RecordPlaytestSpawn(Combatant);
 		Combatant->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		// Keep the weapon selected during preparation when combat begins.
 		Combatant->SyncEconomyLoadout(true);
@@ -649,6 +652,7 @@ void AVanthexGameMode::TickRoundClock()
 		return;
 	}
 
+ SamplePlaytestActivity();
  if(IsCTF()) TickCTF(); else UpdateExtraction(0.1f);
 	if (bEliminationDeferred) EvaluateElimination();
 	if (Phase != EVanthexRoundPhase::RoundActive)
@@ -772,6 +776,7 @@ void AVanthexGameMode::EnterMatchEnded()
 		MatchWinner = AlphaScore >= BravoScore ? EVanthexTeam::Alpha : EVanthexTeam::Bravo;
 	}
 	Phase = EVanthexRoundPhase::MatchEnded;
+	SavePlaytestReport();
 	TimeRemaining = MatchRestartDelay;
 	PublishMatch();
 	FlowStep = 5;
@@ -2216,20 +2221,82 @@ void AVanthexGameMode::CaptureFlag(EVanthexTeam Team)
  Enemy->ReturnHome();PublishMatch();
 }
 
-void AVanthexGameMode::RespawnCTF(AVanthexCharacter* Pawn)
+bool AVanthexGameMode::RespawnCTF(AVanthexCharacter* Pawn)
 {
- if(!Pawn||!Arena) return;
- auto* State=GetVanthexPlayerState(Pawn);
- auto* Start=State?Arena->GetTeamSpawn(State->GetTeam(),State->GetSpawnSlot()):nullptr;
- if(!Start) return;
- State->GiveCTFLoadout(); State->SetRespawnTime(0);
+ UWorld* World = GetWorld();
+ auto* State = Pawn ? GetVanthexPlayerState(Pawn) : nullptr;
+ if(!World || !Arena || !State || State->GetTeam() == EVanthexTeam::None) return false;
+
+ const EVanthexTeam Team = State->GetTeam();
+ APlayerStart* Start = Arena->GetTeamSpawn(Team, State->GetSpawnSlot());
+ if(IsRoundActive())
+ {
+  // Use the standing capsule since the eliminated pawn may have died crouched.
+  const auto* Capsule = Pawn->GetClass()->GetDefaultObject<AVanthexCharacter>()->GetCapsuleComponent();
+  const FCollisionShape Shape = Capsule->GetCollisionShape();
+  const FCollisionQueryParams Query(SCENE_QUERY_STAT(CTFRespawn), false, Pawn);
+  constexpr double DangerDistanceSquared = 1200.0 * 1200.0;
+  APlayerStart* SaferStart = nullptr;
+  double BestEnemyDistanceSquared = -1.0;
+  for(int32 Slot = 0; Slot < TeamSize(); ++Slot)
+  {
+   auto* Candidate = Arena->GetTeamSpawn(Team, Slot);
+   if(!Candidate) continue;
+
+   const FVector Position = Candidate->GetActorLocation();
+   if(World->OverlapBlockingTestByProfile(Position, Candidate->GetActorQuat(),
+      Capsule->GetCollisionProfileName(), Shape, Query)) continue;
+
+   double NearestEnemyDistanceSquared = TNumericLimits<double>::Max();
+   for(const AVanthexCharacter* Other : Combatants)
+   {
+    if(!IsValid(Other) || Other == Pawn || Other->GetHealthComponent()->IsDead()) continue;
+    const auto* OtherState = GetVanthexPlayerState(Other);
+    if(!OtherState || OtherState->GetTeam() == Team || OtherState->GetTeam() == EVanthexTeam::None) continue;
+    NearestEnemyDistanceSquared = FMath::Min(NearestEnemyDistanceSquared,
+      FVector::DistSquared(Position, Other->GetActorLocation()));
+   }
+
+   if(Candidate == Start && NearestEnemyDistanceSquared >= DangerDistanceSquared)
+   {
+    SaferStart = Candidate;
+    break;
+   }
+   if(NearestEnemyDistanceSquared > BestEnemyDistanceSquared
+     || (NearestEnemyDistanceSquared == BestEnemyDistanceSquared && Candidate == Start))
+   {
+    SaferStart = Candidate;
+    BestEnemyDistanceSquared = NearestEnemyDistanceSquared;
+   }
+  }
+  Start = SaferStart;
+ }
+ if(!Start) return false;
+
+ State->GiveCTFLoadout();
+ State->SetRespawnTime(0);
  Pawn->PrepareForRound(Start->GetActorTransform());
+ RecordPlaytestSpawn(Pawn);
  Pawn->SyncEconomyLoadout(false);
+ return true;
 }
+
 void AVanthexGameMode::TickCTF()
 {
- for(auto It=CTFRespawns.CreateIterator();It;++It) if(!It.Key().IsValid()||GetWorld()->GetTimeSeconds()>=It.Value()) {
-  if(auto* Pawn=It.Key().Get()) RespawnCTF(Pawn);
-  It.RemoveCurrent();
+ const float Now = GetWorld()->GetTimeSeconds();
+ for(auto It = CTFRespawns.CreateIterator(); It; ++It)
+ {
+  auto* Pawn = It.Key().Get();
+  if(!Pawn)
+  {
+   It.RemoveCurrent();
+   continue;
+  }
+  if(Now < It.Value()) continue;
+
+  if(RespawnCTF(Pawn))
+   It.RemoveCurrent();
+  else
+   It.Value() = Now + .25f;
  }
 }

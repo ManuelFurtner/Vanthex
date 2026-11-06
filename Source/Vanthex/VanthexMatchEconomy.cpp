@@ -104,6 +104,7 @@ void AVanthexGameMode::RecordDamage(AVanthexCharacter* Victim, const FVanthexDam
  auto* AttackerState = GetVanthexPlayerState(Request.InstigatorController ? static_cast<AActor*>(Request.InstigatorController) : Request.InstigatorActor);
  const int32 Attacker = EconomySlot(AttackerState);
  const bool Enemy = Request.DamageKind != EVanthexDamageKind::Environment && VictimState && Attacker >= 0 && AttackerState != VictimState && AttackerState->GetTeam() != VictimState->GetTeam();
+ RecordPlaytestDamage(Victim, Request, AppliedHP, bKilled, Enemy);
  const double Now = GetWorld()->GetTimeSeconds();
  auto& History = DamageHistory.FindOrAdd(Victim);
  History.RemoveAll([Now](const FDamageCredit& Hit) { return Now - Hit.Time > 8.; });
