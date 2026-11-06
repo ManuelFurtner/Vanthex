@@ -1,5 +1,6 @@
 #include "VanthexEquipmentComponent.h"
 #include "VanthexWeaponPresentation.h"
+#include "VanthexWeaponPickup.h"
 
 #include "VanthexCharacter.h"
 #include "VanthexPlayerState.h"
@@ -143,13 +144,14 @@ void UVanthexEquipmentComponent::SyncLoadout(FName PrimaryId,FName SidearmId,boo
  const auto* Primary=VanthexWeapons::Find(PrimaryId);
  const auto* Sidearm=VanthexWeapons::Find(SidearmId);
  if(!Primary||Primary->bSidearm) PrimaryId=NAME_None;
- if(!Sidearm||!Sidearm->bSidearm) SidearmId=TEXT("Pistol");
+ if(!SidearmId.IsNone()&&(!Sidearm||!Sidearm->bSidearm)) SidearmId=TEXT("Pistol");
+ if(Refill) { bDeathWeaponsDropped=false; NextTransferTime=0.f; }
  auto Update=[Refill](FSlotAmmo& Saved,FName Id) {
   const auto* Profile=VanthexWeapons::Find(Id);
   if(Saved.Id!=Id||Refill) { Saved.Id=Id; Saved.Magazine=Profile?Profile->MagazineSize:0; Saved.Reserve=Profile?Profile->ReserveAmmo:0; }
  };
  Update(PrimaryAmmo,PrimaryId); Update(SidearmAmmo,SidearmId);
- if(!HasSlot(State.Selected)) { State=FVanthexEquipmentState(); State.Previous=State.Selected=EVanthexWeaponSlot::Pistol; }
+ if(!HasSlot(State.Selected)) { State=FVanthexEquipmentState(); State.Previous=State.Selected=HasSlot(EVanthexWeaponSlot::Pistol)?EVanthexWeaponSlot::Pistol:EVanthexWeaponSlot::Knife; }
  ApplySelectedWeapon();
 }
 void UVanthexEquipmentComponent::SelectRoundWeapon()
@@ -159,7 +161,7 @@ void UVanthexEquipmentComponent::SelectRoundWeapon()
  if(GetWorld()) { GetWorld()->GetTimerManager().ClearTimer(SwitchTimer); GetWorld()->GetTimerManager().ClearTimer(StrikeTimer); }
  if(auto* W=Character()?Character()->GetWeapon():nullptr) { W->StopFire(); W->CancelReload(); }
  State=FVanthexEquipmentState();
- State.Previous=State.Selected=HasSlot(EVanthexWeaponSlot::Rifle)?EVanthexWeaponSlot::Rifle:EVanthexWeaponSlot::Pistol;
+ State.Previous=State.Selected=HasSlot(EVanthexWeaponSlot::Rifle)?EVanthexWeaponSlot::Rifle:HasSlot(EVanthexWeaponSlot::Pistol)?EVanthexWeaponSlot::Pistol:EVanthexWeaponSlot::Knife;
  ApplySelectedWeapon(); GetOwner()->ForceNetUpdate(); UpdatePresentation();
  if(CanAct()) UVanthexWeaponAudioComponent::DispatchEvent(GetOwner(),GetSlotWeaponId(State.Selected),EVanthexWeaponAudioEvent::Draw,++AudioActionSequence);
 }
@@ -184,6 +186,75 @@ void UVanthexEquipmentComponent::Select(EVanthexWeaponSlot Slot)
 }
 
 void UVanthexEquipmentComponent::ServerSelect_Implementation(EVanthexWeaponSlot Slot) { Select(Slot); }
+
+void UVanthexEquipmentComponent::PublishCarriedWeapons()
+{
+ if (auto* PS=Character()->GetPlayerState<AVanthexPlayerState>()) PS->SetCarriedWeapons(PrimaryAmmo.Id,SidearmAmmo.Id);
+ GetOwner()->ForceNetUpdate();
+}
+
+void UVanthexEquipmentComponent::FinishInventoryTransfer(EVanthexWeaponSlot Slot)
+{
+ auto* C=Character();
+ C->SetAiming(false);
+ if (auto* W=C->GetWeapon()) { W->StopFire(); W->CancelReload(); }
+ GetWorld()->GetTimerManager().ClearTimer(SwitchTimer);
+ GetWorld()->GetTimerManager().ClearTimer(StrikeTimer);
+ State=FVanthexEquipmentState();
+ State.Previous=State.Selected=Slot;
+ State.SwitchStart=ServerTime();
+ State.SwitchDuration=FMath::Max(.1f,SwitchDuration);
+ NextTransferTime=State.SwitchStart+State.SwitchDuration;
+ ApplySelectedWeapon();
+ PublishCarriedWeapons();
+ UpdatePresentation();
+}
+
+bool UVanthexEquipmentComponent::DropSelectedWeapon()
+{
+ if (!CanSelect() || IsSwitching() || IsSwinging() || ServerTime()<NextTransferTime || State.Selected==EVanthexWeaponSlot::Knife || !HasSlot(State.Selected)) return false;
+ CaptureAmmo();
+ FSlotAmmo& Saved=State.Selected==EVanthexWeaponSlot::Rifle?PrimaryAmmo:SidearmAmmo;
+ FVanthexDroppedWeapon Data; Data.Id=Saved.Id; Data.Magazine=Saved.Magazine; Data.Reserve=Saved.Reserve;
+ if (!AVanthexWeaponPickup::SpawnDrop(Character(),Data,true)) return false;
+ Saved=FSlotAmmo();
+ FinishInventoryTransfer(HasSlot(EVanthexWeaponSlot::Rifle)?EVanthexWeaponSlot::Rifle:HasSlot(EVanthexWeaponSlot::Pistol)?EVanthexWeaponSlot::Pistol:EVanthexWeaponSlot::Knife);
+ return true;
+}
+
+void UVanthexEquipmentComponent::DropWeaponsOnDeath()
+{
+ auto* C=Character();
+ if (!C || !C->HasAuthority() || !C->GetHealthComponent()->IsDead() || bDeathWeaponsDropped) return;
+ bDeathWeaponsDropped=true;
+ // Snapshot before death clears the economy and before changing selection.
+ CaptureAmmo();
+ for (FSlotAmmo* Saved : {&PrimaryAmmo,&SidearmAmmo}) {
+  if (!Saved->Id.IsNone()) {
+   FVanthexDroppedWeapon Data; Data.Id=Saved->Id; Data.Magazine=Saved->Magazine; Data.Reserve=Saved->Reserve;
+   AVanthexWeaponPickup::SpawnDrop(C,Data,false);
+   *Saved=FSlotAmmo();
+  }
+ }
+ FinishInventoryTransfer(EVanthexWeaponSlot::Knife);
+}
+
+bool UVanthexEquipmentComponent::TakeDroppedWeapon(const FVanthexDroppedWeapon& Data)
+{
+ const auto* Profile=VanthexWeapons::Find(Data.Id);
+ if (!CanSelect() || IsSwitching() || IsSwinging() || ServerTime()<NextTransferTime || !Profile || Data.Id==TEXT("LegacyRifle")
+  || Data.Magazine<0 || Data.Magazine>Profile->MagazineSize || Data.Reserve<0 || Data.Reserve>Profile->ReserveAmmo) return false;
+ CaptureAmmo();
+ FSlotAmmo& Saved=Profile->bSidearm?SidearmAmmo:PrimaryAmmo;
+ if (!Saved.Id.IsNone()) {
+  FVanthexDroppedWeapon Previous; Previous.Id=Saved.Id; Previous.Magazine=Saved.Magazine; Previous.Reserve=Saved.Reserve;
+  if (!AVanthexWeaponPickup::SpawnDrop(Character(),Previous,false)) return false;
+ }
+ Saved.Id=Data.Id; Saved.Magazine=Data.Magazine; Saved.Reserve=Data.Reserve;
+ FinishInventoryTransfer(Profile->bSidearm?EVanthexWeaponSlot::Pistol:EVanthexWeaponSlot::Rifle);
+ UVanthexWeaponAudioComponent::DispatchEvent(GetOwner(),Data.Id,EVanthexWeaponAudioEvent::Draw,++AudioActionSequence);
+ return true;
+}
 void UVanthexEquipmentComponent::Attack()
 {
 	if (!GetOwner()->HasAuthority()) { ServerAttack(); return; }

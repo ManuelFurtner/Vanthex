@@ -1,5 +1,6 @@
 #include "VanthexCharacter.h"
 #include "VanthexLocalSettings.h"
+#include "VanthexWeaponPickup.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexGadgetComponent.h"
 #include "VanthexWeaponAudioComponent.h"
@@ -278,6 +279,7 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
  BindGameplayKey(Action::PreviousWeapon, &AVanthexCharacter::PreviousWeapon);
  BindGameplayKey(Action::GadgetOne, &AVanthexCharacter::UseGadgetOne);
  BindGameplayKey(Action::GadgetTwo, &AVanthexCharacter::UseGadgetTwo);
+ BindGameplayKey(Action::DropWeapon, &AVanthexCharacter::DropSelectedWeapon);
 
 	if (!MappingContext)
 	{
@@ -320,7 +322,7 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Canceled,this,&AVanthexCharacter::StopAimingInput);
 	EnhancedInput->BindAction(ReloadAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartReload);
 	EnhancedInput->BindAction(RestartAction, ETriggerEvent::Started, this, &AVanthexCharacter::RequestRestart);
-	EnhancedInput->BindAction(PickupAction, ETriggerEvent::Started, this, &AVanthexCharacter::TryPickupCore);
+	EnhancedInput->BindAction(PickupAction, ETriggerEvent::Started, this, &AVanthexCharacter::TryPickupNearby);
 	EnhancedInput->BindAction(DropAction, ETriggerEvent::Started, this, &AVanthexCharacter::DropCarriedCore);
 	EnhancedInput->BindAction(ThrowAction, ETriggerEvent::Started, this, &AVanthexCharacter::ThrowCarriedCore);
 }
@@ -613,6 +615,27 @@ void AVanthexCharacter::TryPickupCore()
 	}
 }
 
+void AVanthexCharacter::TryPickupNearby()
+{
+ if (!HasAuthority()) { ServerAction(7,false); return; }
+ auto* Mode=GetWorld()->GetAuthGameMode<AVanthexGameMode>();
+ if (!Mode || (!Mode->IsBuyPhase()&&!Mode->IsRoundActive()) || Health->IsDead()) return;
+ // Keep the existing objective interaction; a weapon never steals a Core pickup.
+ if (Mode->IsRoundActive()) if (auto* Core=Mode->GetCore()) if (Core->TryPickup(this)) { Mode->RefreshCoreReadout(); return; }
+ if (auto* Pickup=AVanthexWeaponPickup::FindFor(this)) Pickup->TryPickup(this);
+}
+
+void AVanthexCharacter::DropSelectedWeapon()
+{
+ if (!HasAuthority())
+ {
+  if (IsLocallyControlled()) PrepareWeaponSelection();
+  ServerAction(8, false);
+  return;
+ }
+ if (Equipment) Equipment->DropSelectedWeapon();
+}
+
 void AVanthexCharacter::DropCarriedCore()
 {
  if(!CanPerformRoundActions()) return;
@@ -735,7 +758,7 @@ void AVanthexCharacter::SetTeamAppearance(EVanthexTeam Team)
 void AVanthexCharacter::HandleDeath(AActor* /*DeadActor*/)
 {
  SetAiming(false);
-	if (Equipment) Equipment->ResetEquipment();
+	if (Equipment) Equipment->DropWeaponsOnDeath();
 	StopFire();
 	if (Weapon) { Weapon->CancelReload(); }
 	GetCharacterMovement()->DisableMovement();
@@ -778,7 +801,7 @@ void AVanthexCharacter::ServerStartPredictedFire_Implementation(uint32 Burst)
 }
 
 void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled) {
- switch(Action) { case 0: StartFire(); break; case 1: StopFire(); break; case 2: StartReload(); break; case 3: TryPickupCore(); break; case 4: DropCarriedCore(); break; case 5: ThrowCarriedCore(); break; case 6: SetSprinting(bEnabled); break; default: break; }
+ switch(Action) { case 0: StartFire(); break; case 1: StopFire(); break; case 2: StartReload(); break; case 3: TryPickupCore(); break; case 4: DropCarriedCore(); break; case 5: ThrowCarriedCore(); break; case 6: SetSprinting(bEnabled); break; case 7: TryPickupNearby(); break; case 8: DropSelectedWeapon(); break; default: break; }
 }
 
 

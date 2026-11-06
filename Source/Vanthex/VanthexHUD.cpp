@@ -1,4 +1,5 @@
 #include "VanthexHUD.h"
+#include "VanthexWeaponPickup.h"
 #include "VanthexLocalSettings.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexGadgetComponent.h"
@@ -320,6 +321,7 @@ void AVanthexHUD::DrawHUD()
 
  // One contextual prompt at a time, including a progress bar for power hacking.
  FString Prompt;float Interaction=-1.f;
+ bool bCorePickupPrompt = false;
  if(Character&&!bDead){
   float Nearest=300.f;
   for(TActorIterator<AVanthexShiftDevice> It(GetWorld());It;++It){
@@ -334,8 +336,32 @@ void AVanthexHUD::DrawHUD()
   }
   if(Prompt.IsEmpty()){
    if(Character->IsCarryingCore())Prompt=FString::Printf(TEXT("%s  ABLEGEN     %s  WERFEN"), *KeyName(Action::Drop), *KeyName(Action::Throw));
-   else for(TActorIterator<AVanthexCore> It(GetWorld());It;++It)if(It->GetCoreState()==EVanthexCoreState::AtRest&&FVector::Dist(Character->GetActorLocation(),It->GetActorLocation())<180){Prompt=FString::Printf(TEXT("%s  CORE AUFNEHMEN"), *KeyName(Action::Pickup));break;}
+   else if (Match && Match->GetPhase() == EVanthexRoundPhase::RoundActive)
+   {
+    for (TActorIterator<AVanthexCore> It(GetWorld()); It; ++It)
+    {
+     if (It->GetCoreState() != EVanthexCoreState::AtRest || It->GetCarrier() ||
+         FVector::DistSquared(Character->GetActorLocation(), It->GetActorLocation()) > FMath::Square(It->GetPickupRadius())) continue;
+     bCorePickupPrompt = true;
+     Prompt = FString::Printf(TEXT("%s  CORE AUFNEHMEN"), *KeyName(Action::Pickup));
+     break;
+    }
+   }
   }
+ }
+ if(Character&&!bDead&&Match&&(Buy||Match->GetPhase()==EVanthexRoundPhase::RoundActive)) {
+  if (!bCorePickupPrompt)
+  {
+   if (const auto* Pickup = AVanthexWeaponPickup::FindFor(Character))
+   {
+    const auto& Data = Pickup->GetWeaponData();
+    Prompt = FString::Printf(TEXT("%s  %s AUFHEBEN / TAUSCHEN  [%d / %d]"),
+     *KeyName(Action::Pickup), *Data.Id.ToString(), Data.Magazine, Data.Reserve);
+    Interaction = -1.f;
+   }
+  }
+  if (Equipment && Equipment->CanUseRifle() && LocalSettings->GetGameplayKey(Action::DropWeapon).IsValid())
+   Text(FString::Printf(TEXT("%s  WAFFE WEGWERFEN"), *KeyName(Action::DropWeapon)), CX, H-122, 10, Muted, true);
  }
  if(!Prompt.IsEmpty()){
   Rect(CX-195,H*.5f+64,390,Interaction>=0?44:30,Ink);

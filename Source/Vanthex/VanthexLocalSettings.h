@@ -11,7 +11,7 @@ enum class EVanthexGameplayAction : uint8
 {
  Forward, Back, Left, Right, Jump, Sprint, Crouch, Fire, Aim, Reload,
  Pickup, Drop, Throw, Interact, Operator, Primary, Sidearm, Knife,
- NextWeapon, PreviousWeapon, GadgetOne, GadgetTwo
+ NextWeapon, PreviousWeapon, GadgetOne, GadgetTwo, DropWeapon
 };
 
 struct FVanthexGameplayBinding
@@ -58,6 +58,7 @@ public:
 	static bool ValidateAddress(const FString& Input, FString& Address, FString& Error);
 
 private:
+ friend class FVanthexMenuControlsSettingsTest;
  UPROPERTY(Config) TMap<FName, FName> GameplayKeyOverrides;
  bool bGameplayKeysValidated = false;
  void ValidateGameplayKeys();

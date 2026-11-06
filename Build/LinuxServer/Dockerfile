@@ -20,7 +20,7 @@ RUN --mount=type=cache,id=vanthex-linux-intermediate,target=/tmp/project/Interme
     -project=/tmp/project/Vanthex.uproject -nop4 -utf8output -unattended \
     -build -cook -stage -pak -iostore -archive -nodebuginfo \
     -server -noclient -platform=Linux -serverplatform=Linux -serverconfig=Development \
-    -map=/Game/Vanthex/Maps/GridV4 -archivedirectory=/tmp/Packaged \
+    -map=/Game/Vanthex/Maps/GridV4+/Game/Vanthex/Maps/CrossroadsCTF -archivedirectory=/tmp/Packaged \
     -ddc=InstalledNoZenLocalFallback \
     '-AdditionalCookerOptions=-SkipZenStore -DDC=InstalledNoZenLocalFallback -LocalDataCachePath=/home/ue4/ddc'
 

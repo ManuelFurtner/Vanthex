@@ -43,6 +43,7 @@ bool FVanthexMenuControlsSettingsTest::RunTest(const FString& Parameters)
  Settings->ResetGameplayKeys();
  TestTrue(TEXT("Jump defaults to Space"), Settings->GetGameplayKey(Action::Jump) == EKeys::SpaceBar);
  TestTrue(TEXT("Aim defaults to right mouse"), Settings->GetGameplayKey(Action::Aim) == EKeys::RightMouseButton);
+ TestTrue(TEXT("Weapon drop defaults to X"), Settings->GetGameplayKey(Action::DropWeapon) == EKeys::X);
 
  FText Error;
  TestFalse(TEXT("Existing movement binding is a conflict"), Settings->TrySetGameplayKey(Action::Jump, EKeys::W, Error));
@@ -83,6 +84,17 @@ bool FVanthexMenuControlsSettingsTest::RunTest(const FString& Parameters)
  Reloaded->ResetGameplayKeys();
  TestTrue(TEXT("Reset restores jump and reload defaults"), Reloaded->GetGameplayKey(Action::Jump) == EKeys::SpaceBar &&
   Reloaded->GetGameplayKey(Action::Reload) == EKeys::R);
+ // Older saves could assign X before weapon drop was added.
+ Reloaded->GameplayKeyOverrides.Add(TEXT("Jump"), EKeys::X.GetFName());
+ Reloaded->GameplayKeyOverrides.Add(TEXT("Aim"), EKeys::J.GetFName());
+ Reloaded->ValidateGameplayKeys();
+ TestTrue(TEXT("Old X jump and unrelated aim bindings survive migration"),
+  Reloaded->GetGameplayKey(Action::Jump) == EKeys::X && Reloaded->GetGameplayKey(Action::Aim) == EKeys::J);
+ const FKey DropKey = Reloaded->GetGameplayKey(Action::DropWeapon);
+ TestTrue(TEXT("Weapon drop migrates to a free key"), DropKey.IsValid() && DropKey != EKeys::X && DropKey != EKeys::J);
+ TestFalse(TEXT("Migrated weapon drop key has normal conflict protection"), Reloaded->TrySetGameplayKey(Action::Reload, DropKey, Error));
+ Reloaded->ResetGameplayKeys();
+ TestTrue(TEXT("Reset restores the X weapon drop default"), Reloaded->GetGameplayKey(Action::DropWeapon) == EKeys::X);
  Reloaded->ADSMouseSensitivity = std::numeric_limits<float>::quiet_NaN();
  TestEqual(TEXT("Invalid ADS factor falls back to normal sensitivity"), Reloaded->GetMouseSensitivity(1.f), 2.f);
  return true;

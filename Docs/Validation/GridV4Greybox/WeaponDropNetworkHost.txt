@@ -1,0 +1,1 @@
+PASS WeaponDropNetwork host: owner RPC, replicated pickup, exact ammo, no duplicate

@@ -1,6 +1,7 @@
 #include "VanthexGameMode.h"
 #include "VanthexMapLayout.h"
 #include "VanthexFlag.h"
+#include "VanthexWeaponPickup.h"
 #include "VanthexGadgetActor.h"
 #include "VanthexGadgetComponent.h"
 
@@ -174,6 +175,9 @@ void AVanthexGameMode::BeginPlay()
  if(FParse::Param(FCommandLine::Get(),TEXT("CTFTest"))) { FTimerHandle Test; GetWorldTimerManager().SetTimer(Test,FTimerDelegate::CreateWeakLambda(this,[this](){extern void VanthexRunCTFTest(AVanthexGameMode*); VanthexRunCTFTest(this);}),.1f,true,2.f); }
 	Super::BeginPlay();
 #if !UE_BUILD_SHIPPING
+ if (FParse::Param(FCommandLine::Get(), TEXT("WeaponDropTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer, FTimerDelegate::CreateWeakLambda(this, [this]() { extern void VanthexRunWeaponDropTest(AVanthexGameMode*); VanthexRunWeaponDropTest(this); }), .05f, true, 1.f);
+ }
  if (FParse::Param(FCommandLine::Get(), TEXT("RoundCycleTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer, FTimerDelegate::CreateWeakLambda(this, [this]() { extern void VanthexRunRoundCycleTest(AVanthexGameMode*); VanthexRunRoundCycleTest(this); }), .05f, true, 1.f);
  }
@@ -593,6 +597,7 @@ void AVanthexGameMode::BeginRound()
 	}
 
 	++RoundIndex;
+ AVanthexWeaponPickup::ClearForRound(GetWorld());
 	DamageHistory.Reset(); RewardedDeaths.Reset(); ProcessedThrows.Reset();
 	PaidPasses.Reset(); PaidPassPairs.Reset(); PaidIntercepts.Reset(); AlphaPasses = BravoPasses = 0;
 	RoundWinner = EVanthexTeam::None;
@@ -1583,7 +1588,7 @@ void AVanthexGameMode::AdvanceCoreSelfTest()
 		const float HealthBefore = TargetHealth->GetHealth();
 		Weapon->FireShot();
 		const bool bShot = FMath::IsNearlyEqual(TargetHealth->GetLastDamage(), Weapon->GetBodyDamage(), 0.1f) && TargetHealth->GetHealth() < HealthBefore && !TargetHealth->WasLastHitHeadshot();
-		const bool bMove = FMath::IsNearlyEqual(Movement->MaxWalkSpeed, 600.f, 1.f) && Weapon->GetMagazineSize() == 30;
+		const bool bMove = FMath::IsNearlyEqual(Movement->MaxWalkSpeed, 510.f, 1.f) && Weapon->GetMagazineSize() == 30;
 		if (bShot && bMove)
 		{
 			Pass(TEXT("M1_REGRESSION"), TEXT("walk 600 body shot 40"), EVanthexCoreTest::M2Regression);
@@ -1663,7 +1668,7 @@ void AVanthexGameMode::AdvanceSelfTest()
 		}
 		Character->SetSprinting(true);
 		const float Speed = Character->GetCharacterMovement()->MaxWalkSpeed;
-		SelfTestExpect(FMath::IsNearlyEqual(Speed, 900.f, 0.1f), TEXT("sprint"), FString::Printf(TEXT("speed %.1f"), Speed));
+		SelfTestExpect(FMath::IsNearlyEqual(Speed, 765.f, 0.1f), TEXT("sprint"), FString::Printf(TEXT("speed %.1f"), Speed));
 		Character->SetSprinting(false);
 		Character->SetCrouching(true);
 		SelfTestTicks = 0;

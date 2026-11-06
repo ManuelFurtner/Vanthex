@@ -357,9 +357,10 @@ TSharedRef<SWidget> SVanthexSessionMenu::ControlsPage()
 							SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular", 13)).ColorAndOpacity(Cyan)
 							.Text_Lambda([this, Settings, Action]()
 							{
-								return PendingKeyBinding.IsSet() && PendingKeyBinding.GetValue() == Action
-									? NSLOCTEXT("VanthexControls", "CaptureKey", "Taste dr\u00fccken")
-									: Settings->GetGameplayKey(Action).GetDisplayName();
+								if (PendingKeyBinding.IsSet() && PendingKeyBinding.GetValue() == Action)
+									return NSLOCTEXT("VanthexControls", "CaptureKey", "Taste dr\u00fccken");
+								const FKey Key = Settings->GetGameplayKey(Action);
+								return Key.IsValid() ? Key.GetDisplayName() : NSLOCTEXT("VanthexControls", "Unbound", "Nicht belegt");
 							})
 						]
 					]

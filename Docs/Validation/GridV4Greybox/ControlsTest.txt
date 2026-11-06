@@ -1,0 +1,32 @@
+OVERALL PASS CHECKS 31 FAILURES 0
+PASS fixture starts in real buy phase
+PASS initial buy duration is twelve seconds
+PASS drawn knife uses standard walk and crouch speed
+PASS wheel down selects knife during buy phase
+PASS buy phase still forbids knife attacks
+PASS pistol reduces walk and crouch speed by fifteen percent
+PASS wheel wraps and skips absent primary
+PASS buy phase still forbids firearm shots
+PASS preparation buys actual primary and sidearm
+PASS rifle uses reduced movement speed
+PASS wheel up selects owned primary
+PASS wheel up wraps primary to knife
+PASS number-slot selection also works in buy phase
+PASS purchase menu opens before keyboard focus test
+PASS real Tab event replaces focused purchase menu with scoreboard
+PASS jump is disabled during preparation
+PASS real Tab release closes scoreboard after leaving purchase UI
+PASS real countdown enters combat after remaining twelve-second buy window
+PASS buy-phase weapon selection survives round activation
+PASS living grounded character can jump during active play
+PASS Space input launches character above the floor
+PASS airborne character cannot double jump
+PASS second Space press cannot add upward velocity in midair
+PASS character lands and can jump again
+PASS crouched character cannot jump
+PASS real kill credits public K/A/D exactly once
+PASS lethal damage publishes the actual killer and victim
+PASS corpse hits cannot duplicate elimination messages
+PASS corpse hits cannot inflate scoreboard
+PASS dead character cannot jump
+PASS round respawn preserves match statistics

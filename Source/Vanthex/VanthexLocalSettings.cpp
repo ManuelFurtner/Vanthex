@@ -73,7 +73,7 @@ const TArray<FVanthexGameplayBinding>& UVanthexLocalSettings::GameplayBindings()
   {Action::Fire, TEXT("Fire"), NSLOCTEXT("VanthexControls", "Fire", "Feuern / Angriff"), EKeys::LeftMouseButton},
   {Action::Aim, TEXT("Aim"), NSLOCTEXT("VanthexControls", "Aim", "Zielen"), EKeys::RightMouseButton},
   {Action::Reload, TEXT("Reload"), NSLOCTEXT("VanthexControls", "Reload", "Nachladen"), EKeys::R},
-  {Action::Pickup, TEXT("Pickup"), NSLOCTEXT("VanthexControls", "Pickup", "Core aufnehmen"), EKeys::E},
+  {Action::Pickup, TEXT("Pickup"), NSLOCTEXT("VanthexControls", "Pickup", "Core / Waffe aufnehmen"), EKeys::E},
   {Action::Drop, TEXT("Drop"), NSLOCTEXT("VanthexControls", "Drop", "Core ablegen"), EKeys::G},
   {Action::Throw, TEXT("Throw"), NSLOCTEXT("VanthexControls", "Throw", "Core werfen"), EKeys::Q},
   {Action::Interact, TEXT("Interact"), NSLOCTEXT("VanthexControls", "Interact", "Interagieren"), EKeys::F},
@@ -85,6 +85,7 @@ const TArray<FVanthexGameplayBinding>& UVanthexLocalSettings::GameplayBindings()
   {Action::PreviousWeapon, TEXT("PreviousWeapon"), NSLOCTEXT("VanthexControls", "PreviousWeapon", "Vorherige Waffe"), EKeys::MouseScrollUp},
   {Action::GadgetOne, TEXT("GadgetOne"), NSLOCTEXT("VanthexControls", "GadgetOne", "Gadget 1"), EKeys::Four},
   {Action::GadgetTwo, TEXT("GadgetTwo"), NSLOCTEXT("VanthexControls", "GadgetTwo", "Gadget 2"), EKeys::Five},
+  {Action::DropWeapon, TEXT("DropWeapon"), NSLOCTEXT("VanthexControls", "DropWeapon", "Waffe ablegen"), EKeys::X},
  };
  return Bindings;
 }
@@ -106,7 +107,24 @@ void UVanthexLocalSettings::ValidateGameplayKeys()
  {
   if (const FName* Override = GameplayKeyOverrides.Find(Binding.Id); Override && !IsAllowedGameplayKey(FKey(*Override)))
    GameplayKeyOverrides.Remove(Binding.Id);
-  const FKey Key = GetGameplayKey(Binding.Action);
+  FKey Key = GetGameplayKey(Binding.Action);
+  if (Binding.Action == EVanthexGameplayAction::DropWeapon && Used.Contains(Key))
+  {
+   // Older settings could already assign X. Preserve them and move only the new action.
+   Key = EKeys::Invalid;
+   for (const FKey& Candidate : {EKeys::Z, EKeys::H, EKeys::J, EKeys::K, EKeys::L, EKeys::U, EKeys::I,
+        EKeys::O, EKeys::P, EKeys::M, EKeys::N, EKeys::Zero, EKeys::Six, EKeys::Seven, EKeys::Eight,
+        EKeys::Nine, EKeys::Insert, EKeys::Home, EKeys::End, EKeys::PageUp, EKeys::PageDown,
+        EKeys::F6, EKeys::F7, EKeys::F8, EKeys::F9, EKeys::F10, EKeys::F11, EKeys::F12})
+   {
+    if (IsAllowedGameplayKey(Candidate) && !Used.Contains(Candidate))
+    {
+     Key = Candidate;
+     break;
+    }
+   }
+   GameplayKeyOverrides.Add(Binding.Id, Key.GetFName());
+  }
   if (Used.Contains(Key))
   {
    GameplayKeyOverrides.Reset();

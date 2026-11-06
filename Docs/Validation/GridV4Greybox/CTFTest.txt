@@ -1,0 +1,25 @@
+OVERALL PASS CHECKS 24 FAILURES 0
+PASS five players on both teams
+PASS baked Roman architectural mesh tags are preserved
+PASS Roman paving contains more than one thousand stone instances
+PASS one Roman sun provides atmosphere disk and cast shadows
+PASS Roman sky atmosphere and skylight are present
+PASS fifteen-minute regulation clock
+PASS centre and both flank routes are navigable
+PASS centre and both flank routes are navigable
+PASS centre and both flank routes are navigable
+PASS enemy flag picked up by contact
+PASS carrier death drops flag on ground
+PASS death schedules respawn without ending match
+PASS teammate takes over the dropped flag
+PASS capture adds point and continues match
+PASS no early respawn before eight seconds
+PASS automatic alive respawn at own base after eight seconds
+PASS respawn restores playable loadout
+PASS opposing team can steal own flag
+PASS capture blocked while own flag is away
+PASS touching own dropped flag returns it
+PASS capture succeeds after own flag is returned
+PASS tied regulation grants three-minute overtime
+PASS higher capture score wins after overtime
+PASS tied overtime ends in draw

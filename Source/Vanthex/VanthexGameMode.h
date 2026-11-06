@@ -77,6 +77,7 @@ class AVanthexGameMode : public AGameModeBase
 	friend void VanthexRunExtractionRulesTest(AVanthexGameMode*);
 	friend void VanthexRunPoseHitTest(AVanthexGameMode*);
 	friend void VanthexRunRoundCycleTest(AVanthexGameMode*);
+ friend void VanthexRunWeaponDropTest(AVanthexGameMode*);
 	GENERATED_BODY()
 
 public:

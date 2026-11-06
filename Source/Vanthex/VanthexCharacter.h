@@ -58,6 +58,8 @@ public:
  UFUNCTION(Client, Unreliable) void ClientWeaponRecoil(FVector2D Kick);
 	void SetTeamAppearance(EVanthexTeam Team);
 	void TryPickupCore();
+ void TryPickupNearby();
+ void DropSelectedWeapon();
 	void DropCarriedCore();
 	void ThrowCarriedCore();
 	bool IsCarryingCore() const;

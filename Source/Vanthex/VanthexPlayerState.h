@@ -50,6 +50,8 @@ public:
 
 private:
  UPROPERTY(Replicated) float RespawnTime=0.f;
+ friend class UVanthexEquipmentComponent;
+ void SetCarriedWeapons(FName Primary, FName Sidearm);
 	UPROPERTY(Replicated) int32 Kills = 0;
 	UPROPERTY(Replicated) int32 Deaths = 0;
 	UPROPERTY(Replicated) int32 Assists = 0;

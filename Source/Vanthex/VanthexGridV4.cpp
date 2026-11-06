@@ -19,49 +19,10 @@
 #include "Engine/TargetPoint.h"
 #include "EngineUtils.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/PostProcessVolume.h"
 #include "Engine/SkyLight.h"
 #include "Components/SkyLightComponent.h"
-#if WITH_EDITOR
-#include "Materials/MaterialInstanceConstant.h"
-#include "Misc/PackageName.h"
-#include "HAL/FileManager.h"
-#include "UObject/SavePackage.h"
-#endif
-
-namespace {
-UMaterialInterface* AegisPalette(UStaticMesh* Mesh,const FString& Key,int32 Slot){
- const bool Accent=Key.Contains(TEXT("#"));
- if(!Accent&&!Key.Contains(TEXT("Concrete"))&&!Key.Contains(TEXT("Platform_01"))&&!Key.Contains(TEXT("MetalBeam"))&&!Key.Contains(TEXT("MetalWall")))return nullptr;
- FString Safe=Key.Replace(TEXT("#"),TEXT("_"));
- FString Name=FString::Printf(TEXT("MI_Aegis_%s_%d"),*Safe,Slot);
- FString Path=TEXT("/Game/Vanthex/Materials/Aegis/")+Name;
-#if WITH_EDITOR
- if(IsRunningCommandlet()){
-  auto* Package=FPackageName::DoesPackageExist(Path)?LoadPackage(nullptr,*Path,LOAD_None):CreatePackage(*Path);
-  if(!Package)return nullptr;Package->FullyLoad();
-  auto* M=FindObject<UMaterialInstanceConstant>(Package,*Name);
-  if(!M)M=NewObject<UMaterialInstanceConstant>(Package,FName(Name),RF_Public|RF_Standalone);
-  auto* Parent=Accent?VanthexArt::GetEnergyMaterial():Mesh->GetMaterial(Slot);
-  if(!Parent)return nullptr;M->SetParentEditorOnly(Parent);
-  FLinearColor Tint=Key.Contains(TEXT("Floor"))?FLinearColor(.14f,.17f,.19f):Key.Contains(TEXT("ConcreteWall"))?FLinearColor(.52f,.50f,.45f):FLinearColor(.12f,.16f,.19f);
-  if(Accent){
-   Tint=Key.Contains(TEXT("Amber"))?FLinearColor(1.f,.32f,.045f):Key.Contains(TEXT("Green"))?FLinearColor(.05f,1.f,.35f):Key.Contains(TEXT("Violet"))?FLinearColor(.7f,.15f,1.f):FLinearColor(.04f,.65f,1.f);
-   M->SetVectorParameterValueEditorOnly(TEXT("Color"),Tint*1.35f);M->SetVectorParameterValueEditorOnly(TEXT("EmissiveColor"),Tint*1.35f);
-  }else{
-   M->SetVectorParameterValueEditorOnly(TEXT("ColorA"),Tint);M->SetVectorParameterValueEditorOnly(TEXT("ColorB"),Tint*.65f);M->SetVectorParameterValueEditorOnly(TEXT("ColorC"),Tint*.8f);
-  }
-  M->PostEditChange();Package->MarkPackageDirty();
-  FString File=FPackageName::LongPackageNameToFilename(Path,FPackageName::GetAssetPackageExtension());IFileManager::Get().MakeDirectory(*FPaths::GetPath(File),true);
-  FSavePackageArgs Args;Args.TopLevelFlags=RF_Public|RF_Standalone;
-  return UPackage::SavePackage(Package,M,*File,Args)?M:nullptr;
- }
-#endif
- return LoadObject<UMaterialInterface>(nullptr,*(Path+TEXT(".")+Name));
-}
-}
-
-
 // This builder deliberately has no dependency on the old arena footprints.
 void AVanthexTestArena::BuildGridV4()
 {
@@ -85,13 +46,16 @@ void AVanthexTestArena::BuildGridV4()
  auto Group=[&](const FString& Name)->UInstancedStaticMeshComponent* {
   if(auto** Found=Groups.Find(Name)) return *Found;
   FString MeshName=Name;int32 Hash=INDEX_NONE;if(Name.FindChar(TCHAR('#'),Hash))MeshName=Name.Left(Hash);
-  const FString Sub=MeshName==TEXT("SM_RoboArm04")?TEXT("Robot/"):TEXT("");
-  UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*(TEXT("/Game/Meshes/")+Sub+MeshName+TEXT(".")+MeshName));
-  if(!Mesh) { ++MissingCount; UE_LOG(LogVanthex,Error,TEXT("GRIDV4 missing kit mesh %s"),*Name); return nullptr; }
+  UStaticMesh* Mesh=CubeMesh;
+  if(!Mesh) return nullptr;
   auto* G=NewObject<UInstancedStaticMeshComponent>(this,FName(*(TEXT("GridV4_")+Name)));
   G->SetStaticMesh(Mesh); G->SetupAttachment(SceneRoot); G->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-  for(int32 Slot=0;Slot<Mesh->GetStaticMaterials().Num();++Slot)if(auto* Palette=AegisPalette(Mesh,Name,Slot))G->SetMaterial(Slot,Palette);
-  G->SetCastShadow(!Name.Contains(TEXT("#"))); G->ComponentTags.Add(TEXT("GridV4Kit")); G->RegisterComponent(); Groups.Add(Name,G);
+  // Only project-authored surface material and engine cube; no imported kit dependency.
+  const bool Accent=Name.Contains(TEXT("#"));
+  const bool Floor=Name.Contains(TEXT("Floor"))||Name.Contains(TEXT("Platform"));
+  const FLinearColor Tint=Accent?(Name.Contains(TEXT("Amber"))?FLinearColor(.85f,.35f,.08f):Name.Contains(TEXT("Green"))?FLinearColor(.1f,.65f,.3f):Name.Contains(TEXT("Violet"))?FLinearColor(.5f,.2f,.7f):FLinearColor(.1f,.55f,.7f)):Floor?FLinearColor(.18f,.21f,.24f):Name.Contains(TEXT("Wall"))?FLinearColor(.48f,.5f,.52f):FLinearColor(.27f,.3f,.33f);
+  if(auto* Material=VanthexArt::MakeSurface(this,Tint,.9f,0.f,FLinearColor::Black,0.f,EVanthexSurface::Concrete))G->SetMaterial(0,Material);
+  G->SetCastShadow(!Name.Contains(TEXT("#"))); G->ComponentTags.Add(TEXT("GridV4Greybox")); G->RegisterComponent(); Groups.Add(Name,G);
   return G;
  };
  auto Fit=[&](const FString& Name,const FVector& Center,const FVector& Size,const FRotator& Rotation=FRotator::ZeroRotator) {
@@ -104,20 +68,13 @@ void AVanthexTestArena::BuildGridV4()
   auto* C=SpawnBlock(Center,Size/100.f,FLinearColor::Gray,.8f,.1f,EVanthexSurface::Concrete);
   if(C) { C->SetWorldRotation(Rotation); C->SetVisibility(false); C->SetCastShadow(false); C->ComponentTags.Add(Tag); ++CollisionCount; }
  };
- auto Prop=[&](const FString& Name,const FVector& Ground,float Scale=1.f,float Yaw=0.f,bool Solid=false) {
-  auto* G=Group(Name); if(!G) return;
-  const FBox Box=G->GetStaticMesh()->GetBoundingBox(); const FRotator R(0,Yaw,0);
-  const FVector Offset(Box.GetCenter().X,Box.GetCenter().Y,Box.Min.Z);
-  G->AddInstance(FTransform(R,Ground-R.RotateVector(Offset*Scale),FVector(Scale)),true); ++InstanceCount;
-  if(Solid) Collision(Ground+FVector(0,0,Box.GetSize().Z*Scale*.5f),Box.GetSize()*Scale,R,TEXT("GridV4Cover"));
- };
  auto CeilingLamp=[&](FVector Ground,float Ceiling,float Yaw=0.f) {
   Fit(TEXT("SM_LampSet_01"),FVector(Ground.X,Ground.Y,Ceiling-12),FVector(120,38,24),FRotator(0,Yaw,0));
  };
  auto Point=[&](const FVector& P,FLinearColor Color,float Intensity,float Radius,bool Shadow=false) {
   auto* A=World->SpawnActor<APointLight>(P,FRotator::ZeroRotator); if(!A) return;
   auto* L=Cast<UPointLightComponent>(A->GetLightComponent()); L->SetMobility(EComponentMobility::Movable);
-  L->SetLightColor(Color); L->SetIntensity(Intensity*.55f); L->SetAttenuationRadius(Radius); L->SetCastShadows(Shadow);
+  L->SetLightColor(Color); L->SetIntensity(Intensity*.8f); L->SetAttenuationRadius(Radius); L->SetCastShadows(Shadow);
   if(Shadow) VanthexShadows::ConfigureKeyLight(L);
   A->Tags.Add(TEXT("GridV4Light")); ++LightCount;
  };
@@ -307,26 +264,11 @@ void AVanthexTestArena::BuildGridV4()
   const FVector Mid=(V.Bottom+V.Top)*.5f; const FRotator Slope(Angle,90,0);
   const FVector Normal=Slope.RotateVector(FVector(0,0,1));
   Collision(Mid-Normal*10,FVector(Delta.Size(),V.Width,20),Slope,TEXT("GridV4Ramp"));
-  // This kit stair climbs toward local -X. Its full bounds include the handrail,
-  // so neither +90 yaw nor fitting the bounding-box height describes its treads.
-  // Three 16-tread modules give roughly 12.5 cm risers instead of stretching one flight
-  // across the complete 600 cm rise. Anchors are measured from source tread faces.
-  if(auto* Stairs=Group(TEXT("SM_Stair_01"))) {
-   constexpr int32 Flights=3,TreadsPerFlight=16;
-   constexpr double LowerFrontX=-6.5697,LowerTreadZ=33.0207;
-   constexpr double UpperRearX=-522.4669,UpperTreadZ=336.8436;
-   const FVector NativeSize=Stairs->GetStaticMesh()->GetBoundingBox().GetSize();
-   const float FlightRun=Run/Flights,FlightRise=Delta.Z/Flights;
-   const float Riser=FlightRise/TreadsPerFlight;
-   const double ScaleZ=(FlightRise-Riser)/(UpperTreadZ-LowerTreadZ);
-   const FVector Scale(FlightRun/(LowerFrontX-UpperRearX),V.Width/NativeSize.Y,ScaleZ);
-   const FVector Anchor(LowerFrontX,Stairs->GetStaticMesh()->GetBoundingBox().GetCenter().Y,LowerTreadZ-Riser/ScaleZ);
-   const FRotator Rotation(0,Delta.Rotation().Yaw+180.f,0);
-   for(int32 Flight=0;Flight<Flights;++Flight) {
-    const FVector Bottom=V.Bottom+Delta*(double(Flight)/Flights);
-    Stairs->AddInstance(FTransform(Rotation,Bottom-Rotation.RotateVector(Anchor*Scale),Scale),true);
-    ++InstanceCount;
-   }
+  // 48 explicit cube treads, rising 12.5cm; collision remains a smooth supported ramp.
+  for(int32 I=0;I<48;++I) {
+   const float T=(I+.5f)/48.f,Height=(I+1)*Delta.Z/48.f;
+   const FVector P=V.Bottom+FVector(Delta.X*T,Delta.Y*T,Height*.5f);
+   Fit(TEXT("GreyboxTread"),P,FVector(V.Width,Run/48.f,Height));
   }
   Fit(TEXT("SM_FactoryFloorLarge01"),Mid+FVector(0,0,428),FVector(Delta.Size(),V.Width+40,16),Slope);
   Collision(Mid+FVector(0,0,428),FVector(Delta.Size(),V.Width+40,16),Slope,TEXT("GridV4Ceiling"));
@@ -419,63 +361,13 @@ void AVanthexTestArena::BuildGridV4()
   Collision(P+FVector(0,0,Size.Z*.5f),Size,FRotator(0,Yaw,0),TEXT("GridV4Cover"));
   return true;
  };
- for(const auto& R:GridV4::Rooms()){
-  // Repeated ribs, ceiling services and a restrained illuminated wayfinding strip.
-  const FVector C=R.Center;const float HX=R.Size.X*.5f,HY=R.Size.Y*.5f;
-  const FString Glow=(R.Id==14||R.Id==15)?TEXT("SM_MetalBeam01#Violet"):(R.Id==21||R.Id==22)?TEXT("SM_MetalBeam01#Green"):(R.Level<0||R.Id==5||R.Id==6||R.Id==8)?TEXT("SM_MetalBeam01#Amber"):TEXT("SM_MetalBeam01#Cyan");
-  if(R.Id!=3 && R.Id!=17 && R.Id!=18) {
-   const float W=FMath::Min(650.f,float(R.Size.X-160));
-   Fit(Glow,C+FVector(0,HY-30,360),FVector(W,9,7));
-   for(float Side:{-1.f,1.f})Fit(TEXT("SM_MetalBeam01"),C+FVector(Side*W*.45f,HY-30,391),FVector(8,8,58));
+ // Tactical greybox: sparse grounded cover, no machinery placeholders or suspended props.
+ for(const auto& R:GridV4::Rooms()) {
+  if(R.Id==3||R.Id==12||R.Id==17||R.Id==18)continue;
+  for(float Side:{-1.f,1.f}) {
+   const FVector P=R.Center+FVector(Side*(R.Size.X*.5f-180),-Side*(R.Size.Y*.5f-170),0);
+   Machine(TEXT("GreyboxCover"),P,FVector(220,140,Side>0?110:190));
   }
-  for(float Side:{-1.f,1.f}){
-   bool Supported=R.Id!=3 && R.Id!=17 && R.Id!=18;
-   for(float Offset:{-190.f,0.f,190.f}) {
-    const FVector Outside=C+FVector(Side*(HX+50),HY*.15f+Offset,0);
-    Supported &= !Floors[R.Level+1].Contains(FIntPoint(FMath::FloorToInt(Outside.X/100),FMath::FloorToInt(Outside.Y/100)));
-   }
-   if(Supported) Fit(TEXT("SM_MetalWall_02"),C+FVector(Side*(HX-22),HY*.15f,160),FVector(400,12,180),FRotator(0,90,0));
-   if(R.Id!=3 && R.Id!=17 && R.Id!=18) Fit(TEXT("SM_CeilingVentilation01"),C+FVector(Side*HX*.45f,0,409),FVector(100,FMath::Min(900.f,float(R.Size.Y-150)),22));
-  }
-  const FVector NW=C+FVector(-HX+170,HY-180,0),NE=C+FVector(HX-180,HY-180,0);
-  const FVector SW=C+FVector(-HX+180,-HY+180,0),SE=C+FVector(HX-180,-HY+180,0);
-  if(R.Id==2){
-   for(float X:{-380.f,0.f,380.f})for(float Side:{-1.f,1.f}){
-    const FVector P=C+FVector(X,Side*(HY-140),0);
-    if(!ClearLane(P,120))continue;
-    if(!Machine(TEXT("SM_ElectricalPanel_03"),P,FVector(240,120,300)))continue;
-    Fit(TEXT("SM_OfficeMonitor_02"),P+FVector(0,-Side*65,210),FVector(180,16,75),FRotator(0,Side>0?180:0,0));
-    for(float Z:{65.f,115.f,165.f})Fit(TEXT("SM_MetalBeam01#Cyan"),P+FVector(0,-Side*68,Z),FVector(170,3,3));
-   }
-   Machine(TEXT("SM_AirConditioner01"),NE,FVector(220,180,310));
-  }else if(R.Id==4||R.Id==9){
-   for(const FVector P:{NW,NE,SW,SE}){
-    const bool DeskPlaced=Machine(TEXT("SM_AssemblyLineDesk01"),P,FVector(290,150,100));
-    if(DeskPlaced && ClearLane(P,220))Prop(TEXT("SM_RoboArm04"),P+FVector(0,0,100),.65f,0);
-   }
-   Fit(TEXT("SM_CeilingVentilation01"),C+FVector(0,0,408),FVector(700,200,24));
-  }else if(R.Id==8||R.Id==11||R.Id==13){
-   for(const FVector P:{NW,NE,SW,SE})Machine(TEXT("SM_Boiler_01"),P,FVector(250,210,300));
-   for(float Side:{-1.f,1.f})Fit(TEXT("SM_Pipe_round_long"),C+FVector(Side*(HX-60),0,320),FVector(45,R.Size.Y-200,45));
-  }else if(R.Id==7||R.Id==10||R.Id==16||R.Id==23){
-   Machine(TEXT("SM_StorageShelves_group01"),NW,FVector(300,160,270));
-   Machine(TEXT("SM_Boxes_group_06"),SE,FVector(230,220,150),15);
-   Machine(TEXT("SM_ForkLift"),NE,FVector(250,150,190),90);
-  }else if(R.Id==22||R.Id==15){
-   Machine(TEXT("SM_Container01_01"),NW,FVector(380,210,220),0);
-   Machine(TEXT("SM_AssemblyLineControl01"),SE,FVector(260,150,180),180);
-   Machine(TEXT("SM_Boxes_group_06"),NE,FVector(210,210,150),15);
-   // Flank cover is offset from the small exposed capture footprint.
-   Machine(TEXT("SM_AssemblyLineControl01"),SW,FVector(250,150,110),90);
-   for(float Side:{-1.f,1.f})Fit(TEXT("SM_MetalBeam01"),C+FVector(Side*330,0,392.5),FVector(R.Size.Y-100,65,55),FRotator(0,90,0));
-   Sign(R.Id==22?TEXT("A  /  TRANSFER LOCK"):TEXT("B  /  ISOLATION LOCK"),C+FVector(0,HY-35,290),-90,R.Color,40);
-  }else if(R.Id!=3&&R.Id!=18&&R.Id!=12){
-   Machine(TEXT("SM_AssemblyLineControl01"),NW,FVector(240,140,120),90);
-   Machine(TEXT("SM_AssemblyLineControl01"),SE,FVector(200,120,190));
-   Machine(TEXT("SM_Boxes_group_06"),NE,FVector(160,160,100),10);
-  }
-  // Knee-height defensive cover at selected side lanes, not on every room centre.
-  if(R.Id==1||R.Id==5||R.Id==14||R.Id==21)Machine(TEXT("SM_ContainerP4_01"),C+FVector(-HX*.45f,HY*.45f,0),FVector(250,120,115));
  }
 
  for(float Side:{-1.f,1.f}){
@@ -491,16 +383,9 @@ void AVanthexTestArena::BuildGridV4()
 
   Point(P+FVector(-SX*170,-SY*170,800),FLinearColor(.08f,.5f,1.f),7500,650);
  }
- for(int32 I=0;I<8;++I){
-  const float A=2*PI*I/8,B=2*PI*(I+1)/8;
-  const FVector P(FMath::Cos(A)*820,FMath::Sin(A)*820,1080),Q(FMath::Cos(B)*820,FMath::Sin(B)*820,1080);
-  Fit(TEXT("SM_MetalBeam01"),FVector(P.X,P.Y,1200),FVector(16,16,240));
-  Fit(TEXT("SM_MetalBeam01"),(P+Q)*.5f,FVector(FVector::Dist(P,Q),75,90),(Q-P).Rotation());
-  Fit(TEXT("SM_MetalBeam01#Cyan"),(P+Q)*.5f-FVector(0,0,48),FVector(FVector::Dist(P,Q)-30,12,8),(Q-P).Rotation());
- }
  for(float Y:{-740.f,-260.f})Fit(TEXT("SM_MetalBeam01"),FVector(1100,Y,570),FVector(1400,45,60));
- for(const FVector P:{FVector(-1050,0,0),FVector(1050,150,0)})Machine(TEXT("SM_Boiler_01"),P,FVector(190,220,330));
- for(const FVector P:{FVector(-700,850,0),FVector(700,-900,0)})Machine(TEXT("SM_ContainerP4_01"),P,FVector(280,120,115));
+ for(const FVector P:{FVector(-1050,0,0),FVector(1050,150,0)})Machine(TEXT("GreyboxCover"),P,FVector(190,220,330));
+ for(const FVector P:{FVector(-700,850,0),FVector(700,-900,0)})Machine(TEXT("GreyboxCover"),P,FVector(280,120,115));
  Sign(TEXT("AEGIS  /  REACTOR 07"),FVector(0,-1170,1010),90,FLinearColor(.25f,.8f,1.f),54);
  Sign(TEXT("LOWER CORE PASS"),FVector(600,1175,290),-90,FLinearColor(.9f,.6f,.15f),24);
  // Compact inner containment bay. Offset doors preserve flank routes while
@@ -530,5 +415,5 @@ void AVanthexTestArena::BuildGridV4()
  Socket(TEXT("AEGIS_PowerTerminal"),TEXT("SHIFT_HackTerminal"),FVector(3700,3200,100));
  Socket(TEXT("AEGIS_LabBreachPanel"),TEXT("SHIFT_BreachableWall"),FVector(3500,-1000,180));
  for(const auto& R:GridV4::Rooms())Socket(*FString::Printf(TEXT("AEGIS_Lighting_%02d"),R.Id),TEXT("SHIFT_LightingSector"),R.Center+FVector(0,0,300));
- UE_LOG(LogVanthex,Display,TEXT("GRIDV4 AEGIS rooms=%d connections=%d vertical=%d kitGroups=%d instances=%d proxies=%d lights=%d missing=%d"),GridV4::Rooms().Num(),GridV4::Connections().Num(),GridV4::VerticalLinks().Num(),Groups.Num(),InstanceCount,CollisionCount,LightCount,MissingCount);
+ UE_LOG(LogVanthex,Display,TEXT("GRIDV4 GREYBOX rooms=%d connections=%d vertical=%d kitGroups=%d instances=%d proxies=%d lights=%d missing=%d"),GridV4::Rooms().Num(),GridV4::Connections().Num(),GridV4::VerticalLinks().Num(),Groups.Num(),InstanceCount,CollisionCount,LightCount,MissingCount);
 }

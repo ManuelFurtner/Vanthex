@@ -64,7 +64,7 @@ void AVanthexHUD::DrawTacticalHUD()
    const auto P=Project(It->GetActorLocation()); Rect(P.X-2,P.Y-2,4,4,Cyan);
   }
   const auto P=Project(Pawn->GetActorLocation());
-  const FVector D=PC->GetControlRotation().Vector(); const FVector2D Heading(D.X,-D.Y),Side(-Heading.Y,Heading.X);
+  const FVector2D Heading=VanthexTacticalHUD::Heading(Pawn->GetVelocity(),PC->GetControlRotation().Yaw),Side(-Heading.Y,Heading.X);
   Line(P+Heading*7,P-Heading*4+Side*4,White,2); Line(P-Heading*4+Side*4,P-Heading*4-Side*4,White,2); Line(P-Heading*4-Side*4,P+Heading*7,White,2);
   Text(TEXT("N"),149.8f,103,9,Muted);
   Text(TEXT("DU / TEAM"),36.4f,207.3f,10,Muted);

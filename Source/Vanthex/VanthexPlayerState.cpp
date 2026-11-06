@@ -109,6 +109,14 @@ void AVanthexPlayerState::HandleEconomyDeath()
 	ForceNetUpdate();
 }
 
+void AVanthexPlayerState::SetCarriedWeapons(FName Primary, FName Sidearm)
+{
+ if (!HasAuthority()) return;
+ Economy.PrimaryWeapon = Primary;
+ Economy.Sidearm = Sidearm;
+ ForceNetUpdate();
+}
+
 bool AVanthexPlayerState::ConsumeGadget(int32 Slot,FName Expected)
 {
  if(!HasAuthority()||!Economy.Gadgets.IsValidIndex(Slot)||Economy.Gadgets[Slot]!=Expected)return false;

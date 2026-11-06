@@ -6,6 +6,9 @@
 #include "VanthexGridV4Layout.h"
 #include "VanthexNavigation.h"
 #include "Engine/World.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -27,10 +30,20 @@ void AVanthexTestArena::ValidateGridV4()
   return Length;
  };
  UWorld* World=GetWorld();
+ int32 StructureMeshes=0;bool PrimitiveOnly=true;
+ for(TActorIterator<AActor> It(World);It;++It) {
+  TArray<UStaticMeshComponent*> Parts;It->GetComponents(Parts);
+  for(auto* Part:Parts)if(Part->ComponentHasTag(TEXT("GridV4Greybox"))) {
+   ++StructureMeshes;
+   PrimitiveOnly &= Part->GetStaticMesh()&&Part->GetStaticMesh()->GetPathName()==TEXT("/Engine/BasicShapes/Cube.Cube");
+  }
+ }
+ Check(StructureMeshes>0&&PrimitiveOnly,TEXT("facility architecture uses engine primitives without graphics kits"));
+ Check(GridV4::Bounds().GetSize().Equals(FVector(12800,10600,2300)),TEXT("original 128 by 106 metre design bounds retained"));
  extern bool VanthexValidateGridV4Envelope(UWorld*,TArray<FString>&);
  Check(VanthexValidateGridV4Envelope(World,Lines),TEXT("outer shell contains walking and jumping capsules at all supported floor edges"));
  extern bool VanthexValidateGridV4Furniture(UWorld*,TArray<FString>&);
- Check(VanthexValidateGridV4Furniture(World,Lines),TEXT("floor-mounted kit furniture has actual support under its footprint"));
+ Check(VanthexValidateGridV4Furniture(World,Lines),TEXT("greybox cover has actual support under its footprint"));
  FCollisionObjectQueryParams StaticObjects;
  StaticObjects.AddObjectTypesToQuery(ECC_WorldStatic);
  FCollisionQueryParams Params(SCENE_QUERY_STAT(GridV4Validation),false);
@@ -43,8 +56,8 @@ void AVanthexTestArena::ValidateGridV4()
  Check(GridV4::Rooms().Num()>=18 && GridV4::Rooms().Num()<=25,FString::Printf(TEXT("%d distinct authored spaces"),GridV4::Rooms().Num()));
  Check(GridV4::VerticalLinks().Num()>=3,FString::Printf(TEXT("%d independent physical vertical links"),GridV4::VerticalLinks().Num()));
 #if WITH_EDITOR
- extern bool VanthexValidateVisibleStairs(UWorld* World,TArray<FString>& Out);
- Check(VanthexValidateVisibleStairs(World,Lines),TEXT("visible stair treads ascend with the collision ramps and meet both landings"));
+ extern bool VanthexValidateGreyboxStairs(UWorld* World,TArray<FString>& Out);
+ Check(VanthexValidateGreyboxStairs(World,Lines),TEXT("visible stair treads ascend with the collision ramps and meet both landings"));
 #endif
 
  int32 Nodes=0,Edges=0,Components=0;

@@ -53,7 +53,7 @@ bool VanthexValidateGridV4Furniture(UWorld* World,TArray<FString>& Lines)
  for(TActorIterator<AActor> It(World);It;++It){
   TArray<UInstancedStaticMeshComponent*> Groups;It->GetComponents(Groups);
   for(auto* G:Groups){
-   UStaticMesh* Mesh=G->GetStaticMesh();if(!Mesh||!Grounded.Contains(Mesh->GetName()))continue;
+   UStaticMesh* Mesh=G->GetStaticMesh();if(!Mesh||(!Grounded.Contains(Mesh->GetName())&&!G->GetName().Contains(TEXT("GreyboxCover"))))continue;
    const FBox Box=Mesh->GetBoundingBox();
    for(int32 I=0;I<G->GetInstanceCount();++I){
     ++Count;FTransform T;G->GetInstanceTransform(I,T,true);bool Good=true;
@@ -66,6 +66,26 @@ bool VanthexValidateGridV4Furniture(UWorld* World,TArray<FString>& Lines)
    }
   }
  }
- Lines.Add(FString::Printf(TEXT("FURNITURE %d grounded kit instances checked at nine footprint points; %d unsupported"),Count,Unsupported));
- return Count>20&&Unsupported==0;
+ Lines.Add(FString::Printf(TEXT("FURNITURE %d grounded cover instances checked at nine footprint points; %d unsupported"),Count,Unsupported));
+ return Count>=20&&Unsupported==0;
+}
+
+bool VanthexValidateGreyboxStairs(UWorld* World,TArray<FString>& Lines)
+{
+ TArray<FBox> Treads;
+ for(TActorIterator<AActor> It(World);It;++It) {
+  TArray<UInstancedStaticMeshComponent*> Groups;It->GetComponents(Groups);
+  for(auto* G:Groups)if(G->GetName().Contains(TEXT("GreyboxTread"))&&G->GetStaticMesh())
+   for(int32 I=0;I<G->GetInstanceCount();++I){FTransform T;G->GetInstanceTransform(I,T,true);Treads.Add(G->GetStaticMesh()->GetBoundingBox().TransformBy(T));}
+ }
+ bool Good=Treads.Num()==GridV4::VerticalLinks().Num()*48;
+ int32 Samples=0,Failures=0;
+ for(const auto& V:GridV4::VerticalLinks())for(int32 I=0;I<48;++I)for(float Side:{-.45f,0.f,.45f}) {
+  const FVector P=FMath::Lerp(V.Bottom,V.Top,(I+.5f)/48.f)+FVector(Side*V.Width,0,0);
+  bool Found=false;
+  for(const auto& Box:Treads)if(P.X>=Box.Min.X-.1&&P.X<=Box.Max.X+.1&&P.Y>=Box.Min.Y-.1&&P.Y<=Box.Max.Y+.1&&FMath::Abs(Box.Max.Z-(V.Bottom.Z+(I+1)*(V.Top.Z-V.Bottom.Z)/48.f))<.1) {Found=true;break;}
+  ++Samples;if(!Found)++Failures;
+ }
+ Lines.Add(FString::Printf(TEXT("GREYBOX_STAIRS %d visible cube treads; %d centre/side samples; %d missing or incorrect heights"),Treads.Num(),Samples,Failures));
+ return Good&&Failures==0;
 }

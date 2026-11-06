@@ -9,7 +9,7 @@ Stand 6. November 2026. Die zwölf Punkte werden in dieser Reihenfolge bearbeite
 5. [ ] **Karten.** Beide GRID-Extraktionswege und die Zugänge zu beiden Flaggen auf Crossroads ablaufen. Engpässe, ungenutzte Wege und Tode direkt am Spawn erfassen.
 6. [ ] **Räumlicher Ton.** Richtung, Entfernung und Stockwerk ohne Sichtkontakt erkennen. Schritte, Gadgets und Teamstimmen sollen im Kampf unterscheidbar bleiben.
 7. [x] **Training.** Unter **Spielen → Solo-Training** stehen Ziele auf 10, 25 und 50 Metern, ein bewegliches Ziel und eine wiederholbare Core-Extraktion bereit.
-8. [x] **Steuerung.** **Maus & Steuerung** bietet einen ADS-Faktor, 22 frei belegbare Aktionen, Konfliktprüfung und Rücksetzen auf Standard. Der Konfigurationstest prüft Speichern und Laden.
+8. [x] **Steuerung.** **Maus & Steuerung** bietet einen ADS-Faktor, 23 frei belegbare Aktionen, Konfliktprüfung und Rücksetzen auf Standard. Der Konfigurationstest prüft Speichern und Laden.
 9. [x] **Team und Auswertung.** Per Mausrad-Klick den lebenden Mitspielern eine Fläche markieren. Nach dem Tod per Pfeiltasten das beobachtete Teammitglied wechseln. **Tab** zeigt Kills, Tode, Assists und gewertete Objektivaktionen.
 10. [ ] **Verbindungen.** Einer privaten Lobby beitreten, Serverliste mit Ping und Modus nutzen und nach Abbruch denselben Platz wieder übernehmen.
 11. [ ] **Leistung und Builds.** Bildraten und Frametimes auf beiden Karten mit gleicher Konfiguration vergleichen. Windows-Client und Linux-Server aus demselben Commit reproduzieren und zusammen verbinden.

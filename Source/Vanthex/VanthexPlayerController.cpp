@@ -63,6 +63,11 @@ void AVanthexPlayerController::BeginPlay()
   extern void VanthexStartModerationNetworkTest(AVanthexPlayerController* PC);
   VanthexStartModerationNetworkTest(this);
  }
+ if (FParse::Param(FCommandLine::Get(), TEXT("WeaponDropNetworkTest")))
+ {
+  extern void VanthexStartWeaponDropNetworkTest(AVanthexPlayerController* PC);
+  VanthexStartWeaponDropNetworkTest(this);
+ }
 #endif
  if(IsLocalController()) UVanthexLocalSettings::Get()->ApplyAudio(GetWorld());
  if(IsFrontEnd())
