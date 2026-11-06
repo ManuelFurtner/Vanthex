@@ -27,6 +27,8 @@ public:
 	UFUNCTION(Exec)
 	void RestartTest();
  bool IsSessionMenuOpen() const { return SessionMenu.IsValid(); }
+ bool IsFrontEnd() const;
+ void StartGame(bool bCaptureTheFlag, bool bListen = false);
  bool IsScoreboardOpen() const { return bScoreboardHeld; }
  void ShowScoreboard() { bScoreboardHeld=true; }
  void HideScoreboard() { bScoreboardHeld=false; }
@@ -56,6 +58,9 @@ protected:
  bool bProbeStopped = false;
  bool bProbeDamaged = false;
  FVector ProbeOrigin;
+ void OpenSessionMenu();
  void CloseSessionMenu();
+ void RemoveSessionMenu();
+ void OpenSessionMap(const TCHAR* MapPath, bool bListen);
  TSharedPtr<class SWidget> SessionMenu;
 };

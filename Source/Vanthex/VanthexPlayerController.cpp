@@ -9,7 +9,10 @@
 #include "VanthexOperatorComponent.h"
 #include "VanthexMapLayout.h"
 #include "VanthexBuyMenuComponent.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 #include "Framework/Application/IInputProcessor.h"
 #include "Framework/Application/SlateApplication.h"
 
@@ -51,6 +54,11 @@ void AVanthexPlayerController::BeginPlay()
  }
 #endif
  if(IsLocalController()) UVanthexLocalSettings::Get()->ApplyAudio(GetWorld());
+ if(IsFrontEnd())
+ {
+  OpenSessionMenu();
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("LooseCoreNetworkTest"))) {
   extern void VanthexStartLooseCoreNetworkTest(AVanthexPlayerController* PC);VanthexStartLooseCoreNetworkTest(this);
  }
@@ -126,54 +134,117 @@ void AVanthexPlayerController::PawnLeavingGame()
 }
 
 
-#include "Kismet/GameplayStatics.h"
-void AVanthexPlayerController::HostGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::CurrentMap(GetWorld())), true, "listen"); }
-void AVanthexPlayerController::JoinGame(const FString& Address) { FString Validated, Error; if (IsLocalController() && UVanthexLocalSettings::ValidateAddress(Address,Validated,Error)) ClientTravel(Validated, TRAVEL_Absolute); }
-void AVanthexPlayerController::LeaveGame() { if (IsLocalController()) UGameplayStatics::OpenLevel(this, FName(VanthexMap::CurrentMap(GetWorld()))); }
+bool AVanthexPlayerController::IsFrontEnd() const
+{
+ return VanthexMap::IsFrontEnd(GetWorld());
+}
+
+void AVanthexPlayerController::OpenSessionMap(const TCHAR* MapPath, bool bListen)
+{
+ UWorld* World = GetWorld();
+ if(!IsLocalController() || !World) return;
+
+ UVanthexLocalSettings::Get()->Persist();
+ // A direct join may still be connecting when the player starts a local session.
+ if(GEngine) GEngine->CancelPending(World);
+ UGameplayStatics::OpenLevel(this, FName(MapPath), true, bListen ? TEXT("listen") : TEXT(""));
+}
+
+void AVanthexPlayerController::StartGame(bool bCaptureTheFlag, bool bListen)
+{
+ OpenSessionMap(bCaptureTheFlag ? VanthexMap::CTFPath : VanthexMap::GridV4Path, bListen);
+}
+
+void AVanthexPlayerController::HostGame()
+{
+ if(IsFrontEnd())
+ {
+  StartGame(false, true);
+  return;
+ }
+ OpenSessionMap(VanthexMap::CurrentMap(GetWorld()), true);
+}
+
+void AVanthexPlayerController::JoinGame(const FString& Address)
+{
+ FString Validated, Error;
+ if(!IsLocalController() || !UVanthexLocalSettings::ValidateAddress(Address, Validated, Error)) return;
+
+ auto* Settings = UVanthexLocalSettings::Get();
+ Settings->LastAddress = Validated;
+ Settings->Persist();
+ // Keep the front end available if the connection fails before loading a map.
+ CloseSessionMenu();
+ ClientTravel(Validated, TRAVEL_Absolute);
+}
+
+void AVanthexPlayerController::LeaveGame()
+{
+ OpenSessionMap(VanthexMap::FrontEndPath, false);
+}
 
 
-#include "Engine/GameViewportClient.h"
-#include "Widgets/Layout/SBorder.h"
-#include "Styling/CoreStyle.h"
-#include "Widgets/Layout/SBox.h"
-#include "Widgets/SBoxPanel.h"
-#include "Widgets/Input/SButton.h"
-#include "Widgets/Input/SEditableTextBox.h"
-#include "Widgets/Text/STextBlock.h"
 void AVanthexPlayerController::SetupInputComponent() {
  Super::SetupInputComponent();
+ InputComponent->BindKey(EKeys::Escape,IE_Pressed,this,&AVanthexPlayerController::ToggleSessionMenu);
+ if(IsFrontEnd()) return;
  InputComponent->BindKey(EKeys::Y,IE_Pressed,Communication.Get(),&UVanthexCommunicationComponent::OpenTeamChat);
  InputComponent->BindKey(EKeys::T,IE_Pressed,Communication.Get(),&UVanthexCommunicationComponent::OpenAllChat);
- InputComponent->BindKey(EKeys::Escape,IE_Pressed,this,&AVanthexPlayerController::ToggleSessionMenu);
  InputComponent->BindKey(EKeys::B,IE_Pressed,BuyMenu.Get(),&UVanthexBuyMenuComponent::Toggle);
  InputComponent->BindKey(EKeys::Tab,IE_Pressed,this,&AVanthexPlayerController::ShowScoreboard);
  InputComponent->BindKey(EKeys::Tab,IE_Released,this,&AVanthexPlayerController::HideScoreboard);
 }
 void AVanthexPlayerController::CloseSessionMenu()
 {
+ if(!IsFrontEnd()) RemoveSessionMenu();
+}
+
+void AVanthexPlayerController::RemoveSessionMenu()
+{
  if(!SessionMenu.IsValid()) return;
- if(GetWorld() && GetWorld()->GetGameViewport()) GetWorld()->GetGameViewport()->RemoveViewportWidgetContent(SessionMenu.ToSharedRef());
- SessionMenu.Reset(); UVanthexLocalSettings::Get()->Persist();
- bShowMouseCursor=false; SetInputMode(FInputModeGameOnly());
- SetIgnoreMoveInput(false); SetIgnoreLookInput(false);
+
+ UWorld* World = GetWorld();
+ if(auto* Viewport = World ? World->GetGameViewport() : nullptr)
+ {
+  Viewport->RemoveViewportWidgetContent(SessionMenu.ToSharedRef());
+  SetInputMode(FInputModeGameOnly());
+ }
+ SessionMenu.Reset();
+ UVanthexLocalSettings::Get()->Persist();
+ bShowMouseCursor = false;
+ SetIgnoreMoveInput(false);
+ SetIgnoreLookInput(false);
 }
 void AVanthexPlayerController::EndPlay(const EEndPlayReason::Type Reason) {
  if(ScoreboardKeyRelease&&FSlateApplication::IsInitialized()) FSlateApplication::Get().UnregisterInputPreProcessor(ScoreboardKeyRelease);
  ScoreboardKeyRelease.Reset();HideScoreboard();
- if(IsLocalController()) CloseSessionMenu(); Super::EndPlay(Reason);
+ RemoveSessionMenu();
+ Super::EndPlay(Reason);
 }
 void AVanthexPlayerController::ToggleSessionMenu()
 {
+ if(SessionMenu.IsValid())
+ {
+  CloseSessionMenu();
+  return;
+ }
+ OpenSessionMenu();
+}
+
+void AVanthexPlayerController::OpenSessionMenu()
+{
+ if(SessionMenu.IsValid() || !IsLocalController() || !GetLocalPlayer() || !FSlateApplication::IsInitialized()) return;
+ auto* Viewport = GetWorld() ? GetWorld()->GetGameViewport() : nullptr;
+ if(!Viewport) return;
+
  HideScoreboard();
- if(!IsLocalController() || !GetWorld() || !GetWorld()->GetGameViewport()) return;
- if(SessionMenu.IsValid()) { CloseSessionMenu(); return; }
  Communication->CloseChat();
  if(BuyMenu) BuyMenu->Close();
  if(auto* OwnPawn=Cast<AVanthexCharacter>(GetPawn())) {
   OwnPawn->ServerAction(1,false); OwnPawn->SetSprinting(false); OwnPawn->SetAiming(false);
  }
  SessionMenu=SNew(SVanthexSessionMenu).Controller(this).OnResume(FSimpleDelegate::CreateUObject(this,&AVanthexPlayerController::CloseSessionMenu));
- GetWorld()->GetGameViewport()->AddViewportWidgetContent(SessionMenu.ToSharedRef(),100);
+ Viewport->AddViewportWidgetContent(SessionMenu.ToSharedRef(),100);
  bShowMouseCursor=true; SetIgnoreMoveInput(true); SetIgnoreLookInput(true);
  FInputModeUIOnly Mode; Mode.SetWidgetToFocus(SessionMenu); Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock); SetInputMode(Mode);
 }
@@ -191,6 +262,12 @@ void AVanthexPlayerController::ToggleSessionMenu()
 #include "Misc/Paths.h"
 void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
  Super::PlayerTick(DeltaSeconds);
+ if(IsFrontEnd())
+ {
+  // Retry if the viewport was unavailable at BeginPlay.
+  OpenSessionMenu();
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("VanthexNetworkProbe")) && HasAuthority() && !IsLocalController() && !bProbeDamaged) {
   if(auto* RemoteCharacter=Cast<AVanthexCharacter>(GetPawn())) { FVanthexDamageRequest Damage; Damage.Damage=40; RemoteCharacter->GetHealthComponent()->ApplyDamage(Damage); bProbeDamaged=true; }
  }

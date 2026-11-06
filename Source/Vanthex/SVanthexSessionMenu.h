@@ -25,11 +25,18 @@ private:
 	TSharedPtr<SEditableTextBox> AddressBox;
 	TSharedPtr<STextBlock> Feedback;
 	int32 ActivePage = 0;
-	int32 PendingAction = 0;
+	enum class ETravelAction { Play, Host, MainMenu };
+	TOptional<ETravelAction> PendingAction;
+	bool bFrontEnd = false;
+	bool bCaptureTheFlag = false;
 	int32 Quality = 2;
 	int32 FrameLimit = 144;
 	bool bVSync = false;
 	TSharedRef<SWidget> PlayPage();
+	TSharedRef<SWidget> NetworkPage();
+	TSharedRef<SWidget> ModeCard(bool bCTF);
+	TSharedRef<SWidget> VideoPage();
+	TSharedRef<SWidget> AudioPage();
 	TSharedRef<SWidget> SettingsPage();
 	TSharedRef<SWidget> ControlsPage();
  TSharedRef<SWidget> CrosshairPage();
@@ -37,7 +44,7 @@ private:
 	TSharedRef<SWidget> Button(const FString& Label, TFunction<FReply()> Action, bool Primary=false, int32 Tab=-1);
 	TSharedRef<SWidget> VolumeRow(const FString& Label, float* Value);
 	void ShowPage(int32 Page);
-	FReply RequestTravel(int32 Action);
+	FReply RequestTravel(ETravelAction Action);
 	FReply Join();
 	FText Status() const;
 };

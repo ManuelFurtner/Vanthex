@@ -7,6 +7,15 @@
 // Unreal units are centimetres. GRID occupies 200 x 240 metres.
 namespace VanthexMap
 {
+inline constexpr TCHAR FrontEndPath[] = TEXT("/Game/Vanthex/Maps/MainMenu");
+inline constexpr TCHAR GridV4Path[] = TEXT("/Game/Vanthex/Maps/GridV4");
+inline constexpr TCHAR CTFPath[] = TEXT("/Game/Vanthex/Maps/CrossroadsCTF");
+
+inline bool IsFrontEnd(const UWorld* World)
+{
+ return World && World->GetMapName().EndsWith(TEXT("MainMenu"));
+}
+
 inline bool IsCTF(const UWorld* World=nullptr){return (World&&World->GetMapName().EndsWith(TEXT("CrossroadsCTF")))||FParse::Param(FCommandLine::Get(),TEXT("BakeCTF"))||FParse::Param(FCommandLine::Get(),TEXT("CTFTest"));}
 inline FVector FlagBase(bool Bravo){return FVector(0,Bravo?3600.f:-3600.f,0);}
 inline bool IsGridV3(const UWorld* World = nullptr)
@@ -25,7 +34,13 @@ inline bool IsFacility(const UWorld* World=nullptr){return IsGridV3(World)||IsGr
 inline const TArray<GridV3::FRoom>& Rooms(const UWorld* World){return IsGridV4(World)?GridV4::Rooms():GridV3::Rooms();}
 inline const TArray<GridV3::FConnection>& Connections(const UWorld* World){return IsGridV4(World)?GridV4::Connections():GridV3::Connections();}
 inline const TArray<GridV3::FVerticalLink>& VerticalLinks(const UWorld* World){return IsGridV4(World)?GridV4::VerticalLinks():GridV3::VerticalLinks();}
-inline const TCHAR* CurrentMap(const UWorld* World){return IsCTF(World)?TEXT("/Game/Vanthex/Maps/CrossroadsCTF"):IsGridV4(World)?TEXT("/Game/Vanthex/Maps/GridV4"):IsGridV3(World)?TEXT("/Game/Vanthex/Maps/GridV3"):TEXT("/Game/Vanthex/Maps/Foundry");}
+inline const TCHAR* CurrentMap(const UWorld* World)
+{
+ if(IsFrontEnd(World)) return FrontEndPath;
+ if(IsCTF(World)) return CTFPath;
+ if(IsGridV4(World)) return GridV4Path;
+ return IsGridV3(World) ? TEXT("/Game/Vanthex/Maps/GridV3") : TEXT("/Game/Vanthex/Maps/Foundry");
+}
 inline bool IsLegacyTest()
 {
  return FParse::Param(FCommandLine::Get(), TEXT("VanthexSelfTest")) || FParse::Param(FCommandLine::Get(), TEXT("VanthexVisualShots"));

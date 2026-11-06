@@ -23,9 +23,10 @@ vorhandenen Waffenmodelle und zeigt den Interaktionshinweis im HUD. Drop-Kollisi
 blockiert keine Spieler oder Schuesse. Inventarwechsel brechen Nachladen, Feuer
 und ADS ab und verwenden die bestehende Wechselverzoegerung.
 
-Der gemeinsame Stand enthaelt auch die sechs Partner-Commits bis `6ee80cc`:
+Der gemeinsame Stand enthaelt auch die sieben Partner-Commits bis `e0e4a1a`:
 Maus-Empfindlichkeit, Waffen-Bewegungstempo, Killfeed, CTF mit Respawns, Springen
-und die roemische Arena. Der automatische Match-Neustart bleibt erhalten.
+und die roemische Arena sowie das eigene Hauptmenue mit Modusauswahl. Der
+automatische Match-Neustart bleibt erhalten.
 
 ## Nachgewiesene Pruefungen am 6. November 2026
 
@@ -38,6 +39,14 @@ und die roemische Arena. Der automatische Match-Neustart bleibt erhalten.
 - CTF-Regressionssuite: 24 Pruefungen bestanden, einschliesslich Flaggen und Respawn.
 - Steuerungssuite: 31 Pruefungen bestanden, einschliesslich Springen und Killfeed.
 - Waffenprofil-Suite: 24 Pruefungen bestanden, einschliesslich Nachladen und Slot-Munition.
+- Nach Aufnahme des neuen Hauptmenues erneut beide Drop-Suiten und den
+  Zwei-Prozess-Netzwerktest bestanden.
+- Windows-Development-Paket erfolgreich erstellt. Die fertige EXE startet im
+  gerenderten Hauptmenue; Screenshot lokal unter `Saved/WeaponDrops/packaged-mainmenu.png`.
+  Auch in der gepackten Anwendung bestehen je 29 Drop-Pruefungen auf beiden Karten.
+
+Die neue Anwendung liegt unter `Saved/Standalone-WeaponDrops/Windows/Vanthex.exe`.
+Zum Weitergeben wird der gesamte Windows-Ordner benoetigt, nicht nur die EXE.
 
 Die Berichte und Logs liegen lokal unter `Saved/WeaponDrops/`. Die Netzwerktests
 laufen mit getrennten Prozessen auf einem PC; ein Test mit zwei entfernten PCs
