@@ -298,6 +298,7 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopCrouchInput);
 	EnhancedInput->BindAction(FireAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartFire);
 	EnhancedInput->BindAction(FireAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopFire);
+	EnhancedInput->BindAction(FireAction, ETriggerEvent::Canceled, this, &AVanthexCharacter::StopFire);
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Started,this,&AVanthexCharacter::StartAimingInput);
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Completed,this,&AVanthexCharacter::StopAimingInput);
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Canceled,this,&AVanthexCharacter::StopAimingInput);
@@ -499,7 +500,14 @@ void AVanthexCharacter::StartFire()
 {
  if(!CanPerformRoundActions()) return;
 	if (Equipment && Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife) { Equipment->Attack(); return; }
- if (!HasAuthority()) { ServerAction(0, false); return; }
+ if (!HasAuthority())
+ {
+  if (!IsLocallyControlled()) return;
+  const uint32 Burst = Weapon ? Weapon->StartPredictedFire() : 0;
+  if (Burst != 0) ServerStartPredictedFire(Burst);
+  else ServerAction(0, false);
+  return;
+ }
 	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
 	{
 		Weapon->StartFire();
@@ -508,7 +516,12 @@ void AVanthexCharacter::StartFire()
 
 void AVanthexCharacter::StopFire()
 {
- if (!HasAuthority()) { ServerAction(1, false); return; }
+ if (!HasAuthority())
+ {
+  if (Weapon) Weapon->StopPredictedFire();
+  ServerAction(1, false);
+  return;
+ }
 	if (Weapon)
 	{
 		Weapon->StopFire();
@@ -519,7 +532,15 @@ void AVanthexCharacter::StartReload()
 {
  SetAiming(false);
  if(!CanPerformRoundActions()) return;
- if (!HasAuthority()) { ServerAction(2, false); return; }
+ if (!HasAuthority())
+ {
+  if (Weapon && !Weapon->IsReloading() && Weapon->GetAmmoInMagazine() < Weapon->GetMagazineSize() && Weapon->GetReserveAmmo() > 0)
+  {
+   Weapon->StopPredictedFire();
+  }
+  ServerAction(2, false);
+  return;
+ }
 	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
 	{
 		Weapon->StartReload();
@@ -705,17 +726,36 @@ void AVanthexCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
  DOREPLIFETIME(AVanthexCharacter,bAiming);
 }
 
+void AVanthexCharacter::ServerStartPredictedFire_Implementation(uint32 Burst)
+{
+ if (Burst == 0) return;
+ if (Weapon && CanUseRifle())
+ {
+  Weapon->StartTaggedFire(Burst);
+  return;
+ }
+ if (auto* PC = Cast<AVanthexPlayerController>(GetController()))
+ {
+  PC->ClientResolvePredictedShot(Burst, 0, false, false);
+ }
+}
+
 void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled) {
  switch(Action) { case 0: StartFire(); break; case 1: StopFire(); break; case 2: StartReload(); break; case 3: TryPickupCore(); break; case 4: DropCarriedCore(); break; case 5: ThrowCarriedCore(); break; case 6: SetSprinting(bEnabled); break; default: break; }
 }
 
 
 void AVanthexCharacter::InteractShift() { ServerUseDevice(false); }
-void AVanthexCharacter::SelectRifle() { SetAiming(false); if (Equipment) Equipment->SelectRifle(); }
-void AVanthexCharacter::SelectPistol() { SetAiming(false); if (Equipment) Equipment->SelectPistol(); }
-void AVanthexCharacter::NextWeapon() { SetAiming(false); if (Equipment) Equipment->CycleWeapon(1); }
-void AVanthexCharacter::PreviousWeapon() { SetAiming(false); if (Equipment) Equipment->CycleWeapon(-1); }
-void AVanthexCharacter::SelectKnife() { SetAiming(false); if (Equipment) Equipment->SelectKnife(); }
+void AVanthexCharacter::PrepareWeaponSelection()
+{
+ SetAiming(false);
+ if (Weapon) Weapon->StopPredictedFire();
+}
+void AVanthexCharacter::SelectRifle() { PrepareWeaponSelection(); if (Equipment) Equipment->SelectRifle(); }
+void AVanthexCharacter::SelectPistol() { PrepareWeaponSelection(); if (Equipment) Equipment->SelectPistol(); }
+void AVanthexCharacter::NextWeapon() { PrepareWeaponSelection(); if (Equipment) Equipment->CycleWeapon(1); }
+void AVanthexCharacter::PreviousWeapon() { PrepareWeaponSelection(); if (Equipment) Equipment->CycleWeapon(-1); }
+void AVanthexCharacter::SelectKnife() { PrepareWeaponSelection(); if (Equipment) Equipment->SelectKnife(); }
 bool AVanthexCharacter::CanUseRifle() const { return CanPerformRoundActions() && (!Health || !Health->IsDead()) && (!Equipment || Equipment->CanUseRifle()); }
 void AVanthexCharacter::UseOperator() { ServerUseDevice(true); }
 void AVanthexCharacter::ServerUseDevice_Implementation(bool bRemote) {

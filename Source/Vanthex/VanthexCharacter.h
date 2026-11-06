@@ -34,6 +34,7 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(Server, Reliable) void ServerAction(uint8 Action, bool bEnabled);
+	UFUNCTION(Server, Reliable) void ServerStartPredictedFire(uint32 Burst);
  void DoMove(float Right, float Forward);
 	void DoAim(float Yaw, float Pitch);
 	void SetSprinting(bool bNewSprinting);
@@ -95,6 +96,7 @@ protected:
 	void StartFire();
 	void StopFire();
 	void StartReload();
+	void PrepareWeaponSelection();
 	void SelectRifle();
  void SelectPistol();
 	void SelectKnife();

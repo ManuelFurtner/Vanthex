@@ -1,5 +1,8 @@
 #include "HitscanWeapon.h"
 #include "VanthexCharacter.h"
+#include "VanthexPlayerController.h"
+#include "VanthexPlayerState.h"
+#include "VanthexTestTarget.h"
 #include "VanthexWeaponAudioComponent.h"
 #include "VanthexWeaponPresentation.h"
 
@@ -19,6 +22,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/Controller.h"
+#include "Net/UnrealNetwork.h"
 
 AHitscanWeapon::AHitscanWeapon()
 {
@@ -49,6 +53,7 @@ void AHitscanWeapon::BeginPlay()
 }
 void AHitscanWeapon::OnWeaponProfileChanged()
 {
+ StopPredictedFire();
  if(GetWeaponId()==TEXT("Knife")) return;
  const auto& P=GetProfile(); TraceRange=P.TraceRange; bSupersonicBullet=P.bSupersonic;
  BurstIndex=0; LastShotTime=-100.f;
@@ -61,6 +66,11 @@ void AHitscanWeapon::OnWeaponProfileChanged()
 void AHitscanWeapon::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+ if(PredictionBurst != 0 && (!PredictionOwner.IsValid() || GetPredictionController() != PredictionOwner.Get()
+   || PredictionWeaponId != GetWeaponId()))
+ {
+  StopPredictedFire();
+ }
  VanthexWeaponPresentation::Animate(FirearmParts,GetWeaponId(),GetReloadProgress(),FMath::Clamp(MuzzleTime/.035f,0.f,1.f));
 	Recoil = FMath::FInterpTo(Recoil, 0.f, DeltaSeconds, 14.f);
 	if (RiflePivot)
@@ -201,6 +211,8 @@ void AHitscanWeapon::PresentShotFeedback(const FRotator& ViewRotation)
 
 void AHitscanWeapon::ResetForRound()
 {
+ StopPredictedFire();
+ NextPredictionFireTime = 0.f;
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(FireTimer);
@@ -211,6 +223,7 @@ void AHitscanWeapon::ResetForRound()
 
 void AHitscanWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+ StopPredictedFire();
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(FireTimer);
@@ -218,14 +231,160 @@ void AHitscanWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void AHitscanWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+ Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+ DOREPLIFETIME_CONDITION(AHitscanWeapon, ShotSequence, COND_OwnerOnly);
+}
+
+AVanthexPlayerController* AHitscanWeapon::GetPredictionController() const
+{
+ if(HasAuthority() || bReloading || GetWeaponId() == TEXT("Knife")) return nullptr;
+
+ auto* Character = Cast<AVanthexCharacter>(GetOwner());
+ if(!Character || Character->GetWeapon() != this || !Character->CanUseRifle()) return nullptr;
+
+ auto* PC = Cast<AVanthexPlayerController>(Character->GetController());
+ return PC && PC->GetPawn() == Character && PC->CanPredictDamageFeedback() ? PC : nullptr;
+}
+
+uint32 AHitscanWeapon::StartPredictedFire()
+{
+ auto* PC = GetPredictionController();
+ auto* World = GetWorld();
+ if(!PC || !World || PredictionBurst != 0 || AmmoInMagazine <= 0) return 0;
+
+ const float Delay = NextPredictionFireTime - World->GetTimeSeconds();
+ if(Delay > KINDA_SMALL_NUMBER && !IsAutomatic()) return 0;
+
+ const uint32 Burst = PC->BeginHitPrediction();
+ if(Burst == 0) return 0;
+
+ PredictionBurst = Burst;
+ PredictionShot = 0;
+ PredictionSequence = ShotSequence;
+ PredictionAmmoRemaining = AmmoInMagazine;
+ PredictionWeaponId = GetWeaponId();
+ PredictionOwner = PC;
+ if(Delay > KINDA_SMALL_NUMBER)
+  World->GetTimerManager().SetTimer(PredictionTimer, this, &AHitscanWeapon::PredictShot, Delay, false);
+ else
+  PredictShot();
+ return Burst;
+}
+
+void AHitscanWeapon::StopPredictedFire()
+{
+ if(auto* World = GetWorld()) World->GetTimerManager().ClearTimer(PredictionTimer);
+ PredictionBurst = 0;
+ PredictionAmmoRemaining = 0;
+ PredictionOwner.Reset();
+}
+
+void AHitscanWeapon::PredictShot()
+{
+ auto* PC = GetPredictionController();
+ auto* World = GetWorld();
+ if(!PC || !World || PredictionBurst == 0 || PC != PredictionOwner.Get()
+   || PredictionWeaponId != GetWeaponId() || PredictionAmmoRemaining <= 0 || AmmoInMagazine <= 0)
+ {
+  StopPredictedFire();
+  return;
+ }
+
+ const uint32 Shot = ++PredictionShot;
+ const uint32 Sequence = ++PredictionSequence;
+ --PredictionAmmoRemaining;
+ NextPredictionFireTime = World->GetTimeSeconds() + FireInterval;
+ if(PC->CanPredictShot(PredictionBurst, Shot))
+ {
+  const auto* Character = CastChecked<AVanthexCharacter>(GetOwner());
+  const auto* ShooterState = Character->GetPlayerState<AVanthexPlayerState>();
+  const auto& Profile = GetProfile();
+  const FVector Start = Character->GetPawnViewLocation();
+  const FRotator View = PC->GetControlRotation();
+  const float SpreadScale = Character->IsAiming() ? VanthexWeaponPresentation::Aim(GetWeaponId()).MovingSpreadScale : 1.f;
+  const float MovementForSpread = Character->GetVelocity().Size2D() * SpreadScale;
+  FCollisionQueryParams Params(SCENE_QUERY_STAT(VanthexPredictedHitscan), false, Character);
+  Params.AddIgnoredActor(this);
+  for(int32 Pellet = 0; Pellet < Profile.Pellets; ++Pellet)
+  {
+   FHitResult Hit;
+   TracePellet(Hit, Params, Start, View, Sequence, Pellet, MovementForSpread);
+   const auto* Target = Hit.GetActor();
+   if(!Hit.bBlockingHit || !Target || Profile.DamageAtDistance(Hit.Distance) <= 0.f) continue;
+
+   const auto* Health = Target->FindComponentByClass<UHealthComponent>();
+   if(!Health || Health->IsDead() || Health->GetHealth() <= 0.f) continue;
+
+   if(const auto* TargetCharacter = Cast<AVanthexCharacter>(Target))
+   {
+    const auto* TargetState = TargetCharacter->GetPlayerState<AVanthexPlayerState>();
+    if(!ShooterState || !TargetState || !TargetState->IsAlive()
+      || ShooterState->GetTeam() == EVanthexTeam::None || TargetState->GetTeam() == EVanthexTeam::None
+      || ShooterState->GetTeam() == TargetState->GetTeam()) continue;
+   }
+   else if(!Target->IsA<AVanthexTestTarget>())
+   {
+    continue;
+   }
+
+   PC->ShowPredictedHit(PredictionBurst, Shot);
+   break;
+  }
+ }
+
+ if(IsAutomatic() && PredictionAmmoRemaining > 0)
+  World->GetTimerManager().SetTimer(PredictionTimer, this, &AHitscanWeapon::PredictShot, FireInterval, false);
+ else
+  StopPredictedFire();
+}
+
+void AHitscanWeapon::ClearServerPrediction()
+{
+ if(ServerPredictionBurst != 0 && ServerPredictionShot == 0)
+  if(auto* PC = ServerPredictionOwner.Get())
+   PC->ClientResolvePredictedShot(ServerPredictionBurst, 0, false, false);
+
+ ServerPredictionBurst = 0;
+ ServerPredictionShot = 0;
+ ServerPredictionOwner.Reset();
+}
+
 void AHitscanWeapon::StartFire()
 {
- if(!HasAuthority()||bTriggerHeld) return;
- if(const auto* Character=Cast<AVanthexCharacter>(GetOwner())) if(!Character->CanUseRifle()) return;
+ StartTaggedFire(0);
+}
+
+void AHitscanWeapon::StartTaggedFire(uint32 Burst)
+{
+ if(!HasAuthority()) return;
+
+ const auto* OwnerPawn = Cast<APawn>(GetOwner());
+ auto* PC = OwnerPawn ? Cast<AVanthexPlayerController>(OwnerPawn->GetController()) : nullptr;
+ const auto* Character = Cast<AVanthexCharacter>(OwnerPawn);
+ if(bTriggerHeld || (Character && !Character->CanUseRifle()))
+ {
+  if(Burst != 0 && PC) PC->ClientResolvePredictedShot(Burst, 0, false, false);
+  return;
+ }
+
+ ServerPredictionBurst = PC ? Burst : 0;
+ ServerPredictionShot = 0;
+ ServerPredictionOwner = ServerPredictionBurst != 0 ? PC : nullptr;
  Super::StartFire();
- if(bReloading) return;
+ if(bReloading)
+ {
+  ClearServerPrediction();
+  return;
+ }
+
  FireShot();
- if(!bTriggerHeld||bReloading||!IsAutomatic()) return;
+ if(!bTriggerHeld || bReloading || !IsAutomatic())
+ {
+  if(ServerPredictionShot == 0) ClearServerPrediction();
+  return;
+ }
  ScheduleAutomaticFire();
 }
 void AHitscanWeapon::ScheduleAutomaticFire()
@@ -241,22 +400,30 @@ void AHitscanWeapon::ContinueAutomaticFire()
 }
 void AHitscanWeapon::StartReload()
 {
+ StopPredictedFire();
  if(!HasAuthority()||bReloading||AmmoInMagazine>=MagazineSize||GetReserveAmmo()<=0) return;
  if(const auto* Character=Cast<AVanthexCharacter>(GetOwner())) if(!Character->CanUseRifle()) return;
  if(auto* Character=Cast<AVanthexCharacter>(GetOwner())) Character->SetAiming(false);
  if(GetWorld()) GetWorld()->GetTimerManager().ClearTimer(FireTimer);
+ if(ServerPredictionShot == 0) ClearServerPrediction();
  Super::StartReload();
 }
 void AHitscanWeapon::StopFire()
 {
  Super::StopFire();
+ StopPredictedFire();
+ ClearServerPrediction();
  if(GetWorld()) GetWorld()->GetTimerManager().ClearTimer(FireTimer);
 }
 void AHitscanWeapon::FinishReload()
 {
  const bool Resume=bTriggerHeld&&IsAutomatic();
  Super::FinishReload();
- if(Resume) { bTriggerHeld=false; StartFire(); }
+ if(Resume)
+ {
+  FireShot();
+  ScheduleAutomaticFire();
+ }
 }
 
 bool AHitscanWeapon::IsHeadHit(const FHitResult& Hit) const
@@ -273,6 +440,14 @@ bool AHitscanWeapon::IsHeadHit(const FHitResult& Hit) const
 	return Bone.Contains(TEXT("head"), ESearchCase::IgnoreCase);
 }
 
+FVector AHitscanWeapon::TracePellet(FHitResult& Hit, const FCollisionQueryParams& Params,
+ const FVector& Start, const FRotator& View, uint32 Sequence, int32 Pellet, float MovementForSpread) const
+{
+ const FVector End = Start + GetProfile().ShotDirection(View, Sequence, Pellet, MovementForSpread) * TraceRange;
+ GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params);
+ return End;
+}
+
 void AHitscanWeapon::FireShot()
 {
  if(!HasAuthority()) return;
@@ -281,7 +456,13 @@ void AHitscanWeapon::FireShot()
  auto* World=GetWorld(); if(!World||bReloading) return;
  auto* Mode=Cast<AVanthexGameMode>(World->GetAuthGameMode());
  if(Mode&&!Mode->IsRoundActive()) { StopFire(); return; }
- auto* OwnerPawn=Cast<APawn>(GetOwner()); if(!OwnerPawn||!OwnerPawn->GetController()) return;
+ auto* OwnerPawn=Cast<APawn>(GetOwner());
+ auto* Controller=OwnerPawn?OwnerPawn->GetController():nullptr;
+ if(!Controller || (ServerPredictionBurst != 0 && ServerPredictionOwner.Get() != Controller))
+ {
+  StopFire();
+  return;
+ }
  if(const auto* Health=OwnerPawn->FindComponentByClass<UHealthComponent>()) if(Health->IsDead()) { StopFire(); return; }
  const float Now=World->GetTimeSeconds();
  if(Now+KINDA_SMALL_NUMBER<NextFireTime) return;
@@ -290,23 +471,31 @@ void AHitscanWeapon::FireShot()
   else { UVanthexWeaponAudioComponent::DispatchEvent(this,GetWeaponId(),EVanthexWeaponAudioEvent::DryFire,NextActionId()); StopFire(); NextFireTime=Now+.2f; }
   return;
  }
- auto* Controller=OwnerPawn->GetController();
  const FVector Start=OwnerPawn->GetPawnViewLocation();
  const FRotator View=Controller->GetControlRotation();
  const auto& Profile=GetProfile();
  if(Now-LastShotTime>FMath::Max(.35f,FireInterval*2.5f)) BurstIndex=0;
- LastShotTime=Now; NextFireTime=Now+FireInterval; ++ShotSequence;
+ LastShotTime=Now;
+ NextFireTime=Now+FireInterval;
+ const uint32 Sequence=++ShotSequence;
+ // A kill may end the round and clear the trigger before this shot is resolved.
+ const uint32 Burst=ServerPredictionBurst;
+ const uint32 Shot=Burst != 0 ? ++ServerPredictionShot : 0;
+ TWeakObjectPtr<AVanthexPlayerController> FeedbackController=Cast<AVanthexPlayerController>(Controller);
  SetMagazineAmmo(AmmoInMagazine-1);
  const uint32 Action=NextActionId();
  UVanthexWeaponAudioComponent::DispatchEvent(this,GetWeaponId(),EVanthexWeaponAudioEvent::Shot,Action);
  UVanthexWeaponAudioComponent::DispatchEvent(this,GetWeaponId(),EVanthexWeaponAudioEvent::Mechanic,Action);
  FCollisionQueryParams Params(SCENE_QUERY_STAT(VanthexHitscan),false,OwnerPawn);
  Params.AddIgnoredActor(this); Params.bReturnPhysicalMaterial=true;
- FHitResult FirstHit; TArray<FHitResult> ExtraImpacts;
+ const float SpreadScale=Character&&Character->IsAuthoritativelyAiming()?VanthexWeaponPresentation::Aim(GetWeaponId()).MovingSpreadScale:1.f;
+ const float MovementForSpread=OwnerPawn->GetVelocity().Size2D()*SpreadScale;
+ FHitResult FirstHit;
+ TArray<FHitResult> ExtraImpacts;
+ bool bAppliedHit=false, bAppliedHeadshot=false;
  for(int32 Pellet=0;Pellet<Profile.Pellets;++Pellet) {
-  const float MovingSpreadScale=Character&&Character->IsAuthoritativelyAiming()?VanthexWeaponPresentation::Aim(GetWeaponId()).MovingSpreadScale:1.f;
-  const FVector End=Start+Profile.ShotDirection(View,ShotSequence,Pellet,OwnerPawn->GetVelocity().Size2D()*MovingSpreadScale)*TraceRange;
-  FHitResult Hit; World->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,Params);
+  FHitResult Hit;
+  const FVector End=TracePellet(Hit,Params,Start,View,Sequence,Pellet,MovementForSpread);
   if(Pellet==0) {
    FirstHit=Hit;
    // One representative ballistic audio event per trigger, also for shotguns.
@@ -320,7 +509,21 @@ void AHitscanWeapon::FireShot()
   Request.InstigatorActor=OwnerPawn; Request.InstigatorController=Controller;
   Request.Damage=Profile.DamageAtDistance(Hit.Distance)*(Head?HeadshotMultiplier:1.f);
   Request.bHeadshot=Head; Request.DamageKind=EVanthexDamageKind::Bullet; Request.Hit=Hit;
+  Request.bDeferHitMarker=true;
+  const float PreviousHealth=TargetHealth->GetHealth();
   TargetHealth->ApplyDamage(Request);
+  if(TargetHealth->GetHealth()<PreviousHealth)
+  {
+   bAppliedHit=true;
+   bAppliedHeadshot|=Head;
+  }
+ }
+ if(auto* PC=FeedbackController.Get())
+ {
+  if(Burst != 0)
+   PC->ClientResolvePredictedShot(Burst,Shot,bAppliedHit,bAppliedHeadshot);
+  else if(bAppliedHit)
+   PC->ClientConfirmHit(bAppliedHeadshot);
  }
  MulticastShot(View,FirstHit);
  if(!ExtraImpacts.IsEmpty()) MulticastPelletImpacts(ExtraImpacts);

@@ -54,7 +54,10 @@ void UHealthComponent::ApplyDamage(const FVanthexDamageRequest& Request)
 	Health = FMath::Max(0.f, Health - HPDamage);
 	LastDamage = Request.Damage;
 	LastAppliedHPDamage = PreviousHealth - Health;
- if (auto* PC=Cast<AVanthexPlayerController>(Request.InstigatorController)) PC->ClientConfirmHit(Request.bHeadshot);
+ if (!Request.bDeferHitMarker && LastAppliedHPDamage > 0.f)
+ {
+  if (auto* PC = Cast<AVanthexPlayerController>(Request.InstigatorController)) PC->ClientConfirmHit(Request.bHeadshot);
+ }
 	bLastHitWasHeadshot = Request.bHeadshot;
 
 	const TCHAR* Zone = Request.bHeadshot ? TEXT("HEAD") : TEXT("BODY");
@@ -98,6 +101,10 @@ void UHealthComponent::OnRep_Dead()
 	// Leave non-character targets and their individual collision policies alone.
 	if (auto* Character = Cast<AVanthexCharacter>(GetOwner()))
 	{
+		if (auto* PC = Cast<AVanthexPlayerController>(Character->GetController()); PC && PC->IsLocalController())
+		{
+			PC->ResetDamageFeedback();
+		}
 		if (!bDead && !Character->GetActorEnableCollision())
 		{
 			// Revive can occur after the mesh tick. Rebuild the living pose before

@@ -123,9 +123,19 @@ void AVanthexHUD::DrawHUD()
  if(Health && Health->GetHealth()<PreviousHealth) DamageFlashUntil=GetWorld()->GetTimeSeconds()+0.3f;
  if(Health) PreviousHealth=Health->GetHealth();
  if(GetWorld()->GetTimeSeconds()<DamageFlashUntil) { DrawRect(FLinearColor(0.8f,0,0,0.35f),0,0,Canvas->SizeX,15); DrawRect(FLinearColor(0.8f,0,0,0.35f),0,Canvas->SizeY-15,Canvas->SizeX,15); }
- if(SessionController && GetWorld()->GetTimeSeconds()<SessionController->HitMarkerUntil) {
-  const auto Color=SessionController->bHitMarkerHead ? FLinearColor::Yellow : FLinearColor::White;
-  for(float X:{-1.f,1.f}) for(float Y:{-1.f,1.f}) DrawLine(CenterX+X*10,CenterY+Y*10,CenterX+X*17,CenterY+Y*17,Color,2);
+ if (SessionController)
+ {
+  const bool bConfirmed = SessionController->IsShowingConfirmedHit();
+  if (bConfirmed || SessionController->IsShowingPredictedHit())
+  {
+   const FLinearColor Color = bConfirmed
+    ? (SessionController->bHitMarkerHead ? FLinearColor::Yellow : FLinearColor::White)
+    : FLinearColor(.58f, .64f, .66f, .65f);
+   const float Thickness = bConfirmed ? 2.f : 1.5f;
+   for (float X : {-1.f, 1.f})
+    for (float Y : {-1.f, 1.f})
+     DrawLine(CenterX + X * 10, CenterY + Y * 10, CenterX + X * 17, CenterY + Y * 17, Color, Thickness);
+  }
  }
 
 

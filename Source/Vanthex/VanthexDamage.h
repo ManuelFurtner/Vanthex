@@ -17,4 +17,6 @@ struct FVanthexDamageRequest
 	EVanthexDamageKind DamageKind = EVanthexDamageKind::Environment;
 	bool bHeadshot = false;
 	FHitResult Hit;
+	/** Firearms aggregate hit feedback across all pellets in the shot. */
+	bool bDeferHitMarker = false;
 };

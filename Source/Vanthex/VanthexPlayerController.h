@@ -32,7 +32,17 @@ public:
  bool IsScoreboardOpen() const { return bScoreboardHeld; }
  void ShowScoreboard() { bScoreboardHeld=true; }
  void HideScoreboard() { bScoreboardHeld=false; }
+ // Only the owning client displays provisional hits. The server reports each shot outcome.
+ uint32 BeginHitPrediction();
+ bool CanPredictDamageFeedback() const;
+ bool CanPredictShot(uint32 Burst, uint32 Shot) const;
+ void ShowPredictedHit(uint32 Burst, uint32 Shot);
+ bool IsShowingPredictedHit() const;
+ bool IsShowingConfirmedHit() const;
+ void ResetDamageFeedback();
+ UFUNCTION(Client, Unreliable) void ClientResolvePredictedShot(uint32 Burst, uint32 Shot, bool bHit, bool bHeadshot);
  UFUNCTION(Client, Unreliable) void ClientConfirmHit(bool bHeadshot);
+ virtual void SetPawn(APawn* InPawn) override;
  float HitMarkerUntil=0.f;
  bool bHitMarkerHead=false;
  UFUNCTION(Exec) void HostGame();
@@ -50,6 +60,7 @@ protected:
  virtual void SetupInputComponent() override;
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
  virtual void PawnLeavingGame() override;
+ virtual void OnRep_Pawn() override;
  void ToggleSessionMenu();
  virtual void PlayerTick(float DeltaSeconds) override;
  float ProbeStart = -1.f;
@@ -63,4 +74,14 @@ protected:
  void RemoveSessionMenu();
  void OpenSessionMap(const TCHAR* MapPath, bool bListen);
  TSharedPtr<class SWidget> SessionMenu;
+
+private:
+ bool CanShowDamageFeedback() const;
+ uint32 LastIssuedHitBurst = 0;
+ uint32 InvalidatedThroughHitBurst = 0;
+ uint32 ActiveHitBurst = 0;
+ uint32 LastResolvedHitShot = 0;
+ uint32 PendingHitShot = 0;
+ float PredictedHitUntil = 0.f;
+ int32 HitFeedbackRound = INDEX_NONE;
 };
