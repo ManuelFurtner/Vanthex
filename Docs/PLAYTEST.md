@@ -82,3 +82,19 @@ See Docs/GRID_MAP.md for layout, controls, limitations and verification.
 
 
 Space / Leertaste is the default jump key in Core and Capture the Flag. One grounded jump is allowed; release to clear the input. Jumping is blocked while crouched, dead, or outside active play.
+
+## GRID V4 primitive rebuild — 2026-11-06
+
+GRID V4 keeps its 128 x 106 m design bounds, 25 spaces, three elevations and six vertical links. Architecture now uses only the engine cube and project-authored procedural surface material. Imported environment-kit meshes and their material palettes are no longer used by this level builder. Character, weapon and Core gameplay assets are separate from the architecture.
+
+The southern route now bends through staggered segments instead of a straight perimeter firing lane. Four lateral loops connect the western freight/security approach, eastern research/power approach, lower service route and upper research/manifold route. There are 50 authored connections. The recessed Core enclosure and two elevated/depressed extraction approaches remain. Static navigation measures roughly 110 m to A and 123 m to B from the Core; these are graph estimates, not competitive playtest results.
+
+Sparse grounded full/half-height cover replaces machinery dressing. The six stairs use 48 explicit cube treads each with smooth ramp collision. Runtime and saved-map baking preserve material parameters, visibility and collision independently. Decorative bodies do not acquire unintended blocking collision when baked.
+
+The minimap follows horizontal movement, including strafing/backpedalling; when stationary it uses camera yaw. Direction vectors are normalized and projected with the same X/-Y convention as world locations. Enemies remain hidden. Tests cover four cardinal movement directions independently of camera yaw and the stationary fallback.
+
+Legacy movement assertions were corrected to the accepted partner rules: knife 600/900 cm/s walk/sprint, firearms 510/765 cm/s. No gameplay speed was changed for this rebuild.
+
+Validation evidence is in `Docs/Validation/GridV4Greybox`: 194 map checks, 91,188 exterior capsule probes with no unguarded exits, 37 supported cover instances, 288 treads with 864 height samples, the complete map gameplay test, baseline gameplay regression, controls, extraction, ADS, weapon profiles, CTF, weapon drops on both maps and separate host/client drop replication. All 33 registered Vanthex automation tests passed without test warnings. Editor and Windows Game Development builds passed. Core-room and stair screenshots were captured in Unreal and inspected after a correction pass.
+
+Run `Run-GridV4-Checks.ps1` for geometry, live Core/stair gameplay and host/client map replication; run `Build/Test-WeaponDrops.ps1` for drop regressions. Open `Content/Vanthex/Maps/GridV4.umap` to inspect the new saved map. Existing packaged playtest applications and Edgegap images need a separate cook/package/deployment to contain this map. No Linux build or Edgegap deployment is claimed for this change. Automated probes and two local processes do not replace physical multi-PC testing or a human map-balance playtest.

@@ -1,0 +1,27 @@
+OVERALL PASS
+CHECKS 24
+FAILURES 0
+PASS free pistol and knife without phantom primary
+PASS buy phase blocks firing and reload; weapon selection is tested by ControlsTest
+PASS unowned primary key cannot grant weapon
+PASS held semi trigger fires exactly once
+PASS duplicate press without release cannot repeat semi shot
+PASS released semi trigger fires next shot
+PASS finite reload begins
+PASS reload moves only missing magazine rounds from reserve
+PASS cancel clears timer without minting or losing ammunition
+PASS partial reserve loads only available rounds
+PASS empty reserve rejects reload
+PASS holster blocks shots before profile swap
+PASS sidearm selection applies independent profile
+PASS primary ammunition survives sidearm switch
+PASS sidearm ammunition survives primary switch
+PASS knife public ID does not expose a holstered inventory weapon
+PASS knife switch preserves sidearm ammunition
+PASS held automatic trigger repeatedly fires at profile rate
+PASS empty real weapon dry-fires without automatic reload
+PASS shotgun consumes one shell per trigger
+PASS eight close shotgun pellets each apply eleven damage
+PASS unknown profile cannot mutate active weapon
+PASS inventory uses exactly one hitscan actor per player
+PASS round refill restores purchased weapon ammunition

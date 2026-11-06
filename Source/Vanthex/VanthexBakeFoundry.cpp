@@ -34,7 +34,7 @@ bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false, bool bCTF = 
  TMap<UMaterialInterface*,UMaterialInstanceConstant*> SavedCTFMaterials;
  auto CopyMaterials=[&](UStaticMeshComponent* From,UStaticMeshComponent* To) {
   for(int32 I=0;I<From->GetNumMaterials();++I) if(auto* M=From->GetMaterial(I))
-   if(bCTF) {
+   if(bCTF || bGridV4) {
     UMaterialInstanceConstant*& Saved=SavedCTFMaterials.FindOrAdd(M);
     if(!Saved) {
      Saved=NewObject<UMaterialInstanceConstant>(Package,NAME_None,RF_Public);
@@ -48,10 +48,10 @@ bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false, bool bCTF = 
   if(!Part->GetStaticMesh() || (!Part->IsVisible() && Part->GetCollisionEnabled()==ECollisionEnabled::NoCollision)) continue;
   if(auto* Instances=Cast<UInstancedStaticMeshComponent>(Part)) {
    if(!Instances->IsVisible()) continue;
-   auto* Actor=World->SpawnActor<AActor>(); Actor->SetActorLabel(Part->GetName()); Actor->SetFolderPath(FName(*(Folder+TEXT("/Factory Kit"))));
-   auto* Component=NewObject<UInstancedStaticMeshComponent>(Actor,TEXT("KitInstances")); Actor->SetRootComponent(Component); Actor->AddInstanceComponent(Component);
+   auto* Actor=World->SpawnActor<AActor>(); Actor->SetActorLabel(Part->GetName()); Actor->SetFolderPath(FName(*(Folder+(bGridV4?TEXT("/Greybox"):TEXT("/Factory Kit")))));
+   auto* Component=NewObject<UInstancedStaticMeshComponent>(Actor,bGridV4?Part->GetFName():FName(TEXT("KitInstances"))); Actor->SetRootComponent(Component); Actor->AddInstanceComponent(Component);
    Component->SetStaticMesh(Part->GetStaticMesh()); Component->SetCollisionEnabled(ECollisionEnabled::NoCollision); Component->ComponentTags=Part->ComponentTags;
-   if(bCTF) {
+   if(bCTF || bGridV4) {
     Component->SetCollisionProfileName(Part->GetCollisionProfileName());
     Component->SetCollisionEnabled(Part->GetCollisionEnabled());
     Component->SetCollisionObjectType(Part->GetCollisionObjectType());
@@ -68,7 +68,7 @@ bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false, bool bCTF = 
    auto* Component=Actor->GetStaticMeshComponent(); Component->SetMobility(EComponentMobility::Movable);
    Component->SetStaticMesh(Part->GetStaticMesh()); Component->SetWorldTransform(Part->GetComponentTransform());
    Component->SetCollisionProfileName(TEXT("BlockAll")); Component->SetVisibility(Part->IsVisible()); Component->SetCastShadow(Part->IsVisible());
-   if(bCTF) {
+   if(bCTF || bGridV4) {
     // Architectural trim remains decorative after the procedural owner is removed.
     Component->SetCollisionProfileName(Part->GetCollisionProfileName());
     Component->SetCollisionEnabled(Part->GetCollisionEnabled());

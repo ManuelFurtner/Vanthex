@@ -67,16 +67,16 @@ void VanthexRunExtractionRulesTest(AVanthexGameMode* Mode)
   Core->ResetToSpawn();Mode->TickRoundClock();Check(!Mode->IsRoundActive()&&Mode->RoundWinner==EVanthexTeam::Bravo,TEXT("Core leaving/resetting resolves deferred elimination"));
   Round();Alpha->GetEquipment()->SelectKnife();Advance(4,.8);return;
  case 4:
-  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,690.f),TEXT("drawn knife gives 15 percent walk bonus"));
-  Alpha->SetSprinting(true);Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,1035.f),TEXT("knife sprint receives 15 percent bonus"));
+  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,600.f),TEXT("drawn knife uses standard walk speed"));
+  Alpha->SetSprinting(true);Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,900.f),TEXT("knife uses standard sprint speed"));
   Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeedCrouched,280.f),TEXT("crouch remains unchanged"));
   Alpha->GetEquipment()->SelectPistol();Alpha->SetSprinting(false);
-  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,600.f),TEXT("holstering knife immediately removes bonus"));Advance(5,.8);return;
+  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,510.f),TEXT("holstering knife applies firearm slowdown"));Advance(5,.8);return;
  case 5:
-  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,600.f),TEXT("pistol returns to normal speed"));Alpha->SetSprinting(true);
-  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,900.f),TEXT("pistol sprint unchanged"));Alpha->SetSprinting(false);
+  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,510.f),TEXT("pistol uses firearm walk speed"));Alpha->SetSprinting(true);
+  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,765.f),TEXT("pistol uses firearm sprint speed"));Alpha->SetSprinting(false);
   Alpha->GetEquipment()->SelectKnife();Alpha->SetSprinting(false);
-  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,600.f),TEXT("drawing knife does not grant early bonus"));Case=0;Advance(6,.8);return;
+  Check(FMath::IsNearlyEqual(Alpha->GetCharacterMovement()->MaxWalkSpeed,510.f),TEXT("drawing knife retains firearm speed until drawn"));Case=0;Advance(6,.8);return;
  case 6:
   Round();Pawn=Mode->FindCombatant(Team,1);Check(Acquire(Pawn),Label+TEXT("bot claims Core"));Place(Pawn,Zone->GetActorLocation()+FVector(-380,0,96));
   Pawn->GetCharacterMovement()->SetMovementMode(MOVE_Walking);CastChecked<AVanthexBotController>(Pawn->GetController())->SetActorTickEnabled(true);StageAt=Now;Advance(7,.05);return;

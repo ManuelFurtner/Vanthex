@@ -1,0 +1,16 @@
+OVERALL PASS CHECKS 15 FAILURES 0
+PASS buy phase rejects ADS
+PASS active owner enters server ADS
+PASS iron sight smoothly reaches its actual camera FOV
+PASS server ADS limits run speed
+PASS crouch remains compatible with ADS and reduced speed
+PASS release restores camera and firearm movement speed
+PASS sprint cancels ADS
+PASS ADS cannot bypass active sprint
+PASS actual weapon reload cancels ADS
+PASS reload rejects ADS request
+PASS knife switch cancels and blocks ADS
+PASS AUG enters its magnified scope
+PASS phase transition cancels ADS without release input
+PASS death cancels ADS
+PASS dead owner cannot re-enter ADS

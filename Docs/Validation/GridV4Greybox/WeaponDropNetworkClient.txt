@@ -1,0 +1,1 @@
+PASS WeaponDropNetwork client: owner RPC, replicated pickup, exact ammo, no duplicate

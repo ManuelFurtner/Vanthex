@@ -11,6 +11,12 @@ bool FVanthexMinimapPrivacyTest::RunTest(const FString&)
     const bool Visible=VanthexTacticalHUD::ShowTeammate(Team,Other,Alive,Self);
     TestEqual(TEXT("only living non-self teammates appear; no enemy or unassigned player leaks"),Visible,Team!=EVanthexTeam::None&&Team==Other&&Alive&&!Self);
    }
+ for(const FVector V:{FVector(600,0,0),FVector(0,600,0),FVector(-600,0,0),FVector(0,-600,0)}) {
+  const auto H=VanthexTacticalHUD::Heading(V,123.f);
+  const auto Expected=FVector2D(V.X,-V.Y).GetSafeNormal();
+  TestTrue(TEXT("movement arrow follows projected displacement irrespective of camera yaw"),H.Equals(Expected,.001f));
+ }
+ TestTrue(TEXT("stationary arrow uses yaw without pitch shrinking"),VanthexTacticalHUD::Heading(FVector(0,0,500),90).Equals(FVector2D(0,-1),.001f));
  TestEqual(TEXT("lower floor"),VanthexTacticalHUD::Floor(-502.f),-1);
  TestEqual(TEXT("main floor"),VanthexTacticalHUD::Floor(98.f),0);
  TestEqual(TEXT("upper floor"),VanthexTacticalHUD::Floor(698.f),1);
