@@ -10,7 +10,7 @@ Stand 6. November 2026. Die zwölf Punkte werden in dieser Reihenfolge bearbeite
 6. [ ] **Räumlicher Ton.** Richtung, Entfernung und Stockwerk ohne Sichtkontakt erkennen. Schritte, Gadgets und Teamstimmen sollen im Kampf unterscheidbar bleiben.
 7. [x] **Training.** Unter **Spielen → Solo-Training** stehen Ziele auf 10, 25 und 50 Metern, ein bewegliches Ziel und eine wiederholbare Core-Extraktion bereit.
 8. [x] **Steuerung.** **Maus & Steuerung** bietet einen ADS-Faktor, 22 frei belegbare Aktionen, Konfliktprüfung und Rücksetzen auf Standard. Der Konfigurationstest prüft Speichern und Laden.
-9. [ ] **Team und Auswertung.** Teampings sehen, nach dem Tod zwischen Mitspielern wechseln und am Matchende Kills, Tode, Assists und Objektivaktionen nachvollziehen.
+9. [x] **Team und Auswertung.** Per Mausrad-Klick den lebenden Mitspielern eine Fläche markieren. Nach dem Tod per Pfeiltasten das beobachtete Teammitglied wechseln. **Tab** zeigt Kills, Tode, Assists und gewertete Objektivaktionen.
 10. [ ] **Verbindungen.** Einer privaten Lobby beitreten, Serverliste mit Ping und Modus nutzen und nach Abbruch denselben Platz wieder übernehmen.
 11. [ ] **Leistung und Builds.** Bildraten und Frametimes auf beiden Karten mit gleicher Konfiguration vergleichen. Windows-Client und Linux-Server aus demselben Commit reproduzieren und zusammen verbinden.
 12. [ ] **Serverprüfung und Moderation.** Ungültige Kampf- und Objektivaktionen serverseitig ablehnen. Meldungen absenden und zur Moderation prüfen können. Rangliste, Killcam und weitere Operatoren folgen danach.
@@ -21,6 +21,7 @@ Stand 6. November 2026. Die zwölf Punkte werden in dieser Reihenfolge bearbeite
 - Der Waffenvergleich ermittelt ideale Körpertreffer auf 5, 20 und 45 Metern mit keiner, leichter und schwerer Rüstung. Die Werte dienen als Ausgangspunkt für das Balancing mit Menschen.
 - Kleine Stufen lösen eine schwächere Landepose aus. Die CTF-Respawnwahl prüft auf belegte Startplätze und die Nähe von Gegnern. Die Lautstärke von Schritten und Ausrüstung hat einen eigenen Regler.
 - Mit den Pfeiltasten links und rechts können ausgeschiedene Spieler lebende Teammitglieder beobachten. Die Teamübersicht zeigt außerdem Flaggenaktionen und gewertete Core-Pässe sowie Abfangaktionen.
+- In einer Mehrspielersitzung können Spieler unter **Netzwerk → Spieler melden** einen Grund auswählen. Bestätigte Meldungen liegen zur manuellen Prüfung auf dem Spielserver unter `Saved/Moderation`.
 - Der erste gerenderte Messlauf erfasste je 600 Frames mit fester Spawnansicht bei 1280 × 720, Grafikstufe Hoch und Direct3D 12 auf einer RTX 4070 SUPER. GRID V4 lag bei 10,36 ms im Median und 11,82 ms im 95. Perzentil. Crossroads CTF lag bei 6,08 ms und 6,86 ms.
 
 Für denselben Grafiktest `$Map` auf `GridV4` oder `CrossroadsCTF` setzen und den Entwicklungsbuild mit den folgenden Argumenten starten. Der CSV-Profiler schreibt unter `Saved/Profiling/CSV`.

@@ -26,6 +26,7 @@ void AVanthexHUD::DrawTacticalHUD()
  auto Rect=[&](float X,float Y,float Width,float Height,FLinearColor Color){DrawRect(Color,X*S,Y*S,Width*S,Height*S);};
  auto Text=[&](const FString& Value,float X,float Y,float Size,FLinearColor Color){DrawText(Value,Color,X*S,Y*S,Font,Size*S/FMath::Max(1,Font->GetMaxCharHeight()));};
  auto Line=[&](FVector2D A,FVector2D B,FLinearColor Color,float Width=1.f){DrawLine(A.X*S,A.Y*S,B.X*S,B.Y*S,Color,Width*S);};
+ const FVector* TeamPing = PC->GetTeamPingLocation();
  if(Pawn&&VanthexMap::IsFacility(GetWorld())) {
   const int32 Floor=VanthexTacticalHUD::Floor(Pawn->GetActorLocation().Z);
   // 70% of the previous panel dimensions; keep labels legible at the smaller size.
@@ -50,6 +51,12 @@ void AVanthexHUD::DrawTacticalHUD()
    const auto P=Project(It->GetActorLocation()); Rect(P.X-6,P.Y-6,12,12,FLinearColor(.08f,.34f,.24f));
    Text(It->GetId()==EVanthexExtractionId::A?TEXT("A"):TEXT("B"),P.X-4,P.Y-8,12,FLinearColor(.4f,1,.65f));
   }
+  if(TeamPing && VanthexTacticalHUD::Floor(TeamPing->Z) == Floor)
+  {
+   const FVector2D Ping = Project(*TeamPing);
+   Rect(Ping.X-3,Ping.Y-3,6,6,White);
+   Rect(Ping.X-2,Ping.Y-2,4,4,Cyan);
+  }
   for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) {
    const auto* State=It->GetPlayerState<AVanthexPlayerState>();
    if(!State||!Own||!VanthexTacticalHUD::ShowTeammate(Own->GetTeam(),State->GetTeam(),State->IsAlive(),*It==Pawn)) continue;
@@ -63,6 +70,26 @@ void AVanthexHUD::DrawTacticalHUD()
   Text(TEXT("DU / TEAM"),36.4f,207.3f,10,Muted);
  }
  Text(TEXT("TAB  TEAMSTATUS"),W-160,51,11,Muted);
+ if(Pawn && Pawn->GetHealthComponent() && !Pawn->GetHealthComponent()->IsDead() && Pawn->CanPerformRoundActions())
+ {
+  Text(TEXT("MAUSRAD DRUECKEN  TEAM-PING"),W-212,67,10,Muted);
+  FVector2D Screen;
+  if(TeamPing && PC->ProjectWorldLocationToScreen(*TeamPing, Screen))
+  {
+   const FVector2D Point = Screen / S;
+   if(Point.X > 16 && Point.X < W-16 && Point.Y > 16 && Point.Y < H-16)
+   {
+    constexpr double Radius = 7.0;
+    const FVector2D Top = Point + FVector2D(0,-Radius), Right = Point + FVector2D(Radius,0);
+    const FVector2D Bottom = Point + FVector2D(0,Radius), Left = Point + FVector2D(-Radius,0);
+    Line(Top,Right,Cyan,2); Line(Right,Bottom,Cyan,2);
+    Line(Bottom,Left,Cyan,2); Line(Left,Top,Cyan,2);
+    const int32 Meters = FMath::RoundToInt(FVector::Distance(Pawn->GetActorLocation(),*TeamPing) / 100.0);
+    const float LabelX = Point.X + (Point.X < W-125 ? 12.f : -112.f);
+    Text(FString::Printf(TEXT("TEAM-PING  %d m"),Meters),LabelX,Point.Y-7,11,Cyan);
+   }
+  }
+ }
  if(Pawn && Pawn->GetHealthComponent() && Pawn->GetHealthComponent()->IsDead())
  {
   const float X=(W-360)*.5f,Y=H-135;

@@ -41,6 +41,7 @@ private:
 	bool bVSync = false;
 	TSharedRef<SWidget> PlayPage();
 	TSharedRef<SWidget> NetworkPage();
+	TSharedRef<SWidget> ReportPanel();
 	TSharedRef<SWidget> ModeCard(bool bCTF);
 	TSharedRef<SWidget> VideoPage();
 	TSharedRef<SWidget> AudioPage();

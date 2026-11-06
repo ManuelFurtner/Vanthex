@@ -1,7 +1,10 @@
-﻿#include "SVanthexSessionMenu.h"
+#include "SVanthexSessionMenu.h"
 #include "VanthexPlayerController.h"
 #include "VanthexCharacter.h"
 #include "VanthexLocalSettings.h"
+#include "VanthexCommunicationComponent.h"
+#include "VanthexModerationComponent.h"
+#include "VanthexPlayerState.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "VanthexMenuStyle.h"
 #include "Engine/World.h"
@@ -10,6 +13,8 @@
 #include "Engine/Engine.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SComboBox.h"
+#include "Widgets/SNullWidget.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/SLeafWidget.h"
@@ -204,7 +209,93 @@ TSharedRef<SWidget> SVanthexSessionMenu::NetworkPage()
         [Button(TEXT("VERBINDEN"), [this]() { return Join(); })]
         +SVerticalBox::Slot().AutoHeight()
         [Text(TEXT("Der Host muss erreichbar sein. Standardport ist 7777."), 13, Muted)]
+        +SVerticalBox::Slot().AutoHeight()[ReportPanel()]
     ];
+}
+
+TSharedRef<SWidget> SVanthexSessionMenu::ReportPanel()
+{
+    const auto* PC = Controller.Get();
+    auto* Component = PC ? PC->GetModeration() : nullptr;
+    if (bFrontEnd || !Component) return SNullWidget::NullWidget;
+
+    TArray<AVanthexPlayerState*> Players;
+    Component->GetReportTargets(Players);
+    if (Players.IsEmpty()) return SNullWidget::NullWidget;
+
+    struct FReportTarget
+    {
+        int32 Id;
+        FString Name;
+    };
+    struct FReportSelection
+    {
+        TArray<TSharedPtr<FReportTarget>> Options;
+        TSharedPtr<FReportTarget> Selected;
+    };
+    auto Selection = MakeShared<FReportSelection>();
+    for (const auto* Player : Players)
+    {
+        Selection->Options.Add(MakeShared<FReportTarget>(FReportTarget{Player->GetPlayerId(),
+            UVanthexCommunicationComponent::CleanText(Player->GetPlayerName(), 32)}));
+    }
+    const TWeakObjectPtr<UVanthexModerationComponent> Moderation(Component);
+    auto Reasons = SNew(SHorizontalBox);
+    const TPair<EVanthexReportReason, FText> ReasonButtons[] = {
+        {EVanthexReportReason::Harassment, NSLOCTEXT("VanthexModeration", "Harassment", "Bel\u00e4stigung")},
+        {EVanthexReportReason::Cheating, NSLOCTEXT("VanthexModeration", "Cheating", "Cheat-Verdacht")},
+        {EVanthexReportReason::Disruption, NSLOCTEXT("VanthexModeration", "Disruption", "Spielst\u00f6rung")},
+    };
+    for (const auto& Reason : ReasonButtons)
+    {
+        Reasons->AddSlot().FillWidth(1).Padding(0, 0, 6, 0)
+        [
+            SNew(SButton).HAlign(HAlign_Center).ContentPadding(FMargin(7, 8))
+            .IsEnabled_Lambda([Moderation, Selection]()
+            {
+                const auto* Report = Moderation.Get();
+                return Report && Selection->Selected.IsValid() && Report->CanSubmitReport();
+            })
+            .OnClicked_Lambda([Moderation, Selection, Code = Reason.Key]()
+            {
+                if (auto* Report = Moderation.Get(); Report && Selection->Selected.IsValid())
+                    Report->SubmitReport(Selection->Selected->Id, Code);
+                return FReply::Handled();
+            })
+            [SNew(STextBlock).Text(Reason.Value).ColorAndOpacity(White)]
+        ];
+    }
+
+    return SNew(SVerticalBox)
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 20, 0, 8)[Text(TEXT("SPIELER MELDEN"), 12, Cyan)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 8, 8)
+        [
+            SNew(SComboBox<TSharedPtr<FReportTarget>>)
+            .OptionsSource(&Selection->Options)
+            .OnSelectionChanged_Lambda([Selection](TSharedPtr<FReportTarget> Target, ESelectInfo::Type)
+            {
+                Selection->Selected = MoveTemp(Target);
+            })
+            .OnGenerateWidget_Lambda([](TSharedPtr<FReportTarget> Target) { return Text(Target->Name, 14); })
+            [
+                SNew(STextBlock).ColorAndOpacity(White).Text_Lambda([Selection]()
+                {
+                    return Selection->Selected.IsValid() ? FText::FromString(Selection->Selected->Name) :
+                        NSLOCTEXT("VanthexModeration", "SelectPlayer", "Spieler ausw\u00e4hlen");
+                })
+            ]
+        ]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)
+        [Text(TEXT("Mit Auswahl des Grundes sendest du die Meldung an den Spielserver."), 13, Muted)]
+        +SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)[Reasons]
+        +SVerticalBox::Slot().AutoHeight()
+        [
+            SNew(STextBlock).ColorAndOpacity(Cyan).AutoWrapText(true).Text_Lambda([Moderation]()
+            {
+                const auto* Report = Moderation.Get();
+                return Report ? Report->GetReportStatus() : FText::GetEmpty();
+            })
+        ];
 }
 
 TSharedRef<SWidget> SVanthexSessionMenu::ControlsPage()

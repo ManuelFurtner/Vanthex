@@ -7,9 +7,10 @@ namespace
 {
 bool IsReservedGameplayKey(const FKey& Key)
 {
- // Session, scoreboard, communication, and test controls are fixed bindings.
+ // Session, scoreboard, communication, team ping, and test controls are fixed bindings.
  return Key == EKeys::Escape || Key == EKeys::Tab || Key == EKeys::B ||
   Key == EKeys::Y || Key == EKeys::T || Key == EKeys::V || Key == EKeys::F5 ||
+  Key == EKeys::MiddleMouseButton ||
   GetDefault<UInputSettings>()->ConsoleKeys.Contains(Key);
 }
 

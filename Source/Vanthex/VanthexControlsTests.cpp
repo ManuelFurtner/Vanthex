@@ -44,6 +44,7 @@ void VanthexRunControlsTest(AVanthexGameMode* Mode)
  if(!Mode||!Mode->HasAuthority()) return;
  static TWeakObjectPtr<UWorld> Fixture; static int32 Step=0,Failures=0; static double Start=0,Next=0;
  static float BuyRemaining=0,StartZ=0,SecondJumpVelocity=0; static TArray<FString> Lines;
+ static FVector FirstPing = FVector::ZeroVector;
  const double Now=FPlatformTime::Seconds();
  if(Fixture.Get()!=Mode->GetWorld()) { Fixture=Mode->GetWorld(); Step=Failures=0; Start=Now; Next=0; Lines.Reset(); }
  if(Step==100) return;
@@ -117,8 +118,24 @@ void VanthexRunControlsTest(AVanthexGameMode* Mode)
   Pawn->SetCrouching(true);++Step;Next=Now+.1;return;
  case 13:
   Check(Pawn->bIsCrouched&&!Pawn->CanJump(),TEXT("crouched character cannot jump"));
-  Pawn->SetCrouching(false);++Step;Next=Now+.1;return;
+  Pawn->SetCrouching(false);
+  PC->SetControlRotation(FRotator(-85,0,0));
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::MiddleMouseButton,IE_Pressed,1.f));
+  ++Step;Next=Now+.1;return;
  case 14:
+  if(const FVector* Ping=PC->GetTeamPingLocation()) FirstPing=*Ping;
+  Check(PC->GetTeamPingLocation() && FirstPing.Z<Pawn->GetActorLocation().Z,
+   TEXT("middle mouse places an authoritative team ping on the floor"));
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::MiddleMouseButton,IE_Released,0.f));
+  PC->SetControlRotation(FRotator(-45,0,0));
+  ++Step;Next=Now+.1;return;
+ case 15:
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::MiddleMouseButton,IE_Pressed,1.f));
+  ++Step;Next=Now+.1;return;
+ case 16:
+  Check(PC->GetTeamPingLocation() && PC->GetTeamPingLocation()->Equals(FirstPing),
+   TEXT("rapid repeat cannot overwrite the current team ping"));
+  PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::MiddleMouseButton,IE_Released,0.f));
   {auto* Ally=Mode->FindCombatant(EVanthexTeam::Alpha,1);auto* Enemy=Mode->FindCombatant(EVanthexTeam::Bravo,0);
    auto* H=Pawn->GetPlayerState<AVanthexPlayerState>();auto* A=Ally->GetPlayerState<AVanthexPlayerState>();auto* B=Enemy->GetPlayerState<AVanthexPlayerState>();
    const int32 K=H->GetKills(),Assists=A->GetAssists(),D=B->GetDeaths();

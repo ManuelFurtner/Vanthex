@@ -10,6 +10,7 @@
 #include "VanthexOperatorComponent.h"
 #include "VanthexMapLayout.h"
 #include "VanthexBuyMenuComponent.h"
+#include "VanthexModerationComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
@@ -42,6 +43,7 @@ AVanthexPlayerController::AVanthexPlayerController()
 	BulletAudio = CreateDefaultSubobject<UVanthexBulletAudioComponent>(TEXT("BulletAudio"));
 	WeaponAudio = CreateDefaultSubobject<UVanthexWeaponAudioComponent>(TEXT("WeaponAudio"));
 	BuyMenu = CreateDefaultSubobject<UVanthexBuyMenuComponent>(TEXT("BuyMenu"));
+	Moderation = CreateDefaultSubobject<UVanthexModerationComponent>(TEXT("Moderation"));
 	bShowMouseCursor = false;
 	bEnableClickEvents = false;
 	bEnableMouseOverEvents = false;
@@ -55,6 +57,11 @@ void AVanthexPlayerController::BeginPlay()
  {
   extern void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC);
   VanthexStartDamagePredictionTest(this);
+ }
+ if (FParse::Param(FCommandLine::Get(), TEXT("ModerationNetworkTest")))
+ {
+  extern void VanthexStartModerationNetworkTest(AVanthexPlayerController* PC);
+  VanthexStartModerationNetworkTest(this);
  }
 #endif
  if(IsLocalController()) UVanthexLocalSettings::Get()->ApplyAudio(GetWorld());
@@ -207,6 +214,7 @@ void AVanthexPlayerController::SetupInputComponent() {
  InputComponent->BindKey(EKeys::B,IE_Pressed,BuyMenu.Get(),&UVanthexBuyMenuComponent::Toggle);
  InputComponent->BindKey(EKeys::Tab,IE_Pressed,this,&AVanthexPlayerController::ShowScoreboard);
  InputComponent->BindKey(EKeys::Tab,IE_Released,this,&AVanthexPlayerController::HideScoreboard);
+ InputComponent->BindKey(EKeys::MiddleMouseButton,IE_Pressed,this,&AVanthexPlayerController::RequestTeamPing);
  InputComponent->BindKey(EKeys::Left,IE_Pressed,this,&AVanthexPlayerController::SpectatePrevious).bConsumeInput=false;
  InputComponent->BindKey(EKeys::Right,IE_Pressed,this,&AVanthexPlayerController::SpectateNext).bConsumeInput=false;
 }
@@ -437,6 +445,7 @@ void AVanthexPlayerController::SetPawn(APawn* InPawn)
  if (GetPawn() != InPawn)
  {
   ResetDamageFeedback();
+  TeamPingUntil = 0.0;
   if (HasAuthority()) SetSpectateTarget(nullptr);
  }
  Super::SetPawn(InPawn);
@@ -445,6 +454,7 @@ void AVanthexPlayerController::SetPawn(APawn* InPawn)
 void AVanthexPlayerController::OnRep_Pawn()
 {
  ResetDamageFeedback();
+ TeamPingUntil = 0.0;
  Super::OnRep_Pawn();
 }
 

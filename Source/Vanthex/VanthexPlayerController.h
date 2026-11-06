@@ -7,6 +7,7 @@
 #include "VanthexPlayerController.generated.h"
 
 class UVanthexBuyMenuComponent;
+class UVanthexModerationComponent;
 class UVanthexCommunicationComponent;
 class AVanthexCharacter;
 
@@ -24,6 +25,7 @@ public:
  UFUNCTION(Client, Unreliable) void ClientBulletAudio(const FVanthexBulletAudioPacket& Packet);
  UVanthexWeaponAudioComponent* GetWeaponAudio() const { return WeaponAudio; }
  UVanthexBuyMenuComponent* GetBuyMenu() const { return BuyMenu; }
+ UVanthexModerationComponent* GetModeration() const { return Moderation; }
  UFUNCTION(Client, Unreliable) void ClientWeaponAudio(const FVanthexWeaponAudioPacket& Packet);
 
 	/** Local test restart. Later this is a server round restart. */
@@ -34,6 +36,7 @@ public:
  void StartGame(bool bCaptureTheFlag, bool bListen = false);
  void StartTraining();
  bool IsScoreboardOpen() const { return bScoreboardHeld; }
+ const FVector* GetTeamPingLocation() const;
  void ShowScoreboard() { bScoreboardHeld=true; }
  void HideScoreboard() { bScoreboardHeld=false; }
  // Only the owning client displays provisional hits. The server reports each shot outcome.
@@ -60,6 +63,7 @@ protected:
  UPROPERTY(VisibleAnywhere, Category="Audio") TObjectPtr<UVanthexBulletAudioComponent> BulletAudio;
  UPROPERTY(VisibleAnywhere, Category="Audio") TObjectPtr<UVanthexWeaponAudioComponent> WeaponAudio;
  UPROPERTY(VisibleAnywhere, Category="Economy") TObjectPtr<UVanthexBuyMenuComponent> BuyMenu;
+ UPROPERTY(VisibleAnywhere, Category="Moderation") TObjectPtr<UVanthexModerationComponent> Moderation;
 	virtual void BeginPlay() override;
  virtual void SetupInputComponent() override;
  virtual void EndPlay(const EEndPlayReason::Type Reason) override;
@@ -90,6 +94,13 @@ private:
  void SpectateNext();
  void RequestSpectateCycle(int32 Direction);
  UFUNCTION(Server, Reliable) void ServerCycleSpectate(int32 Direction);
+ void RequestTeamPing();
+ UFUNCTION(Server, Unreliable) void ServerPlaceTeamPing();
+ UFUNCTION(Client, Unreliable) void ClientPlaceTeamPing(FVector_NetQuantize Location, int32 RoundIndex);
+ FVector TeamPingLocation = FVector::ZeroVector;
+ double NextTeamPingAt = 0.0;
+ double TeamPingUntil = 0.0;
+ int32 TeamPingRound = INDEX_NONE;
  bool CanShowDamageFeedback() const;
  uint32 LastIssuedHitBurst = 0;
  uint32 InvalidatedThroughHitBurst = 0;
