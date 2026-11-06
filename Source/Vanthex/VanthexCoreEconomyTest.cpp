@@ -172,6 +172,7 @@ void VanthexRunCoreEconomyTest(AVanthexGameMode* Mode)
    if(Core->GetCarrier()!=Ally && Age<3.) break;
    Probe->Check(Core->GetCarrier()==Ally,TEXT("world-ticked flight is caught by teammate"));
    Probe->Check(H->GetEconomy().Credits==850 && A->GetEconomy().Credits==800,TEXT("genuine qualifying catch pays exactly 50 to thrower"));
+   Probe->Check(H->GetCorePasses()==1 && A->GetCorePasses()==0,TEXT("qualified pass credits only the thrower on the scoreboard"));
    Advance(2); break;
   case 2:
    if(Age<.4) break;
@@ -237,6 +238,7 @@ void VanthexRunCoreEconomyTest(AVanthexGameMode* Mode)
   default:
    if(Age<.4) break;
    Probe->Check(E->GetEconomy().Credits==900,TEXT("intercept remains single payment on subsequent ticks"));
+   Probe->Check(E->GetCoreIntercepts()==1 && H->GetCorePasses()==1,TEXT("only eligible passes and interceptions are recorded"));
    Probe->Finish(W); break;
   }
  }),.05f,true);

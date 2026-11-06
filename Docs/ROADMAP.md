@@ -1,3 +1,60 @@
+# VANTHEX – Aktiver Plan
+
+Stand 6. November 2026. Die zwölf Punkte werden in dieser Reihenfolge bearbeitet. Änderungen einzeln umsetzen, prüfen und pushen. Ein Punkt ist abgeschlossen, wenn die passende Abnahme belegt ist. Die Partien mit sechs bzw. zehn Menschen stehen aus, bis eine Testgruppe verfügbar ist.
+
+1. [ ] **Echte Playtests.** Eine vollständige Core-Partie mit sechs und eine CTF-Partie mit zehn Menschen spielen. Todesorte, oft genutzte Waffen und wenig genutzte Wege protokollieren.
+2. [ ] **Treffer bei höherem Ping.** Dieselben Schussserien mit bewegten Zielen und Dauerfeuer bei normaler und erhöhter Latenz sowie Paketverlust vergleichen. Ein begrenztes serverseitiges Zurückrechnen der Zielpositionen erst anhand der Messwerte planen.
+3. [ ] **Waffenbalance.** Rückstoß, Streuung, Schadensabfall und Rüstung auf kurzen, mittleren und langen Distanzen vergleichen. Jede Waffe bekommt eine erkennbare Rolle.
+4. [ ] **Bewegung und Animationen.** Sprint, Ducken, Sprung und Zielen mit Visier in Ego- und Fremdansicht prüfen. Nachladen, Landen und Waffenwechsel sollen sauber ineinander übergehen.
+5. [ ] **Karten.** Beide GRID-Extraktionswege und die Zugänge zu beiden Flaggen auf Crossroads ablaufen. Engpässe, ungenutzte Wege und Tode direkt am Spawn erfassen.
+6. [ ] **Räumlicher Ton.** Richtung, Entfernung und Stockwerk ohne Sichtkontakt erkennen. Schritte, Gadgets und Teamstimmen sollen im Kampf unterscheidbar bleiben.
+7. [x] **Training.** Unter **Spielen → Solo-Training** stehen Ziele auf 10, 25 und 50 Metern, ein bewegliches Ziel und eine wiederholbare Core-Extraktion bereit.
+8. [x] **Steuerung.** **Maus & Steuerung** bietet einen ADS-Faktor, 22 frei belegbare Aktionen, Konfliktprüfung und Rücksetzen auf Standard. Der Konfigurationstest prüft Speichern und Laden.
+9. [ ] **Team und Auswertung.** Teampings sehen, nach dem Tod zwischen Mitspielern wechseln und am Matchende Kills, Tode, Assists und Objektivaktionen nachvollziehen.
+10. [ ] **Verbindungen.** Einer privaten Lobby beitreten, Serverliste mit Ping und Modus nutzen und nach Abbruch denselben Platz wieder übernehmen.
+11. [ ] **Leistung und Builds.** Bildraten und Frametimes auf beiden Karten mit gleicher Konfiguration vergleichen. Windows-Client und Linux-Server aus demselben Commit reproduzieren und zusammen verbinden.
+12. [ ] **Serverprüfung und Moderation.** Ungültige Kampf- und Objektivaktionen serverseitig ablehnen. Meldungen absenden und zur Moderation prüfen können. Rangliste, Killcam und weitere Operatoren folgen danach.
+
+## Fortschritt der ersten Etappe
+
+- Der lokale Testlauf prüft Bot-Partien und Treffer auf ein bewegtes Ziel bei 0, 50, 100 und 150 ms simulierter RTT. Ein separater Lauf hat 100 ms RTT mit 2 % ausgehendem Paketverlust pro Seite geprüft. Das HUD kann die Netzwerkdaten unter **Grafik** einblenden.
+- Der Waffenvergleich ermittelt ideale Körpertreffer auf 5, 20 und 45 Metern mit keiner, leichter und schwerer Rüstung. Die Werte dienen als Ausgangspunkt für das Balancing mit Menschen.
+- Kleine Stufen lösen eine schwächere Landepose aus. Die CTF-Respawnwahl prüft auf belegte Startplätze und die Nähe von Gegnern. Die Lautstärke von Schritten und Ausrüstung hat einen eigenen Regler.
+- Mit den Pfeiltasten links und rechts können ausgeschiedene Spieler lebende Teammitglieder beobachten. Die Teamübersicht zeigt außerdem Flaggenaktionen und gewertete Core-Pässe sowie Abfangaktionen.
+- Der erste gerenderte Messlauf erfasste je 600 Frames mit fester Spawnansicht bei 1280 × 720, Grafikstufe Hoch und Direct3D 12 auf einer RTX 4070 SUPER. GRID V4 lag bei 10,36 ms im Median und 11,82 ms im 95. Perzentil. Crossroads CTF lag bei 6,08 ms und 6,86 ms.
+
+Für denselben Grafiktest `$Map` auf `GridV4` oder `CrossroadsCTF` setzen und den Entwicklungsbuild mit den folgenden Argumenten starten. Der CSV-Profiler schreibt unter `Saved/Profiling/CSV`.
+
+```powershell
+& $Editor $Project "/Game/Vanthex/Maps/$Map" -game -d3d12 -RenderOffscreen -windowed -ResX=1280 -ResY=720 -ForceRes -unattended -nosplash -nosound -VanthexPerfCapture -ExitAfterCsvProfiling -csvCompression=0 -seconds=180
+```
+
+## Phase 1 – Anleitung für den Playtest
+
+**Vorbereiten und verbinden.** Alle starten denselben Build. Für LAN im Hauptmenü unter **Spielen** den Modus wählen und unter **Netzwerk** auf **LAN-Partie hosten** klicken. Mitspieler tragen dort unter **Direkt beitreten** die erreichbare Adresse ein und klicken **Verbinden**. Bei abweichendem Port die Form `IP:Port` verwenden. Mit einer bereitgestellten Serveradresse direkt beitreten. Vor dem Start im Scoreboard prüfen, ob alle Plätze durch Menschen besetzt sind. Bot-Partien separat kennzeichnen.
+
+| Partie | Ablauf und Beobachtungen |
+|---|---|
+| Aufwärmen, fünf Minuten | Laufen, Springen, Zielen, Nachladen und Waffenauswahl ausprobieren. Je eine kurze Schussserie auf ein stehendes und ein bewegtes Ziel. Probleme mit Eingabe, Trefferfeedback oder Ton notieren. |
+| Core auf GRID V4, 3v3 | Eine vollständige Partie spielen. Beide Extraktionswege versuchen, den Core passen und abfangen. Bei einer Extraktion die 15 Sekunden beobachten. Tode nach Kartenbereich und gewählte Waffen zählen. |
+| CTF auf Crossroads, 5v5 | Eine vollständige Partie spielen. Die Mitte und beide Flanken testen. Flaggenaufnahme, Übergabe nach Tod und Rückkehr zur eigenen Basis beobachten. Route jeder Eroberung und Tode nahe den Spawns zählen. Reguläre Spielzeit 15 Minuten, bei Gleichstand drei Minuten Verlängerung. |
+
+Nach dem Match den automatischen Neustart beobachten. Bei einem geplanten Abbruch zwischen zwei Runden notieren, ob der Beitritt erneut klappt und welcher Platz zugeteilt wird.
+
+**Protokoll je Partie.** Build, Karte, Modus, menschliche Spielerzahl, Dauer, Ergebnis und Objektivaktionen festhalten. Todesorte, Waffenwahl, Abschüsse pro Waffe, Routen und Tode nahe dem Spawn nach Team zählen. Bei Auffälligkeiten Runde oder Spielzeit, beteiligte Waffe, Entfernung, beobachtetes Verhalten und erwartetes Ergebnis notieren. Ping, Paketverlust und Frametimes ergänzen, falls gemessen. Jede Person nennt danach die stärkste und die unklarste Situation.
+
+**Technische Vorprüfung.** Nach dem Build im Projektverzeichnis in PowerShell ausführen.
+
+```powershell
+.\Run-Playtest-Checks.ps1 -Scope All
+```
+
+Der Runner prüft Core, CTF, Solo-Training und die Trefferbestätigung ohne Spielfenster. `-Scope Core`, `-Scope CTF`, `-Scope Training` und `-Scope DamagePrediction` wählen einzelne Prüfungen aus. Die Ergebnisse stehen pro Lauf in `Saved/PlaytestChecks/<run>/Summary.json`. Spielbalance und Kartenfluss werden in den menschlichen Partien abgenommen.
+
+**Matchbericht.** Mit `-VanthexPlaytestReport` auf dem Host oder Server schreibt ein Entwicklungsbuild am Matchende eine CSV-Datei unter `Saved/Playtests`. Sie enthält Ergebnis, Dauer, belegte Spielerplätze, serverseitig bestätigten Waffenschaden, Abschüsse und Todesorte. Positions- und Ausrüstungsproben werden einmal pro Sekunde für lebende Figuren erfasst. Die Positionszellen messen auf jeder Achse vier Meter und verwenden Weltkoordinaten. Proben und Abschüsse umfassen auch Bots. Der Bericht erfasst keine Namen oder IP-Adressen.
+
+## Historische Entwicklungsnotizen
+
 # Neue Planung — 2026-11-02
 
 Nächster geplanter Slice: hybrides Kaufsystem, Standardpistole/AUG/MP7,

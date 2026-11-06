@@ -8,6 +8,7 @@
 
 class UVanthexBuyMenuComponent;
 class UVanthexCommunicationComponent;
+class AVanthexCharacter;
 
 UCLASS()
 class AVanthexPlayerController : public APlayerController
@@ -16,6 +17,8 @@ class AVanthexPlayerController : public APlayerController
 
 public:
 	AVanthexPlayerController();
+ virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+ AVanthexCharacter* GetSpectatedTeammate() const;
  UVanthexCommunicationComponent* GetCommunication() const { return Communication; }
  UVanthexBulletAudioComponent* GetBulletAudio() const { return BulletAudio; }
  UFUNCTION(Client, Unreliable) void ClientBulletAudio(const FVanthexBulletAudioPacket& Packet);
@@ -29,6 +32,7 @@ public:
  bool IsSessionMenuOpen() const { return SessionMenu.IsValid(); }
  bool IsFrontEnd() const;
  void StartGame(bool bCaptureTheFlag, bool bListen = false);
+ void StartTraining();
  bool IsScoreboardOpen() const { return bScoreboardHeld; }
  void ShowScoreboard() { bScoreboardHeld=true; }
  void HideScoreboard() { bScoreboardHeld=false; }
@@ -62,6 +66,7 @@ protected:
  virtual void PawnLeavingGame() override;
  virtual void OnRep_Pawn() override;
  void ToggleSessionMenu();
+ virtual void Tick(float DeltaSeconds) override;
  virtual void PlayerTick(float DeltaSeconds) override;
  float ProbeStart = -1.f;
  bool bProbeReported = false;
@@ -76,6 +81,15 @@ protected:
  TSharedPtr<class SWidget> SessionMenu;
 
 private:
+ UPROPERTY(Replicated) TObjectPtr<AVanthexCharacter> SpectatedTeammate;
+ bool IsOwnCharacterDead() const;
+ bool IsLivingTeammate(const AVanthexCharacter* Candidate) const;
+ AVanthexCharacter* FindSpectateTarget(const AVanthexCharacter* Current, int32 Direction) const;
+ void SetSpectateTarget(AVanthexCharacter* Target);
+ void SpectatePrevious();
+ void SpectateNext();
+ void RequestSpectateCycle(int32 Direction);
+ UFUNCTION(Server, Reliable) void ServerCycleSpectate(int32 Direction);
  bool CanShowDamageFeedback() const;
  uint32 LastIssuedHitBurst = 0;
  uint32 InvalidatedThroughHitBurst = 0;

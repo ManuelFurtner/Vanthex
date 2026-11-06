@@ -18,6 +18,8 @@
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
+#include "Engine/NetConnection.h"
+#include "Engine/NetDriver.h"
 #include "VanthexCore.h"
 #include "VanthexFlag.h"
 #include "GameFramework/PlayerController.h"
@@ -193,6 +195,38 @@ void AVanthexHUD::DrawHUD()
  Text(FString::Printf(TEXT("%s  /  ARC"),TeamLabel(Team)),28,51,11,Accent);
  Text(TEXT("ESC  MENUE"),W-111,28,11,Muted);
 
+ if (const UWorld* World = GetWorld(); World && SessionController && SessionController->IsLocalController() &&
+     UVanthexLocalSettings::Get()->bShowNetworkStats)
+ {
+  FText NetworkText;
+  if (World->GetNetMode() != NM_Client)
+  {
+   NetworkText = NSLOCTEXT("VanthexHUD", "LocalConnection", "NETZWERK  LOKAL");
+  }
+  else if (const UNetDriver* Driver = World->GetNetDriver(); Driver && Driver->ServerConnection && PlayerState)
+  {
+   const UNetConnection* Connection = Driver->ServerConnection.Get();
+   FNumberFormattingOptions LossFormat;
+   LossFormat.SetMaximumFractionalDigits(1);
+   const auto PacketLossText = [&LossFormat](float LossRatio)
+   {
+    if (!FMath::IsFinite(LossRatio)) return FText::FromString(TEXT("--"));
+    return FText::AsPercent(FMath::Clamp(LossRatio, 0.f, 1.f), &LossFormat);
+   };
+   const float Ping = PlayerState->GetPingInMilliseconds();
+   const FText PingText = FMath::IsFinite(Ping) && Ping >= 0.f
+    ? FText::AsNumber(FMath::RoundToInt(FMath::Min(Ping, 99999.f))) : FText::FromString(TEXT("--"));
+   NetworkText = FText::Format(NSLOCTEXT("VanthexHUD", "NetworkStats", "Ping {0} ms   |   Verlust ein {1} / aus {2}"),
+    PingText, PacketLossText(Connection->GetInLossPercentage().GetAvgLossPercentage()),
+    PacketLossText(Connection->GetOutLossPercentage().GetAvgLossPercentage()));
+  }
+  if (!NetworkText.IsEmpty())
+  {
+   Panel(W-350,56,326,28,Accent);
+   Text(NetworkText.ToString(),W-337,64,11,White);
+  }
+ }
+
  FString Objective=CTF?TEXT("CAPTURE THE FLAG / 5 GEGEN 5"):TEXT("CORE SICHERN");
  bool Extracting=false;
  if(Match&&!CTF)switch(Match->GetCoreReadout()){
@@ -231,6 +265,16 @@ void AVanthexHUD::DrawHUD()
   Text(Buy?TEXT("B  AUSRUESTEN"):TEXT("B  AUSRUESTUNG"),140,H-160,10,Buy?White:Muted);
  }
 
+ using Action = EVanthexGameplayAction;
+ const auto* LocalSettings = UVanthexLocalSettings::Get();
+ const auto KeyName = [LocalSettings](Action Binding)
+ {
+  const FKey Key = LocalSettings->GetGameplayKey(Binding);
+  if (Key == EKeys::LeftMouseButton) return FString(TEXT("LMB"));
+  if (Key == EKeys::RightMouseButton) return FString(TEXT("RMB"));
+  return Key.GetDisplayName(false).ToString();
+ };
+
  // Active weapon and ammunition. Knife selection never shows a stale rifle magazine.
  Panel(W-276,H-135,248,107,Accent);
  const FString WeaponName=Knife?TEXT("KAMPFMESSER"):Weapon?Weapon->GetWeaponId().ToString().ToUpper():TEXT("KEINE WAFFE");
@@ -242,11 +286,17 @@ void AVanthexHUD::DrawHUD()
   Text(FString::Printf(TEXT("/ %03d"),Weapon->GetReserveAmmo()),W-186,H-81,18,Muted);
   const bool Reload=Weapon->IsReloading();
   Bar(W-260,H-52,216,3,Reload?Weapon->GetReloadProgress():float(Ammo)/FMath::Max(1,Weapon->GetMagazineSize()),Reload?Amber:Accent);
-  Text(Reload?TEXT("WIRD NACHGELADEN"):Equipment&&Equipment->IsSwitching()?TEXT("WAFFENWECHSEL"):Ammo==0?TEXT("R  NACHLADEN"):TEXT("R  LADEN   /   RMB  VISIER"),W-260,H-44,9,Reload||Ammo==0?Amber:Muted);
- }else Text(TEXT("LMB  ANGRIFF"),W-260,H-79,15,Muted);
+  FString WeaponHint;
+  if (Reload) WeaponHint = TEXT("WIRD NACHGELADEN");
+  else if (Equipment && Equipment->IsSwitching()) WeaponHint = TEXT("WAFFENWECHSEL");
+  else if (Ammo == 0) WeaponHint = FString::Printf(TEXT("%s  NACHLADEN"), *KeyName(Action::Reload));
+  else WeaponHint = FString::Printf(TEXT("%s  LADEN   /   %s  VISIER"), *KeyName(Action::Reload), *KeyName(Action::Aim));
+  Text(WeaponHint,W-260,H-44,9,Reload||Ammo==0?Amber:Muted);
+ }else Text(FString::Printf(TEXT("%s  ANGRIFF"), *KeyName(Action::Fire)),W-260,H-79,15,Muted);
 
  // Compact inventory; slot names come from the actual owned loadout.
  const EVanthexWeaponSlot WeaponSlots[]={EVanthexWeaponSlot::Rifle,EVanthexWeaponSlot::Pistol,EVanthexWeaponSlot::Knife};
+ const Action SlotBindings[] = {Action::Primary, Action::Sidearm, Action::Knife, Action::GadgetOne, Action::GadgetTwo};
  for(int32 I=0;I<5;++I){
   const float X=CX-217+I*88;
   bool Selected=I<3&&Equipment&&Equipment->GetSelectedSlot()==WeaponSlots[I];
@@ -255,7 +305,7 @@ void AVanthexHUD::DrawHUD()
   if(I>=3&&PlayerState&&PlayerState->GetEconomy().Gadgets.IsValidIndex(I-3))Name=PlayerState->GetEconomy().Gadgets[I-3].ToString().ToUpper();
   Rect(X,H-79,82,51,Selected?FLinearColor(.035f,.11f,.14f,.94f):Ink);
   Rect(X,H-30,82,2,Selected?Accent:Edge);
-  Text(FString::FromInt(I+1),X+8,H-74,11,Selected?Accent:Muted);
+  Text(KeyName(SlotBindings[I]).Left(12),X+8,H-74,11,Selected?Accent:Muted);
   Text(Name,X+8,H-53,10,Name==TEXT("LEER")?Muted:White);
  }
  FString Condition;
@@ -275,13 +325,16 @@ void AVanthexHUD::DrawHUD()
   for(TActorIterator<AVanthexShiftDevice> It(GetWorld());It;++It){
    const float D=FVector::Dist(Character->GetActorLocation(),It->InteractionPoint(Character->GetActorLocation()));
    if(D>=Nearest)continue;Nearest=D;
-   Prompt=It->Kind==3?(It->bPowered?TEXT("F  STROM ABSCHALTEN"):TEXT("F  STROM WIEDERHERSTELLEN")):It->Kind==2?(It->bPowered?TEXT("F  FAHRSTUHL BEDIENEN"):TEXT("FAHRSTUHL OHNE STROM")):TEXT("F  INTERAGIEREN");
+   const TCHAR* DeviceAction = It->Kind == 3 ? (It->bPowered ? TEXT("STROM ABSCHALTEN") : TEXT("STROM WIEDERHERSTELLEN")) :
+    It->Kind == 2 ? TEXT("FAHRSTUHL BEDIENEN") : TEXT("INTERAGIEREN");
+   Prompt = It->Kind == 2 && !It->bPowered ? TEXT("FAHRSTUHL OHNE STROM") :
+    FString::Printf(TEXT("%s  %s"), *KeyName(Action::Interact), DeviceAction);
    Interaction=It->Kind==3?It->HackProgress:-1.f;
    if(It->IsEMPDisabled()){Prompt=TEXT("EMP  /  GERAET GESTOERT");Interaction=-1.f;}
   }
   if(Prompt.IsEmpty()){
-   if(Character->IsCarryingCore())Prompt=TEXT("G  ABLEGEN     Q  WERFEN");
-   else for(TActorIterator<AVanthexCore> It(GetWorld());It;++It)if(It->GetCoreState()==EVanthexCoreState::AtRest&&FVector::Dist(Character->GetActorLocation(),It->GetActorLocation())<180){Prompt=TEXT("E  CORE AUFNEHMEN");break;}
+   if(Character->IsCarryingCore())Prompt=FString::Printf(TEXT("%s  ABLEGEN     %s  WERFEN"), *KeyName(Action::Drop), *KeyName(Action::Throw));
+   else for(TActorIterator<AVanthexCore> It(GetWorld());It;++It)if(It->GetCoreState()==EVanthexCoreState::AtRest&&FVector::Dist(Character->GetActorLocation(),It->GetActorLocation())<180){Prompt=FString::Printf(TEXT("%s  CORE AUFNEHMEN"), *KeyName(Action::Pickup));break;}
   }
  }
  if(!Prompt.IsEmpty()){

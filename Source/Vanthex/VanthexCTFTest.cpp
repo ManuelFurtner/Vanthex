@@ -2,6 +2,7 @@
 #if !UE_BUILD_SHIPPING
 #include "VanthexFlag.h"
 #include "VanthexCharacter.h"
+#include "VanthexPlayerController.h"
 #include "VanthexPlayerState.h"
 #include "VanthexGameState.h"
 #include "VanthexBotController.h"
@@ -16,6 +17,7 @@
 #include "Components/SkyAtmosphereComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "EngineUtils.h"
+#include "InputKeyEventArgs.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "HAL/PlatformMisc.h"
@@ -42,6 +44,7 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
  }
  auto* A=Mode->FindCombatant(EVanthexTeam::Alpha,0);auto* Ally=Mode->FindCombatant(EVanthexTeam::Alpha,1);
  auto* B=Mode->FindCombatant(EVanthexTeam::Bravo,0);
+ auto* PC=A?Cast<AVanthexPlayerController>(A->GetController()):nullptr;
  auto* AF=AVanthexFlag::Find(Mode->GetWorld(),EVanthexTeam::Alpha);auto* BF=AVanthexFlag::Find(Mode->GetWorld(),EVanthexTeam::Bravo);
  if(!A||!Ally||!B||!AF||!BF)return;
  switch(Step) {
@@ -85,6 +88,9 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
   Check(BF->TryTouch(Ally)&&BF->GetCarrier()==Ally,TEXT("teammate takes over the dropped flag"));
   Ally->SetActorLocation(AF->Base()+FVector(0,0,100));BF->Tick(0);
   Check(Mode->AlphaScore==1&&BF->IsHome()&&Mode->IsRoundActive(),TEXT("capture adds point and continues match"));
+  Check(Ally->GetPlayerState<AVanthexPlayerState>()->GetFlagCaptures()==1
+   && A->GetPlayerState<AVanthexPlayerState>()->GetFlagCaptures()==0,
+   TEXT("only the actual flag carrier receives the capture statistic"));
   const int32 RespawnSlot=A->GetPlayerState<AVanthexPlayerState>()->GetSpawnSlot();
   if(auto* AssignedStart=Mode->Arena->GetTeamSpawn(EVanthexTeam::Alpha,RespawnSlot))
    Ally->SetActorLocation(AssignedStart->GetActorLocation());
@@ -94,10 +100,30 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
  }
  case 1:
   if(Mode->GetWorld()->GetTimeSeconds()-DiedAt<4)return;
-  Check(A->GetHealthComponent()->IsDead(),TEXT("no early respawn before eight seconds"));++Step;return;
+  Check(A->GetHealthComponent()->IsDead(),TEXT("no early respawn before eight seconds"));
+  Check(PC&&PC->GetSpectatedTeammate()==Ally&&PC->GetViewTarget()==Ally,
+   TEXT("death automatically spectates the first living teammate"));
+  if(PC) PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::Right,IE_Pressed,1.f));
+  Step=4;return;
+ case 4: {
+  const auto* Next=Mode->FindCombatant(EVanthexTeam::Alpha,2);
+  Check(PC&&Next&&PC->GetSpectatedTeammate()==Next&&PC->GetViewTarget()==Next,
+   TEXT("right arrow changes camera to the next living teammate"));
+  if(PC) {
+   PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::Right,IE_Released,0.f));
+   PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::Left,IE_Pressed,1.f));
+  }
+  Step=5;return;
+ }
+ case 5:
+  Check(PC&&PC->GetSpectatedTeammate()==Ally&&PC->GetViewTarget()==Ally,
+   TEXT("left arrow returns the camera to the previous teammate"));
+  if(PC) PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::Left,IE_Released,0.f));
+  Step=2;return;
  case 2:
   if(Mode->GetWorld()->GetTimeSeconds()-DiedAt<8.3f)return;
   Check(!A->GetHealthComponent()->IsDead()&&A->GetPlayerState<AVanthexPlayerState>()->IsAlive()&&A->GetActorLocation().Y<-3500,TEXT("automatic alive respawn at own base after eight seconds"));
+  Check(PC&&!PC->GetSpectatedTeammate()&&PC->GetViewTarget()==A,TEXT("respawn returns the camera to the owned pawn"));
   Check(FVector::DistSquared2D(A->GetActorLocation(),Ally->GetActorLocation())>FMath::Square(84.0),
     TEXT("respawn avoids assigned start occupied by a live ally"));
   Check(A->GetPlayerState<AVanthexPlayerState>()->GetEconomy().PrimaryWeapon==TEXT("M4"),TEXT("respawn restores playable loadout"));
@@ -105,9 +131,13 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
   B->SetActorLocation(AF->Base()+FVector(0,0,100));Check(AF->TryTouch(B),TEXT("opposing team can steal own flag"));
   B->SetActorLocation(FVector(-1800,0,100));AF->Drop();
   A->SetActorLocation(BF->Base()+FVector(0,0,100));BF->TryTouch(A);A->SetActorLocation(AF->Base()+FVector(0,0,100));BF->Tick(0);
-  Check(Mode->AlphaScore==1,TEXT("capture blocked while own flag is away"));
+  Check(Mode->AlphaScore==1&&A->GetPlayerState<AVanthexPlayerState>()->GetFlagCaptures()==0,
+   TEXT("capture and individual credit blocked while own flag is away"));
   Ally->SetActorLocation(AF->GetActorLocation()+FVector(0,0,100));Check(AF->TryTouch(Ally)&&AF->IsHome(),TEXT("touching own dropped flag returns it"));
-  BF->Tick(0);Check(Mode->AlphaScore==2,TEXT("capture succeeds after own flag is returned"));
+  Check(!AF->TryTouch(Ally)&&Ally->GetPlayerState<AVanthexPlayerState>()->GetFlagReturns()==1,
+   TEXT("only the actual flag return counts, even if touched again"));
+  BF->Tick(0);Check(Mode->AlphaScore==2&&A->GetPlayerState<AVanthexPlayerState>()->GetFlagCaptures()==1,
+   TEXT("capture and individual credit succeed after own flag is returned"));
   Mode->AlphaScore=Mode->BravoScore=2;Mode->TimeRemaining=0;Mode->ResolveTimeout();
   Check(Mode->bCTFOvertime&&Mode->TimeRemaining==180&&Mode->IsRoundActive(),TEXT("tied regulation grants three-minute overtime"));
   Mode->AlphaScore=3;Mode->TimeRemaining=0;Mode->ResolveTimeout();
@@ -128,6 +158,10 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
   Check(Mode->AlphaScore==0&&Mode->BravoScore==0&&!Mode->bCTFOvertime&&Mode->MatchWinner==EVanthexTeam::None,
     TEXT("CTF rematch clears scores, overtime and match winner"));
   Check(AF->IsHome()&&BF->IsHome(),TEXT("CTF rematch returns both flags home"));
+  Check(A->GetPlayerState<AVanthexPlayerState>()->GetFlagCaptures()==0
+   && Ally->GetPlayerState<AVanthexPlayerState>()->GetFlagCaptures()==0
+   && Ally->GetPlayerState<AVanthexPlayerState>()->GetFlagReturns()==0,
+   TEXT("CTF rematch resets individual objective statistics"));
   Finish();
   return;
  }

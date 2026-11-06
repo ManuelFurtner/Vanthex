@@ -1,5 +1,6 @@
 ﻿#include "SVanthexSessionMenu.h"
 #include "VanthexPlayerController.h"
+#include "VanthexCharacter.h"
 #include "VanthexLocalSettings.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "VanthexMenuStyle.h"
@@ -151,6 +152,15 @@ TSharedRef<SWidget> SVanthexSessionMenu::PlayPage()
     ];
     Content->AddSlot().AutoHeight().Padding(0, 0, 0, 10)
     [Button(TEXT("PARTIE STARTEN"), [this]() { return RequestTravel(ETravelAction::Play); }, true)];
+    if (bFrontEnd)
+    {
+        Content->AddSlot().AutoHeight()
+        [Button(TEXT("SOLO-TRAINING"), [this]()
+        {
+            if (auto* PC = Controller.Get()) PC->StartTraining();
+            return FReply::Handled();
+        })];
+    }
     if (!bFrontEnd)
     {
         Content->AddSlot().AutoHeight()
@@ -204,27 +214,108 @@ TSharedRef<SWidget> SVanthexSessionMenu::ControlsPage()
 	List->AddSlot().AutoHeight().Padding(0, 0, 0, 14)[Text(TEXT("Maus"), 22)];
 	List->AddSlot().AutoHeight().Padding(0, 0, 0, 8)
 	[NumberRow(TEXT("Maus-Empfindlichkeit"), &Settings->MouseSensitivity, .1f, 5.f, 1.f, .01f)];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 8)
+	[NumberRow(TEXT("Empfindlichkeit beim Zielen (Faktor)"), &Settings->ADSMouseSensitivity, .1f, 3.f, 1.f, .01f)];
 	List->AddSlot().AutoHeight().Padding(0, 0, 0, 14)
-	[Text(TEXT("0,10 bis 5,00. Standard ist 1,00."), 13, Muted)];
+	[Text(TEXT("Der Faktor wirkt beim Blick durchs Visier. Standard ist 1,00."), 13, Muted)];
 	List->AddSlot().AutoHeight().Padding(0, 0, 0, 24)
 	[Button(TEXT("MAUS AUF STANDARD"), [Settings]()
 	{
 		Settings->MouseSensitivity = 1.f;
+		Settings->ADSMouseSensitivity = 1.f;
 		Settings->Persist();
 		return FReply::Handled();
 	})];
-	List->AddSlot().AutoHeight().Padding(0, 0, 0, 14)[Text(TEXT("Tastenbelegung"), 22)];
-	const TCHAR* Keys[]={TEXT("W A S D / MAUS"),TEXT("SHIFT / STRG / LEERTASTE"),TEXT("LMB / RMB / R"),TEXT("1 / 2 / 3 / MAUSRAD"),TEXT("E / G / Q"),TEXT("4 / 5"),TEXT("F / C"),TEXT("B / TAB / ESC")};
-	const TCHAR* Actions[]={TEXT("Bewegen / Umsehen"),TEXT("Sprinten / Ducken / Springen"),TEXT("Feuern / Zielen / Nachladen"),TEXT("Primaer / Pistole / Messer / Wechseln"),TEXT("Core aufnehmen / Ablegen / Werfen"),TEXT("Gadget verwenden"),TEXT("SHIFT / Operator-Faehigkeit (wo verfuegbar)"),TEXT("Kaufmenue / Teamstand / Menue")};
-	for(int32 I=0; I<8; ++I) List->AddSlot().AutoHeight().Padding(0,0,0,2)
-	[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Panel).Padding(14,12)
-	[SNew(SHorizontalBox)+SHorizontalBox::Slot().FillWidth(.46f)[Text(Keys[I],13,Cyan)]+SHorizontalBox::Slot().FillWidth(.54f)[Text(Actions[I],14)]]];
- List->AddSlot().AutoHeight().Padding(14,12)[Text(TEXT("Y: Teamchat   /   T: Alle   /   V halten: Team-Voice\nEnter senden / Esc abbrechen. Stummschaltung unter Einstellungen."),14,Cyan)];
-	return SNew(SScrollBox)+SScrollBox::Slot()[List];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 10)[Text(TEXT("Tastenbelegung"), 22)];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 12)
+	[Text(TEXT("Belegung anklicken und eine Taste oder Maustaste dr\u00fccken. Esc bricht die Auswahl ab."), 13, Muted)];
+	List->AddSlot().AutoHeight().Padding(0, 0, 0, 14)
+	[Button(TEXT("TASTEN AUF STANDARD"), [this, Settings]()
+	{
+		Settings->ResetGameplayKeys();
+		Settings->Persist();
+		RefreshLocalGameplayBindings();
+		if (Feedback.IsValid()) Feedback->SetText(NSLOCTEXT("VanthexControls", "KeysReset", "Standardbelegung wiederhergestellt."));
+		return FReply::Handled();
+	})];
+	for (const auto& Binding : UVanthexLocalSettings::GameplayBindings())
+	{
+		const auto Action = Binding.Action;
+		List->AddSlot().AutoHeight().Padding(0, 0, 0, 4)
+		[
+			SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Panel).Padding(12, 6)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)
+				[
+					SNew(STextBlock).Text(Binding.Label).Font(FCoreStyle::GetDefaultFontStyle("Regular", 14)).ColorAndOpacity(White)
+				]
+				+ SHorizontalBox::Slot().AutoWidth()
+				[
+					SNew(SBox).WidthOverride(172)
+					[
+						SNew(SButton).HAlign(HAlign_Center).ContentPadding(FMargin(7, 6))
+						.OnClicked_Lambda([this, Action]()
+						{
+							PendingKeyBinding = Action;
+							if (auto Scroll = ControlsScroll.Pin()) Scroll->SetConsumeMouseWheel(EConsumeMouseWheel::Never);
+							if (Feedback.IsValid()) Feedback->SetText(NSLOCTEXT("VanthexControls", "CaptureHint", "Neue Taste dr\u00fccken. Esc bricht ab."));
+							return FReply::Handled().SetUserFocus(AsShared());
+						})
+						[
+							SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular", 13)).ColorAndOpacity(Cyan)
+							.Text_Lambda([this, Settings, Action]()
+							{
+								return PendingKeyBinding.IsSet() && PendingKeyBinding.GetValue() == Action
+									? NSLOCTEXT("VanthexControls", "CaptureKey", "Taste dr\u00fccken")
+									: Settings->GetGameplayKey(Action).GetDisplayName();
+							})
+						]
+					]
+				]
+			]
+		];
+	}
+	List->AddSlot().AutoHeight().Padding(0, 12, 0, 0)
+	[Text(TEXT("Feste Tasten: B Kaufmen\u00fc / Tab Teamstand / Esc Men\u00fc / Y Teamchat / T Alle / V Team-Voice / F5 Neustart"), 13, Muted)];
+
+	auto Scroll = SNew(SScrollBox).AnimateWheelScrolling(true) + SScrollBox::Slot().Padding(0, 0, 12, 0)[List];
+	ControlsScroll = Scroll;
+	return Scroll;
+}
+
+void SVanthexSessionMenu::RefreshLocalGameplayBindings()
+{
+	const auto* PC = Controller.Get();
+	if (auto* Character = PC ? Cast<AVanthexCharacter>(PC->GetPawn()) : nullptr)
+		Character->RefreshGameplayBindings();
+}
+
+void SVanthexSessionMenu::EndKeyCapture()
+{
+	PendingKeyBinding.Reset();
+	if (auto Scroll = ControlsScroll.Pin()) Scroll->SetConsumeMouseWheel(EConsumeMouseWheel::WhenScrollingPossible);
+}
+
+FReply SVanthexSessionMenu::CaptureGameplayKey(const FKey& Key)
+{
+	const auto Action = PendingKeyBinding.GetValue();
+	EndKeyCapture();
+	FText Error;
+	auto* Settings = UVanthexLocalSettings::Get();
+	if (Settings->TrySetGameplayKey(Action, Key, Error))
+	{
+		Settings->Persist();
+		RefreshLocalGameplayBindings();
+		Error = NSLOCTEXT("VanthexControls", "KeySaved", "Taste gespeichert.");
+	}
+	if (Feedback.IsValid()) Feedback->SetText(Error);
+	return FReply::Handled();
 }
 
 void SVanthexSessionMenu::ShowPage(int32 Page)
 {
+	EndKeyCapture();
 	ActivePage = Page;
 	PendingAction.Reset();
 	Pages->SetActiveWidgetIndex(Page);
@@ -233,6 +324,16 @@ void SVanthexSessionMenu::ShowPage(int32 Page)
 
 FReply SVanthexSessionMenu::OnPreviewKeyDown(const FGeometry& Geometry, const FKeyEvent& Event)
 {
+    if (PendingKeyBinding.IsSet())
+    {
+        if (Event.GetKey() == EKeys::Escape)
+        {
+            EndKeyCapture();
+            if (Feedback.IsValid()) Feedback->SetText(FText::GetEmpty());
+            return FReply::Handled();
+        }
+        return Event.IsRepeat() ? FReply::Handled() : CaptureGameplayKey(Event.GetKey());
+    }
     if (Event.GetKey() != EKeys::Escape)
     {
         return SCompoundWidget::OnPreviewKeyDown(Geometry, Event);
@@ -244,6 +345,19 @@ FReply SVanthexSessionMenu::OnPreviewKeyDown(const FGeometry& Geometry, const FK
     }
     Resume.ExecuteIfBound();
     return FReply::Handled();
+}
+
+FReply SVanthexSessionMenu::OnPreviewMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& Event)
+{
+    return PendingKeyBinding.IsSet() ? CaptureGameplayKey(Event.GetEffectingButton()) : SCompoundWidget::OnPreviewMouseButtonDown(Geometry, Event);
+}
+
+FReply SVanthexSessionMenu::OnMouseWheel(const FGeometry& Geometry, const FPointerEvent& Event)
+{
+    const float Delta = Event.GetWheelDelta();
+    if (PendingKeyBinding.IsSet() && !FMath::IsNearlyZero(Delta))
+        return CaptureGameplayKey(Delta > 0.f ? EKeys::MouseScrollUp : EKeys::MouseScrollDown);
+    return SCompoundWidget::OnMouseWheel(Geometry, Event);
 }
 
 FReply SVanthexSessionMenu::RequestTravel(ETravelAction Action)

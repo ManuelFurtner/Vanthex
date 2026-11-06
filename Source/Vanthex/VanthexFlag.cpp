@@ -50,7 +50,13 @@ bool AVanthexFlag::TryTouch(AVanthexCharacter* Pawn)
  if(!State||State->GetTeam()==EVanthexTeam::None||FVector::Dist2D(Pawn->GetActorLocation(),GetActorLocation())>140||FMath::Abs(Pawn->GetActorLocation().Z-GetActorLocation().Z)>160)return false;
  FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(FlagPickup),false,Pawn);Q.AddIgnoredActor(this);
  if(GetWorld()->LineTraceSingleByChannel(Hit,Pawn->GetActorLocation(),GetActorLocation()+FVector(0,0,100),ECC_Visibility,Q))return false;
- if(State->GetTeam()==Team) {if(!bHome){ReturnHome();return true;}return false;}
+ if(State->GetTeam()==Team)
+ {
+  if(bHome) return false;
+  ReturnHome();
+  State->RecordFlagReturn();
+  return true;
+ }
  Carrier=Pawn;bHome=false;ReturnAt=0;ForceNetUpdate();return true;
 }
 void AVanthexFlag::Tick(float DeltaSeconds)

@@ -81,7 +81,8 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
  UAnimSequence* End = nullptr;
  float Speed = 0.f, Direction = 0.f, Pitch = 0.f, Crouch = 0.f, Death = 0.f;
  float Lower = 0.f, Swing = 0.f;
- float AirTime = 0.f, LandingTime = 1.f, AuthoredRunSpeed = 375.f;
+ float AirTime = 0.f, LandingTime = 1.f, LandingWeight = 0.f, FallSpeed = 0.f, AuthoredRunSpeed = 375.f;
+ bool JumpTakeoff = false;
  bool WasFalling = false, Falling = false, Dead = false, SpeedOnX = false;
  bool Knife = false, Sidearm = false;
  bool FirstPerson = false, HaveFirstPersonMount = false;
@@ -148,8 +149,22 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
   // Round restart clears the death pose immediately; falling into death eases in.
   Death = Dead ? FMath::Min(1.f, Death + DeltaSeconds * 2.2f) : 0.f;
   Falling = !FirstPerson && Movement && Movement->IsFalling() && !Dead;
-  if (Falling) { AirTime = WasFalling ? AirTime + DeltaSeconds : 0.f; LandingTime = 0.f; }
-  else LandingTime = WasFalling ? 0.f : LandingTime + DeltaSeconds;
+  if (Falling)
+  {
+   if (!WasFalling) JumpTakeoff = LocalVelocity.Z > 80.f;
+   AirTime = WasFalling ? AirTime + DeltaSeconds : 0.f;
+   FallSpeed = FMath::Max(0.f, -LocalVelocity.Z);
+  }
+  else if (WasFalling)
+  {
+   LandingTime = 0.f;
+   LandingWeight = Dead ? 0.f : FMath::GetMappedRangeValueClamped(
+    FVector2D(140.f, 650.f), FVector2D(0.f, .8f), FallSpeed);
+  }
+  else
+  {
+   LandingTime += DeltaSeconds;
+  }
   WasFalling = Falling;
   Operator->AimPitch = Pitch;
   Operator->CrouchAlpha = Crouch;
@@ -165,14 +180,14 @@ struct FVanthexOperatorAnimProxy final : FAnimInstanceProxy
   // slide over the floor with an unchanged jogging cadence.
   Ground.SetPosition(SpeedOnX ? FVector(FMath::Min(Speed, AuthoredRunSpeed), 0., 0.) : FVector(Direction, FMath::Min(Speed, AuthoredRunSpeed), 0.));
   Ground.SetPlayRate(Dead ? 0.f : FMath::Max(1.f, Speed / AuthoredRunSpeed));
-  UAnimSequence* Desired = Falling ? ((AirTime < .15f && Start) ? Start : Loop) : (End ? End : Loop);
+  UAnimSequence* Desired = Falling ? ((JumpTakeoff && AirTime < .15f && Start) ? Start : Loop) : (End ? End : Loop);
   if (Air.GetSequence() != Desired)
   {
    Air.SetSequence(Desired);
    Air.SetAccumulatedTime(0.f);
   }
   Air.SetLoopAnimation(Desired == Loop);
-  const float WantedAir = Falling ? 1.f : (LandingTime < .12f ? .65f : 0.f);
+  const float WantedAir = Falling ? 1.f : LandingWeight * FMath::Clamp(1.f - LandingTime / .22f, 0.f, 1.f);
   GroundAir.Alpha = FMath::FInterpTo(GroundAir.Alpha, WantedAir, DeltaSeconds, 15.f);
   FAnimInstanceProxy::UpdateAnimationNode(Context);
  }

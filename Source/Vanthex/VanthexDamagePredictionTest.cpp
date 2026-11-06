@@ -4,6 +4,7 @@
 #include "Vanthex.h"
 #include "VanthexBotController.h"
 #include "VanthexCharacter.h"
+#include "VanthexEquipmentComponent.h"
 #include "VanthexGameMode.h"
 #include "VanthexPlayerState.h"
 #include "HealthComponent.h"
@@ -25,6 +26,8 @@ namespace
 {
 const FVector ShooterPosition(50000, 0, 5000);
 const FVector TargetPosition(50400, 0, 5000);
+constexpr double TargetTravel = 60.0;
+const FName AutomaticWeaponId(TEXT("M4"));
 
 enum class EPredictionTestStage
 {
@@ -32,7 +35,10 @@ enum class EPredictionTestStage
 	ConfirmHit,
 	PrepareMiss,
 	ConfirmMiss,
-	CheckMissHealth
+	CheckMissHealth,
+	PrepareAutomatic,
+	HoldAutomatic,
+	CheckAutomatic
 };
 
 struct FDamagePredictionProbe
@@ -42,12 +48,23 @@ struct FDamagePredictionProbe
 	EPredictionTestStage Stage = EPredictionTestStage::Setup;
 	double Started = 0.0;
 	double ContinueAt = 0.0;
+	double RangeReadyAt = 0.0;
+	TOptional<double> FirstTargetY;
+	double ObservedTargetTravel = 0.0;
 	float InitialHealth = 0.f;
 	float HealthAfterHit = 0.f;
+	float ObservedHealth = 0.f;
 	uint32 Burst = 0;
+	int32 AmmoBeforeHit = 0;
+	int32 ObservedAmmo = 0;
 	int32 AmmoBeforeMiss = 0;
+	int32 AmmoBeforeAutomatic = 0;
+	int32 LastAutomaticAmmo = 0;
+	uint32 AutomaticShots = 0;
+	uint32 AutomaticResolvedOrdinal = 0;
 	bool bConfirmedHit = false;
 	bool bConfirmedMiss = false;
+	bool bMissAmmoConsumed = false;
 };
 
 bool AimAtTorso(AVanthexPlayerController* PC, const AVanthexCharacter* Shooter,
@@ -155,9 +172,13 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 			auto Finish = [&](bool bPass, const TCHAR* Detail)
 			{
 				const FString Report = FString::Printf(
-					TEXT("%s %s stage=%d initial_hp=%.0f hit_hp=%.0f\n"),
+					TEXT("%s %s stage=%d initial_hp=%.0f hit_hp=%.0f observed_hp=%.0f ")
+					TEXT("target_travel_cm=%.1f first_shot_ammo=%d/%d hit_ack=%d miss_ack=%d miss_ammo=%d auto_shots=%u auto_ack=%u\n"),
 					bPass ? TEXT("PASS") : TEXT("FAIL"), Detail, int32(Probe.Stage),
-					Probe.InitialHealth, Probe.HealthAfterHit);
+					Probe.InitialHealth, Probe.HealthAfterHit, Probe.ObservedHealth, Probe.ObservedTargetTravel,
+					Probe.ObservedAmmo, Probe.AmmoBeforeHit,
+					Probe.bConfirmedHit, Probe.bConfirmedMiss, Probe.bMissAmmoConsumed,
+					Probe.AutomaticShots, Probe.AutomaticResolvedOrdinal);
 				UE_LOG(LogVanthex, Display, TEXT("DAMAGE_PREDICTION %s"), *Report);
 				World->GetTimerManager().ClearTimer(Probe.Timer);
 				if (!bServer)
@@ -175,7 +196,7 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 
 			auto* Shooter = Cast<AVanthexCharacter>(PC->GetPawn());
 			auto* Weapon = Shooter ? Shooter->GetWeapon() : nullptr;
-			if (!Weapon || !Shooter->CanUseRifle() || Weapon->GetWeaponId() != TEXT("Pistol"))
+			if (!Weapon || !Shooter->CanUseRifle())
 			{
 				return;
 			}
@@ -187,10 +208,15 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 					if (auto* Target = Probe.Target.Get())
 					{
 						Probe.InitialHealth = Target->GetHealthComponent()->GetHealth();
+						Probe.RangeReadyAt = Now;
 					}
 				}
 				if (auto* Target = Probe.Target.Get())
 				{
+					const double SideOffset = FMath::Sin((Now - Probe.RangeReadyAt) * .75) * TargetTravel;
+					Target->SetActorLocation(TargetPosition + FVector(0, SideOffset, 0),
+						false, nullptr, ETeleportType::TeleportPhysics);
+					Target->ForceNetUpdate();
 					AimAtTorso(PC, Shooter, Target);
 					if (Probe.Stage == EPredictionTestStage::Setup
 						&& Target->GetHealthComponent()->GetHealth() < Probe.InitialHealth)
@@ -201,7 +227,26 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 							return;
 						}
 						Probe.Stage = EPredictionTestStage::PrepareMiss;
+						Probe.AmmoBeforeMiss = Weapon->GetAmmoInMagazine();
 						UE_LOG(LogVanthex, Display, TEXT("DAMAGE_PREDICTION server applied first hit and placed blocker"));
+					}
+					else if (Probe.Stage == EPredictionTestStage::PrepareMiss
+						&& Weapon->GetAmmoInMagazine() == Probe.AmmoBeforeMiss - 1)
+					{
+						if (Probe.ContinueAt == 0.0)
+						{
+							// Allow the client to observe the pistol ammo update before switching.
+							Probe.ContinueAt = Now + 2.0;
+						}
+						else if (Now >= Probe.ContinueAt)
+						{
+							auto* Equipment = Shooter->GetEquipment();
+							// The owner checks its replicated inventory before it predicts an equipped rifle.
+							Shooter->GetPlayerState<AVanthexPlayerState>()->GiveCTFLoadout();
+							Shooter->SyncEconomyLoadout(true);
+							Equipment->SelectRoundWeapon();
+							Probe.Stage = EPredictionTestStage::PrepareAutomatic;
+						}
 					}
 				}
 				return;
@@ -215,7 +260,10 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 			{
 				for (TActorIterator<AVanthexCharacter> It(World); It; ++It)
 				{
-					if (It->GetActorLocation().Equals(TargetPosition, 10.f))
+					const FVector Position = It->GetActorLocation();
+					if (FMath::Abs(Position.X - TargetPosition.X) < 10.0
+						&& FMath::Abs(Position.Z - TargetPosition.Z) < 10.0
+						&& FMath::Abs(Position.Y - TargetPosition.Y) <= TargetTravel + 10.0)
 					{
 						Probe.Target = *It;
 						break;
@@ -228,11 +276,18 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 			{
 				return;
 			}
+			Probe.ObservedHealth = Health->GetHealth();
+			auto ReleaseTrigger = [&]()
+			{
+				Weapon->StopPredictedFire();
+				Shooter->ServerAction(1, false);
+			};
 			if (Probe.Stage == EPredictionTestStage::Setup || Probe.Stage == EPredictionTestStage::PrepareMiss)
 			{
 				const auto* ShooterState = Shooter->GetPlayerState<AVanthexPlayerState>();
 				const auto* TargetState = Target->GetPlayerState<AVanthexPlayerState>();
-				if (Now < Probe.ContinueAt || !ShooterState || !TargetState || !TargetState->IsAlive()
+				if (Weapon->GetWeaponId() != TEXT("Pistol") || Now < Probe.ContinueAt
+					|| !ShooterState || !TargetState || !TargetState->IsAlive()
 					|| ShooterState->GetTeam() == EVanthexTeam::None || TargetState->GetTeam() == EVanthexTeam::None
 					|| ShooterState->GetTeam() == TargetState->GetTeam() || !AimAtTorso(PC, Shooter, Target))
 				{
@@ -246,7 +301,18 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 				}
 				else
 				{
+					const double TargetY = Target->GetActorLocation().Y;
+					if (!Probe.FirstTargetY.IsSet())
+					{
+						Probe.FirstTargetY = TargetY;
+					}
+					Probe.ObservedTargetTravel = FMath::Abs(TargetY - Probe.FirstTargetY.GetValue());
+					if (Probe.ObservedTargetTravel < 12.0)
+					{
+						return;
+					}
 					Probe.InitialHealth = HealthBefore;
+					Probe.AmmoBeforeHit = Weapon->GetAmmoInMagazine();
 				}
 
 				Probe.Burst = Weapon->StartPredictedFire();
@@ -258,13 +324,13 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 				}
 				Probe.Stage = bMiss ? EPredictionTestStage::ConfirmMiss : EPredictionTestStage::ConfirmHit;
 				Shooter->ServerStartPredictedFire(Probe.Burst);
-				Weapon->StopPredictedFire();
-				Shooter->ServerAction(1, false);
+				ReleaseTrigger();
 				return;
 			}
 
 			if (Probe.Stage == EPredictionTestStage::ConfirmHit)
 			{
+				Probe.ObservedAmmo = Weapon->GetAmmoInMagazine();
 				if (!Probe.bConfirmedHit && !PC->CanPredictShot(Probe.Burst, 1))
 				{
 					if (PC->IsShowingPredictedHit() || !PC->IsShowingConfirmedHit())
@@ -304,15 +370,78 @@ void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC)
 					}
 					Probe.bConfirmedMiss = true;
 				}
-				if (Probe.bConfirmedMiss && Weapon->GetAmmoInMagazine() == Probe.AmmoBeforeMiss - 1)
+				Probe.bMissAmmoConsumed |= Weapon->GetWeaponId() == TEXT("Pistol")
+					&& Weapon->GetAmmoInMagazine() == Probe.AmmoBeforeMiss - 1;
+				if (Probe.bConfirmedMiss && Probe.bMissAmmoConsumed)
 				{
 					Probe.ContinueAt = Now + .5;
 					Probe.Stage = EPredictionTestStage::CheckMissHealth;
 				}
+				return;
 			}
-			else if (Now >= Probe.ContinueAt)
+			if (Probe.Stage == EPredictionTestStage::CheckMissHealth && Now >= Probe.ContinueAt)
 			{
-				Finish(true, TEXT("immediate client prediction, confirmed damage, and blocked shot correction"));
+				Probe.Stage = EPredictionTestStage::PrepareAutomatic;
+			}
+			if (Probe.Stage == EPredictionTestStage::PrepareAutomatic)
+			{
+				if (Weapon->GetWeaponId() != AutomaticWeaponId || !Weapon->IsAutomatic()
+					|| Weapon->GetAmmoInMagazine() != Weapon->GetMagazineSize() || !AimAtTorso(PC, Shooter, Target))
+				{
+					return;
+				}
+				Probe.AmmoBeforeAutomatic = Weapon->GetAmmoInMagazine();
+				Probe.LastAutomaticAmmo = Probe.AmmoBeforeAutomatic;
+				Probe.Burst = Weapon->StartPredictedFire();
+				if (!Probe.Burst || !PC->IsShowingPredictedHit() || PC->IsShowingConfirmedHit()
+					|| Health->GetHealth() != Probe.HealthAfterHit)
+				{
+					Finish(false, TEXT("automatic burst did not start with a cosmetic-only prediction"));
+					return;
+				}
+				Shooter->ServerStartPredictedFire(Probe.Burst);
+				Probe.Stage = EPredictionTestStage::HoldAutomatic;
+				Probe.ContinueAt = Now + .7;
+				return;
+			}
+			if (Probe.Stage == EPredictionTestStage::HoldAutomatic)
+			{
+				AimAtTorso(PC, Shooter, Target);
+				if (Now < Probe.ContinueAt)
+				{
+					return;
+				}
+				ReleaseTrigger();
+				Probe.Stage = EPredictionTestStage::CheckAutomatic;
+				Probe.ContinueAt = Now + 1.3;
+			}
+			if (Probe.Stage == EPredictionTestStage::CheckAutomatic)
+			{
+				const int32 Ammo = Weapon->GetAmmoInMagazine();
+				if (Ammo != Probe.LastAutomaticAmmo)
+				{
+					Probe.LastAutomaticAmmo = Ammo;
+					Probe.ContinueAt = FMath::Max(Probe.ContinueAt, Now + .5);
+				}
+				Probe.AutomaticShots = FMath::Max(0, Probe.AmmoBeforeAutomatic - Ammo);
+				const uint32 MaximumShots = Probe.AmmoBeforeAutomatic;
+				// The controller reports resolved ordinals as no longer predictable.
+				// First rule out an invalidated burst (all ordinals would return false).
+				if (PC->CanPredictShot(Probe.Burst, MaximumShots + 1))
+				{
+					uint32 Ordinal = 1;
+					while (Ordinal <= MaximumShots && !PC->CanPredictShot(Probe.Burst, Ordinal))
+					{
+						++Ordinal;
+					}
+					Probe.AutomaticResolvedOrdinal = Ordinal - 1;
+				}
+				if (Now >= Probe.ContinueAt && Probe.AutomaticShots >= 3
+					&& Probe.AutomaticResolvedOrdinal == Probe.AutomaticShots
+					&& !PC->IsShowingPredictedHit() && !PC->IsShowingConfirmedHit())
+				{
+					Finish(true, TEXT("moving-target hit, blocked pistol miss, and reconciled held automatic burst"));
+				}
 			}
 		}), .02f, true, .2f);
 #endif

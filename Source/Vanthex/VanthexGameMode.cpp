@@ -639,6 +639,10 @@ void AVanthexGameMode::ActivateRound()
 		World->GetTimerManager().SetTimer(FlowTimer, this, &AVanthexGameMode::OnRoundFlow, 0.1f, true);
 	}
 	UE_LOG(LogVanthex, Display, TEXT("Round %d active"), RoundIndex);
+#if !UE_BUILD_SHIPPING
+ extern void VanthexSchedulePerfCapture(AVanthexGameMode* Mode);
+ VanthexSchedulePerfCapture(this);
+#endif
 }
 
 void AVanthexGameMode::TickRoundClock()
@@ -2211,13 +2215,16 @@ void AVanthexGameMode::Logout(AController* Exiting)
 bool AVanthexGameMode::IsCTF() const { return VanthexMap::IsCTF(GetWorld()); }
 void AVanthexGameMode::CaptureFlag(EVanthexTeam Team)
 {
- if(!IsCTF()||!IsRoundActive()||Team==EVanthexTeam::None)return;
+ if(!HasAuthority()||!IsCTF()||!IsRoundActive()||Team==EVanthexTeam::None)return;
  auto* Enemy=AVanthexFlag::Find(GetWorld(),Team==EVanthexTeam::Alpha?EVanthexTeam::Bravo:EVanthexTeam::Alpha);
  auto* Own=AVanthexFlag::Find(GetWorld(),Team);
  auto* Carrier=Enemy?Enemy->GetCarrier():nullptr;
- const auto* State=Carrier?GetVanthexPlayerState(Carrier):nullptr;
- if(!Own||!Own->IsHome()||!State||State->GetTeam()!=Team||Carrier->GetHealthComponent()->IsDead()||FVector::Dist2D(Carrier->GetActorLocation(),Own->Base())>=180)return;
+ auto* State=Carrier?GetVanthexPlayerState(Carrier):nullptr;
+ if(!Own||!Own->IsHome()||!State||State->GetTeam()!=Team||Carrier->GetHealthComponent()->IsDead())return;
+ const FVector Position=Carrier->GetActorLocation(), Base=Own->Base();
+ if(FVector::Dist2D(Position,Base)>=180.f||FMath::Abs(Position.Z-Base.Z)>=160.f)return;
  if(Team==EVanthexTeam::Alpha)++AlphaScore;else ++BravoScore;
+ State->RecordFlagCapture();
  Enemy->ReturnHome();PublishMatch();
 }
 

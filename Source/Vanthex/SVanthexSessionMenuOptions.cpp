@@ -82,6 +82,7 @@ TSharedRef<SWidget> SVanthexSessionMenu::SettingsPage()
 
 TSharedRef<SWidget> SVanthexSessionMenu::VideoPage()
 {
+	auto* LocalSettings = UVanthexLocalSettings::Get();
 	auto Display = MakeShared<FDisplaySelection>();
 	const auto* PC = Controller.Get();
 	const UWorld* World = PC ? PC->GetWorld() : nullptr;
@@ -197,6 +198,24 @@ TSharedRef<SWidget> SVanthexSessionMenu::VideoPage()
 				.OnCheckStateChanged_Lambda([this](ECheckBoxState State) { bVSync = State == ECheckBoxState::Checked; })
 				[Text(TEXT("  VSync"), 15)]
 			]
+			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 18)
+			[
+				SNew(SCheckBox)
+				.ToolTipText(NSLOCTEXT("VanthexSettings", "NetworkStatsHint", "Ping und Paketverlust im Spiel anzeigen"))
+				.IsChecked_Lambda([LocalSettings]()
+				{
+					return LocalSettings->bShowNetworkStats ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+				})
+				.OnCheckStateChanged_Lambda([LocalSettings](ECheckBoxState State)
+				{
+					LocalSettings->bShowNetworkStats = State == ECheckBoxState::Checked;
+					LocalSettings->Persist();
+				})
+				[
+					SNew(STextBlock).Font(FCoreStyle::GetDefaultFontStyle("Regular", 15)).ColorAndOpacity(White)
+					.Text(NSLOCTEXT("VanthexSettings", "ShowNetworkStats", "  Netzwerkdaten im HUD"))
+				]
+			]
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				Button(TEXT("GRAFIK ANWENDEN"), [this, Display, bCanChangeDisplay]()
@@ -269,7 +288,8 @@ TSharedRef<SWidget> SVanthexSessionMenu::AudioPage()
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)[Text(TEXT("LAUTSTAERKE"), 12, Cyan)]
 			+ SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Gesamtlautstaerke"), &Settings->MasterVolume)]
-			+ SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen & Bewegung"), &Settings->CombatVolume)]
+			+ SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Kampflautstärke"), &Settings->CombatVolume)]
+			+ SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Schritte & Ausrüstung"), &Settings->MovementVolume)]
 			+ SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Menue & Kaufhinweise"), &Settings->UIVolume)]
 			+ SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen-Raumreflexionen"), &Settings->RoomVolume)]
 			+ SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Team-Voice"), &Settings->VoiceVolume)]

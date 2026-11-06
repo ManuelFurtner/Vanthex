@@ -3,13 +3,11 @@
 #include "VanthexBulletAudioProfile.h"
 #include "VanthexBulletAudioSettings.h"
 #include "VanthexPlayerController.h"
-#include "VanthexPlayerState.h"
 #include "VanthexCharacter.h"
 #include "HealthComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/World.h"
-#include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Sound/SoundBase.h"
@@ -73,20 +71,7 @@ APawn* UVanthexBulletAudioComponent::GetListenerPawn() const
  if (!Pawn) return nullptr;
  const auto* Health = Pawn->FindComponentByClass<UHealthComponent>();
  if (!Health || !Health->IsDead()) return Pawn;
- // Shared with the camera: spawn slots are replicated, iteration order is not.
- const auto* OwnState = PC->GetPlayerState<AVanthexPlayerState>();
- APawn* Spectated = nullptr;
- int32 LowestSlot = MAX_int32;
- if (OwnState) for (TActorIterator<AVanthexCharacter> It(GetWorld()); It; ++It)
- {
-  const auto* State = It->GetPlayerState<AVanthexPlayerState>();
-  if (State && State->GetTeam() == OwnState->GetTeam() && !It->GetHealthComponent()->IsDead() && State->GetSpawnSlot() < LowestSlot)
-  {
-   Spectated = *It;
-   LowestSlot = State->GetSpawnSlot();
-  }
- }
- return Spectated;
+ return PC->GetSpectatedTeammate();
 }
 
 FVector UVanthexBulletAudioComponent::GetListenerLocation(const APawn* Pawn) const

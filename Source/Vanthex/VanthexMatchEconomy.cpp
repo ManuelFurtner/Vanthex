@@ -157,7 +157,11 @@ void AVanthexGameMode::NotifyCoreCaught(uint32 ThrowId, AVanthexCharacter* Throw
  const int32 Sender = EconomySlot(From), Receiver = EconomySlot(To);
  if (Sender < 0 || Receiver < 0) return;
  if (From->GetTeam() != To->GetTeam()) {
-  if (!PaidIntercepts.Contains(Receiver)) { PaidIntercepts.Add(Receiver); To->AwardCredits(100); }
+  if (!PaidIntercepts.Contains(Receiver)) {
+   PaidIntercepts.Add(Receiver);
+   To->AwardCredits(100);
+   To->RecordCoreIntercept();
+  }
   return;
  }
  int32& TeamPasses = From->GetTeam() == EVanthexTeam::Alpha ? AlphaPasses : BravoPasses;
@@ -167,4 +171,5 @@ void AVanthexGameMode::NotifyCoreCaught(uint32 ThrowId, AVanthexCharacter* Throw
  if (!VanthexEconomyRewards::QualifiesPass(FVector::Dist(Origin, CatchPosition), Before, After)) return;
  ++PaidPasses.FindOrAdd(Sender); ++TeamPasses; PaidPassPairs.Add(Pair);
  From->AwardCredits(50);
+ From->RecordCorePass();
 }

@@ -1,5 +1,6 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
+#include "Misc/ConfigCacheIni.h"
 #include "VanthexLocalSettings.h"
 #include <limits>
 
@@ -31,5 +32,59 @@ bool FVanthexMenuVolumeTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("A valid gain is retained"),UVanthexLocalSettings::SafeVolume(.6f),.6f);
 	TestEqual(TEXT("Non-finite gain is silent"),UVanthexLocalSettings::SafeVolume(std::numeric_limits<float>::quiet_NaN()),0.f);
 	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FVanthexMenuControlsSettingsTest, "Vanthex.Menu.ControlsSettings",
+ EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+bool FVanthexMenuControlsSettingsTest::RunTest(const FString& Parameters)
+{
+ using Action = EVanthexGameplayAction;
+ auto* Settings = NewObject<UVanthexLocalSettings>();
+ Settings->ResetGameplayKeys();
+ TestTrue(TEXT("Jump defaults to Space"), Settings->GetGameplayKey(Action::Jump) == EKeys::SpaceBar);
+ TestTrue(TEXT("Aim defaults to right mouse"), Settings->GetGameplayKey(Action::Aim) == EKeys::RightMouseButton);
+
+ FText Error;
+ TestFalse(TEXT("Existing movement binding is a conflict"), Settings->TrySetGameplayKey(Action::Jump, EKeys::W, Error));
+ TestTrue(TEXT("Conflict has a readable error"), !Error.IsEmpty());
+ TestFalse(TEXT("Menu key stays reserved"), Settings->TrySetGameplayKey(Action::Jump, EKeys::Escape, Error));
+ TestFalse(TEXT("Secondary default Ctrl conflicts with another action"), Settings->TrySetGameplayKey(Action::Jump, EKeys::RightControl, Error));
+ TestTrue(TEXT("Rejected assignments retain prior binding"), Settings->GetGameplayKey(Action::Jump) == EKeys::SpaceBar);
+ TestTrue(TEXT("Unused keyboard key can bind jump"), Settings->TrySetGameplayKey(Action::Jump, EKeys::J, Error));
+ TestTrue(TEXT("Freed Space can bind reload"), Settings->TrySetGameplayKey(Action::Reload, EKeys::SpaceBar, Error));
+ TestFalse(TEXT("Remapped keys still conflict"), Settings->TrySetGameplayKey(Action::Fire, EKeys::J, Error));
+
+ Settings->MouseSensitivity = 2.f;
+ Settings->ADSMouseSensitivity = .5f;
+ TestEqual(TEXT("ADS factor does not change hip sensitivity"), Settings->GetMouseSensitivity(), 2.f);
+ TestEqual(TEXT("ADS sensitivity uses half of hip at full aim"), Settings->GetMouseSensitivity(1.f), 1.f);
+ TestEqual(TEXT("Aim transition interpolates sensitivity"), Settings->GetMouseSensitivity(.5f), 1.5f);
+
+ // Exercise UObject config serialization in memory without touching the user's settings or CDO.
+ FConfigCacheIni TempConfig(EConfigCacheType::Temporary);
+ const FString ConfigFile(TEXT("VanthexControlsSettingsTest.ini"));
+ // SaveConfig evicts an implicitly created branch after attempting to flush it.
+ // Pre-create the branch so this temporary cache retains the saved values.
+ TempConfig.AddNewBranch(ConfigFile);
+ Settings->SaveConfig(CPF_Config, *ConfigFile, &TempConfig, false);
+ auto* Reloaded = NewObject<UVanthexLocalSettings>();
+ Reloaded->ResetGameplayKeys();
+ Reloaded->MouseSensitivity = 1.f;
+ Reloaded->ADSMouseSensitivity = 1.f;
+ UObject::FLoadConfigParams Load;
+ Load.ConfigSystem = &TempConfig;
+ Load.Filename = ConfigFile;
+ Reloaded->LoadConfig(Load);
+ TestTrue(TEXT("Saved jump binding survives load"), Reloaded->GetGameplayKey(Action::Jump) == EKeys::J);
+ TestTrue(TEXT("Saved binding to freed key survives load"), Reloaded->GetGameplayKey(Action::Reload) == EKeys::SpaceBar);
+ TestEqual(TEXT("Saved hip sensitivity survives load"), Reloaded->GetMouseSensitivity(), 2.f);
+ TestEqual(TEXT("Saved ADS factor survives load"), Reloaded->GetADSMouseSensitivity(), .5f);
+
+ Reloaded->ResetGameplayKeys();
+ TestTrue(TEXT("Reset restores jump and reload defaults"), Reloaded->GetGameplayKey(Action::Jump) == EKeys::SpaceBar &&
+  Reloaded->GetGameplayKey(Action::Reload) == EKeys::R);
+ Reloaded->ADSMouseSensitivity = std::numeric_limits<float>::quiet_NaN();
+ TestEqual(TEXT("Invalid ADS factor falls back to normal sensitivity"), Reloaded->GetMouseSensitivity(1.f), 2.f);
+ return true;
 }
 #endif

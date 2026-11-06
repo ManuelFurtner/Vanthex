@@ -6,6 +6,9 @@ class AVanthexPlayerController;
 class SWidgetSwitcher;
 class SEditableTextBox;
 class STextBlock;
+class SScrollBox;
+struct FKey;
+enum class EVanthexGameplayAction : uint8;
 
 /** Native game UI. A single focus root consumes Escape and owns all tab content. */
 class SVanthexSessionMenu : public SCompoundWidget
@@ -18,12 +21,16 @@ public:
 	void Construct(const FArguments& Args);
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnPreviewKeyDown(const FGeometry& Geometry, const FKeyEvent& Event) override;
+	virtual FReply OnPreviewMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& Event) override;
+	virtual FReply OnMouseWheel(const FGeometry& Geometry, const FPointerEvent& Event) override;
 private:
 	TWeakObjectPtr<AVanthexPlayerController> Controller;
 	FSimpleDelegate Resume;
 	TSharedPtr<SWidgetSwitcher> Pages;
 	TSharedPtr<SEditableTextBox> AddressBox;
 	TSharedPtr<STextBlock> Feedback;
+	TWeakPtr<SScrollBox> ControlsScroll;
+	TOptional<EVanthexGameplayAction> PendingKeyBinding;
 	int32 ActivePage = 0;
 	enum class ETravelAction { Play, Host, MainMenu };
 	TOptional<ETravelAction> PendingAction;
@@ -44,6 +51,9 @@ private:
 	TSharedRef<SWidget> Button(const FString& Label, TFunction<FReply()> Action, bool Primary=false, int32 Tab=-1);
 	TSharedRef<SWidget> VolumeRow(const FString& Label, float* Value);
 	void ShowPage(int32 Page);
+	FReply CaptureGameplayKey(const FKey& Key);
+	void EndKeyCapture();
+	void RefreshLocalGameplayBindings();
 	FReply RequestTravel(ETravelAction Action);
 	FReply Join();
 	FText Status() const;

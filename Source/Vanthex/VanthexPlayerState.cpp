@@ -43,6 +43,10 @@ void AVanthexPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AVanthexPlayerState, Kills);
 	DOREPLIFETIME(AVanthexPlayerState, Deaths);
 	DOREPLIFETIME(AVanthexPlayerState, Assists);
+	DOREPLIFETIME(AVanthexPlayerState, FlagCaptures);
+	DOREPLIFETIME(AVanthexPlayerState, FlagReturns);
+	DOREPLIFETIME(AVanthexPlayerState, CorePasses);
+	DOREPLIFETIME(AVanthexPlayerState, CoreIntercepts);
 	DOREPLIFETIME_CONDITION(AVanthexPlayerState, Economy, COND_OwnerOnly);
 }
 
@@ -51,6 +55,7 @@ void AVanthexPlayerState::ResetEconomyForMatch()
 	if (!HasAuthority()) return;
 	Economy = FVanthexEconomyState();
 	Kills = Deaths = Assists = 0;
+	FlagCaptures = FlagReturns = CorePasses = CoreIntercepts = 0;
 	LastPurchaseRequest = 0;
 	LastPurchaseError.Reset();
 	ForceNetUpdate();
@@ -62,6 +67,10 @@ void AVanthexPlayerState::CopyEconomyFrom(const AVanthexPlayerState* PreviousOwn
 	Economy = PreviousOwner->Economy;
  RespawnTime=PreviousOwner->RespawnTime;
 	Kills = PreviousOwner->Kills; Deaths = PreviousOwner->Deaths; Assists = PreviousOwner->Assists;
+	FlagCaptures = PreviousOwner->FlagCaptures;
+	FlagReturns = PreviousOwner->FlagReturns;
+	CorePasses = PreviousOwner->CorePasses;
+	CoreIntercepts = PreviousOwner->CoreIntercepts;
 	LastPurchaseRequest = 0;
 	LastPurchaseError.Reset();
 	ForceNetUpdate();
