@@ -1,4 +1,5 @@
 #include "VanthexGameMode.h"
+#include "VanthexBotController.h"
 #include "VanthexCharacter.h"
 #include "VanthexGridV4Layout.h"
 #include "HitscanWeapon.h"
@@ -58,6 +59,16 @@ const TArray<FGridV4View>& GridV4Views()
  return Views;
 }
 
+const TArray<FGridV4View>& CTFArtViews()
+{
+ static const TArray<FGridV4View> Views = {
+  {{850,-1200,195},{0,0,430},TEXT("01_forum.png")},
+  {{0,-3040,230},{0,-4300,430},TEXT("02_castra_alpha.png")},
+  {{0,3040,230},{0,4300,430},TEXT("03_castra_bravo.png")}
+ };
+ return Views;
+}
+
 struct FGridV4ShotRun
 {
  TWeakObjectPtr<UWorld> World;
@@ -76,26 +87,36 @@ void AVanthexGameMode::AdvanceGridV4Shots()
  auto* World = GetWorld();
  if (!Human || !World || FScreenshotRequest::IsScreenshotRequested()) return;
 
- const FString Directory = FPaths::ProjectSavedDir() / TEXT("GridV4Shots");
- const auto& Views = GridV4Views();
+ const bool bCTFArt = IsCTF() && FParse::Param(FCommandLine::Get(), TEXT("CTFArtShots"));
+ const FString Directory = FPaths::ProjectSavedDir() / (bCTFArt ? TEXT("CTFArtShots") : TEXT("GridV4Shots"));
+ const TCHAR* CaptureName = bCTFArt ? TEXT("CTF ART SHOTS") : TEXT("GRID V4 SHOTS");
+ const auto& Views = bCTFArt ? CTFArtViews() : GridV4Views();
  if (Run.World.Get() != World)
  {
   Run = FGridV4ShotRun();
   Run.World = World;
-  FParse::Value(FCommandLine::Get(), TEXT("GridV4Shot="), Run.SingleShot);
+  FParse::Value(FCommandLine::Get(), bCTFArt ? TEXT("CTFArtShot=") : TEXT("GridV4Shot="), Run.SingleShot);
   Run.SingleShot = FMath::Clamp(Run.SingleShot, 0, Views.Num());
-  const int32 FirstView = FParse::Param(FCommandLine::Get(), TEXT("GridV4StairShots")) ? 14 : 0;
+  const int32 FirstView = !bCTFArt && FParse::Param(FCommandLine::Get(), TEXT("GridV4StairShots")) ? 14 : 0;
   VisualShotIndex = Run.SingleShot > 0 ? (Run.SingleShot - 1) * 3 : FirstView * 3;
   IFileManager::Get().MakeDirectory(*Directory, true);
   Run.TimingCsv = TEXT("View,Filename,SettlingSeconds,Frames,MeanFrameMs,Eye,Target\n");
-  // A complete camera tour is longer than a normal round. Keep this diagnostic
-  // session stable; normal match timing remains unchanged outside -GridV4Shots.
+  // Keep the capture session stable for the complete camera tour.
   TimeRemaining = 600.f;
   RoundDuration = 600.f;
   Human->SetHoldForward(false);
   Human->SetSprinting(false);
   Human->SetActorEnableCollision(false);
-  UE_LOG(LogTemp, Display, TEXT("GRID V4 SHOTS: %d views; 8s settle per camera. Frame intervals describe an uncontested capture session, not a combat benchmark."), Run.SingleShot ? 1 : Views.Num() - FirstView);
+  if (bCTFArt)
+  {
+   for (TActorIterator<AVanthexBotController> It(World); It; ++It)
+   {
+    It->SetActorTickEnabled(false);
+    if (auto* BotPawn = Cast<AVanthexCharacter>(It->GetPawn()); BotPawn && BotPawn->GetWeapon())
+     BotPawn->GetWeapon()->StopFire();
+   }
+  }
+  UE_LOG(LogTemp, Display, TEXT("%s: %d views; 8s settle per camera. Frame intervals describe an uncontested capture session, not a combat benchmark."), CaptureName, Run.SingleShot ? 1 : Views.Num() - FirstView);
  }
 
  const int32 ViewIndex = VisualShotIndex / 3;
@@ -108,12 +129,12 @@ void AVanthexGameMode::AdvanceGridV4Shots()
    if (IFileManager::Get().FileSize(*File) <= 0)
    {
     bMissing = true;
-    UE_LOG(LogTemp, Error, TEXT("GRID V4 SHOTS: missing screenshot %s"), *File);
+    UE_LOG(LogTemp, Error, TEXT("%s: missing screenshot %s"), CaptureName, *File);
    }
   }
   FFileHelper::SaveStringToFile(Run.TimingCsv, *(Directory / TEXT("capture_timing.csv")));
   GetWorldTimerManager().ClearTimer(VisualShotTimer);
-  UE_LOG(LogTemp, Display, TEXT("GRID V4 SHOTS: complete; %d requested files; result %s"), Run.RequestedFiles.Num(), bMissing ? TEXT("FAILED") : TEXT("OK"));
+  UE_LOG(LogTemp, Display, TEXT("%s: complete; %d requested files; result %s"), CaptureName, Run.RequestedFiles.Num(), bMissing ? TEXT("FAILED") : TEXT("OK"));
   FPlatformMisc::RequestExitWithStatus(false, bMissing ? 1 : 0);
   return;
  }
@@ -145,7 +166,7 @@ void AVanthexGameMode::AdvanceGridV4Shots()
   }
   Run.PoseSeconds = FPlatformTime::Seconds();
   Run.PoseFrame = GFrameCounter;
-  UE_LOG(LogTemp, Display, TEXT("GRID V4 SHOTS: settle %02d %s eye=%s"), ViewIndex + 1, View.Filename, *View.Eye.ToString());
+  UE_LOG(LogTemp, Display, TEXT("%s: settle %02d %s eye=%s"), CaptureName, ViewIndex + 1, View.Filename, *View.Eye.ToString());
  }
  else if (Stage == 2)
  {
@@ -157,7 +178,7 @@ void AVanthexGameMode::AdvanceGridV4Shots()
   Run.TimingCsv += FString::Printf(TEXT("%d,%s,%.3f,%llu,%.3f,%s,%s\n"), ViewIndex + 1, View.Filename, Elapsed, static_cast<unsigned long long>(Frames), MeanMs, *View.Eye.ToString(), *View.Target.ToString());
   FFileHelper::SaveStringToFile(Run.TimingCsv, *(Directory / TEXT("capture_timing.csv")));
   FScreenshotRequest::RequestScreenshot(File, false, false);
-  UE_LOG(LogTemp, Display, TEXT("GRID V4 SHOTS: capture %02d %s; %.2fs / %llu frames / %.2fms mean (settling window)"), ViewIndex + 1, View.Filename, Elapsed, static_cast<unsigned long long>(Frames), MeanMs);
+  UE_LOG(LogTemp, Display, TEXT("%s: capture %02d %s; %.2fs / %llu frames / %.2fms mean (settling window)"), CaptureName, ViewIndex + 1, View.Filename, Elapsed, static_cast<unsigned long long>(Frames), MeanMs);
  }
  ++VisualShotIndex;
 }

@@ -229,6 +229,9 @@ void AVanthexGameMode::BeginPlay()
  }
  if (FParse::Param(FCommandLine::Get(),TEXT("VanthexMapShots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceMapShots,4.f,true,8.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV4Shots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceGridV4Shots,4.f,true,12.f);
+#if !UE_BUILD_SHIPPING
+ if (IsCTF() && FParse::Param(FCommandLine::Get(),TEXT("CTFArtShots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceGridV4Shots,4.f,true,14.f);
+#endif
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV4GameTest"))) GetWorldTimerManager().SetTimer(SelfTestTimer,this,&AVanthexGameMode::AdvanceGridV4GameTest,0.05f,true,3.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV3Shots"))) GetWorldTimerManager().SetTimer(VisualShotTimer,this,&AVanthexGameMode::AdvanceGridV3Shots,4.f,true,12.f);
  if (FParse::Param(FCommandLine::Get(),TEXT("GridV3GameTest"))) GetWorldTimerManager().SetTimer(SelfTestTimer,this,&AVanthexGameMode::AdvanceGridV3GameTest,0.05f,true,3.f);
