@@ -26,6 +26,9 @@ public:
 	void RecordAssist() { if(HasAuthority()) { ++Assists; ForceNetUpdate(); } }
 	const FVanthexEconomyState& GetEconomy() const { return Economy; }
 	void ResetEconomyForMatch();
+ void GiveCTFLoadout();
+ void SetRespawnTime(float Time) { if(HasAuthority()) { RespawnTime=Time; ForceNetUpdate(); } }
+ float GetRespawnTime() const { return RespawnTime; }
 	void CopyEconomyFrom(const AVanthexPlayerState* PreviousOwner);
 	bool TryPurchase(FName ItemId, uint32 RequestId);
 	const FString& GetLastPurchaseError() const { return LastPurchaseError; }
@@ -38,6 +41,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+ UPROPERTY(Replicated) float RespawnTime=0.f;
+ friend class UVanthexEquipmentComponent;
+ void SetCarriedWeapons(FName Primary, FName Sidearm);
 	UPROPERTY(Replicated) int32 Kills = 0;
 	UPROPERTY(Replicated) int32 Deaths = 0;
 	UPROPERTY(Replicated) int32 Assists = 0;

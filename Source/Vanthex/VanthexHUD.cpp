@@ -1,4 +1,5 @@
 #include "VanthexHUD.h"
+#include "VanthexWeaponPickup.h"
 #include "VanthexLocalSettings.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexGadgetComponent.h"
@@ -19,6 +20,7 @@
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
 #include "VanthexCore.h"
+#include "VanthexFlag.h"
 #include "GameFramework/PlayerController.h"
 
 namespace
@@ -148,10 +150,20 @@ void AVanthexHUD::DrawHUD()
   Rect(X,Y,Width,Height,FLinearColor(.14f,.20f,.24f,.8f));
   Rect(X,Y,Width*FMath::Clamp(Fraction,0.f,1.f),Height,Color);
  };
+ const bool CTF=VanthexMap::IsCTF(GetWorld());
  const bool Buy=Match&&Match->GetPhase()==EVanthexRoundPhase::BuyPhase;
  const auto* Equipment=Character?Character->GetEquipment():nullptr;
  const bool Knife=Equipment&&Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife;
 
+ if(CTF) {
+  int32 Row=0;
+  for(auto FlagTeam:{EVanthexTeam::Alpha,EVanthexTeam::Bravo}) if(auto* Flag=AVanthexFlag::Find(GetWorld(),FlagTeam)) {
+   const FString Status=Flag->IsHome()?TEXT("IN BASIS"):Flag->GetCarrier()?TEXT("GETRAGEN"):TEXT("FALLENGELASSEN");
+   Text(FString::Printf(TEXT("%s FLAGGE: %s"),TeamLabel(FlagTeam),*Status),28,82+Row*19,11,FlagTeam==EVanthexTeam::Alpha?Cyan:Amber);++Row;
+   if(Flag->GetCarrier()==Character)Text(TEXT("FLAGGE ZUR EIGENEN BASIS BRINGEN"),CX,H-185,16,Accent,true);
+  }
+  Text(TEXT("Flagge beruehren / Eigene Flagge muss in der Basis sein"),CX,H-160,11,Muted,true);
+ }
  // Scoreboard: fixed widths prevent the clock and scores from jumping as they change.
  Panel(CX-224,24,448,65,Accent);
  Rect(CX-62,24,124,65,FLinearColor(.025f,.045f,.06f,.9f));
@@ -160,7 +172,7 @@ void AVanthexHUD::DrawHUD()
  Text(TEXT("BRAVO"),CX+137,34,13,Amber);
  Text(FString::FromInt(BravoScore),CX+88,37,31,White,true);
  Text(FString::Printf(TEXT("%02d:%02d"),Seconds/60,Seconds%60),CX,43,28,Seconds<=15&&!Buy?Red:White,true);
- Text(Buy?TEXT("KAUFPHASE"):FString::Printf(TEXT("RUNDE %02d"),RoundIndex),CX,29,11,Buy?Amber:Muted,true);
+ Text(Buy?TEXT("KAUFPHASE"):CTF?(Match&&Match->IsCTFOvertime()?TEXT("NACHSPIELZEIT"):TEXT("CAPTURE THE FLAG")):FString::Printf(TEXT("RUNDE %02d"),RoundIndex),CX,29,11,Buy?Amber:Muted,true);
  int32 AliveA=0,AliveB=0,CountA=0,CountB=0;
  if(Match)for(const auto& Entry:Match->PlayerArray)if(const auto* P=Cast<AVanthexPlayerState>(Entry)){
   if(P->GetTeam()==EVanthexTeam::Alpha){++CountA;if(P->IsAlive())++AliveA;}
@@ -172,9 +184,9 @@ void AVanthexHUD::DrawHUD()
  Text(FString::Printf(TEXT("%s  /  ARC"),TeamLabel(Team)),28,51,11,Accent);
  Text(TEXT("ESC  MENUE"),W-111,28,11,Muted);
 
- FString Objective=TEXT("CORE SICHERN");
+ FString Objective=CTF?TEXT("CAPTURE THE FLAG / 5 GEGEN 5"):TEXT("CORE SICHERN");
  bool Extracting=false;
- if(Match)switch(Match->GetCoreReadout()){
+ if(Match&&!CTF)switch(Match->GetCoreReadout()){
   case EVanthexCoreReadout::Alpha:Objective=TEXT("CORE  /  ALPHA");break;
   case EVanthexCoreReadout::Bravo:Objective=TEXT("CORE  /  BRAVO");break;
   case EVanthexCoreReadout::Dropped:Objective=TEXT("CORE FALLENGELASSEN");break;
@@ -263,15 +275,46 @@ void AVanthexHUD::DrawHUD()
    else for(TActorIterator<AVanthexCore> It(GetWorld());It;++It)if(It->GetCoreState()==EVanthexCoreState::AtRest&&FVector::Dist(Character->GetActorLocation(),It->GetActorLocation())<180){Prompt=TEXT("E  CORE AUFNEHMEN");break;}
   }
  }
+ if(Character&&!bDead&&Match&&(Buy||Match->GetPhase()==EVanthexRoundPhase::RoundActive)) {
+  if(!Prompt.Contains(TEXT("E  CORE"))) if(auto* Pickup=AVanthexWeaponPickup::FindFor(Character)) {
+   const auto& Data=Pickup->GetWeaponData();
+   Prompt=FString::Printf(TEXT("E  %s AUFHEBEN / TAUSCHEN  [%d / %d]"),*Data.Id.ToString(),Data.Magazine,Data.Reserve);
+   Interaction=-1.f;
+  }
+  if(Character->GetEquipment()->CanUseRifle())Text(TEXT("X  WAFFE WEGWERFEN"),CX,H-122,10,Muted,true);
+ }
  if(!Prompt.IsEmpty()){
   Rect(CX-195,H*.5f+64,390,Interaction>=0?44:30,Ink);
   Text(Prompt,CX,H*.5f+72,13,White,true);
   if(Interaction>=0)Bar(CX-175,H*.5f+99,350,3,Interaction,Accent);
  }
+ if(Match) {
+  int32 Row=0;
+  const auto& Feed=Match->GetEliminations();
+  for(int32 I=Feed.Num()-1;I>=0&&Row<4;--I) {
+   const auto& Entry=Feed[I];
+   if(Match->GetServerWorldTimeSeconds()-Entry.ServerTime>8.f) continue;
+   const bool Own=PlayerState&&(Entry.KillerId==PlayerState->GetPlayerId()||Entry.VictimId==PlayerState->GetPlayerId());
+   const float Y=96.f+Row*44.f;
+   Panel(W-350,Y,326,40,Own?Accent:Muted);
+   Text(Entry.Killer+TEXT("  >  ")+Entry.Victim,W-337,Y+5,12,White);
+   Text(Entry.KillerId==Entry.VictimId?TEXT("SELBST ELIMINIERT"):TEXT("ELIMINIERUNG"),W-337,Y+23,9,Muted);
+   ++Row;
+  }
+ }
  if(bDead){
-  Panel(CX-225,H*.5f-101,450,61,Red);
+  FString Cause=TEXT("Todesinfo wird geladen...");
+  if(Match&&PlayerState) {
+   const auto& Feed=Match->GetEliminations();
+   for(int32 I=Feed.Num()-1;I>=0;--I) if(Feed[I].VictimId==PlayerState->GetPlayerId()) {
+    Cause=Feed[I].KillerId==Feed[I].VictimId?TEXT("Selbst eliminiert"):TEXT("Eliminiert von: ")+Feed[I].Killer;
+    break;
+   }
+  }
+  Panel(CX-225,H*.5f-101,450,86,Red);
+  Text(Cause,CX,H*.5f-64,15,Red,true);
   Text(TEXT("ELIMINIERT"),CX,H*.5f-94,23,White,true);
-  Text(TEXT("Du steigst in der naechsten Runde wieder ein."),CX,H*.5f-62,12,Muted,true);
+  Text(CTF&&PlayerState&&Match?FString::Printf(TEXT("Respawn in eigener Basis: %d s"),FMath::Max(0,FMath::CeilToInt(PlayerState->GetRespawnTime()-Match->GetServerWorldTimeSeconds()))):TEXT("Du steigst in der naechsten Runde wieder ein."),CX,H*.5f-37,12,Muted,true);
  }
 
 	if (!Match)
@@ -283,7 +326,7 @@ void AVanthexHUD::DrawHUD()
 
 	if (Match->GetPhase() == EVanthexRoundPhase::MatchEnded)
 	{
-		Banner = FString::Printf(TEXT("%s GEWINNT DAS MATCH"), TeamLabel(Match->GetMatchWinner()));
+		Banner = Match->GetMatchWinner()==EVanthexTeam::None?TEXT("MATCH UNENTSCHIEDEN"):FString::Printf(TEXT("%s GEWINNT DAS MATCH"), TeamLabel(Match->GetMatchWinner()));
 
 	}
 	else if (Match->GetPhase() == EVanthexRoundPhase::RoundEnding || Match->GetPhase() == EVanthexRoundPhase::Intermission)

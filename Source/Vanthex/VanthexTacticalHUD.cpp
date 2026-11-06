@@ -64,13 +64,14 @@ void AVanthexHUD::DrawTacticalHUD()
  Text(TEXT("TAB  TEAMSTATUS"),W-160,51,11,Muted);
  if(!PC->IsScoreboardOpen()) return;
  Rect(0,0,W,H,FLinearColor(.002f,.006f,.012f,.68f));
- const float X=(W-820)*.5f,Y=(H-430)*.5f;
- Rect(X,Y,820,430,Ink); Rect(X,Y,820,3,Cyan);
+ const float BoardHeight=VanthexMap::IsCTF(GetWorld())?570.f:430.f;
+ const float X=(W-820)*.5f,Y=(H-BoardHeight)*.5f;
+ Rect(X,Y,820,BoardHeight,Ink); Rect(X,Y,820,3,Cyan);
  Text(TEXT("VANTHEX / TEAMSTATUS"),X+24,Y+19,23,White);
  Text(FString::Printf(TEXT("RUNDE %02d     ALPHA %d : %d BRAVO"),Match->GetRoundIndex(),Match->GetAlphaScore(),Match->GetBravoScore()),X+24,Y+53,12,Muted);
  for(int32 TeamIndex=0;TeamIndex<2;++TeamIndex) {
   const auto Team=TeamIndex==0?EVanthexTeam::Alpha:EVanthexTeam::Bravo; const auto Color=TeamIndex==0?Cyan:Amber;
-  const float Top=Y+86+TeamIndex*154;
+  const float Top=Y+86+TeamIndex*(VanthexMap::IsCTF(GetWorld())?224:154);
   Rect(X+16,Top,788,27,FLinearColor(.035f,.065f,.085f));
   Text(TeamIndex==0?TEXT("ALPHA"):TEXT("BRAVO"),X+28,Top+5,13,Color);
   Text(TEXT("K"),X+480,Top+5,12,Muted); Text(TEXT("A"),X+535,Top+5,12,Muted); Text(TEXT("D"),X+590,Top+5,12,Muted);
@@ -78,7 +79,7 @@ void AVanthexHUD::DrawTacticalHUD()
   TArray<const AVanthexPlayerState*> Players;
   for(const auto& Entry:Match->PlayerArray) if(const auto* State=Cast<AVanthexPlayerState>(Entry);State&&State->GetTeam()==Team) Players.Add(State);
   Players.Sort([](const AVanthexPlayerState& A,const AVanthexPlayerState& B){return A.GetSpawnSlot()<B.GetSpawnSlot();});
-  for(int32 I=0;I<Players.Num()&&I<3;++I) {
+  for(int32 I=0;I<Players.Num()&&I<(VanthexMap::IsCTF(GetWorld())?5:3);++I) {
    const auto* State=Players[I]; const float Row=Top+31+I*36;
    if(State==Own) Rect(X+16,Row-1,788,33,FLinearColor(.05f,.14f,.17f));
    const auto Tint=State->IsAlive()?White:Muted;
@@ -90,6 +91,6 @@ void AVanthexHUD::DrawTacticalHUD()
    Text(State->IsAlive()?TEXT("AKTIV"):TEXT("TOT"),X+714,Row+6,12,State->IsAlive()?Color:Muted);
   }
  }
- Text(TEXT("K KILLS    A ASSISTS    D TODE"),X+24,Y+398,11,Muted);
- Text(TEXT("TAB LOSLASSEN / SCHLIESSEN"),X+588,Y+398,10,Muted);
+ Text(TEXT("K KILLS    A ASSISTS    D TODE"),X+24,Y+BoardHeight-32,11,Muted);
+ Text(TEXT("TAB LOSLASSEN / SCHLIESSEN"),X+588,Y+BoardHeight-32,10,Muted);
 }

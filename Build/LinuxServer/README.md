@@ -19,7 +19,7 @@ Run from PowerShell 7.2 or newer:
 ```
 
 The default runtime image is `vanthex-server:local`. The build compiles the
-`VanthexServer` target, cooks GRID V4, and packages a Development server. Logs go
+`VanthexServer` target, cooks GRID V4 and Crossroads CTF, and packages a Development server. Logs go
 to `Saved/LinuxServer/build-*.log`. Before building, the script pulls the pinned
 engine image if necessary and retains it as `vanthex-unreal-build:5.8.3` locally.
 This avoids depending only on BuildKit's smaller disposable cache after a failed

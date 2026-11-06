@@ -18,6 +18,11 @@ void UVanthexLocalSettings::ApplyAudio(UWorld* World)
 		Device->SetTransientPrimaryVolume(MasterVolume);
 }
 
+float UVanthexLocalSettings::GetMouseSensitivity() const
+{
+ return FMath::IsFinite(MouseSensitivity) ? FMath::Clamp(MouseSensitivity, .1f, 5.f) : 1.f;
+}
+
 void UVanthexLocalSettings::Persist() { SaveConfig(); }
 
 FVanthexCrosshairStyle UVanthexLocalSettings::GetCrosshairStyle() const

@@ -1,4 +1,7 @@
 #include "VanthexGameMode.h"
+#include "VanthexMapLayout.h"
+#include "VanthexFlag.h"
+#include "VanthexWeaponPickup.h"
 #include "VanthexGadgetActor.h"
 #include "VanthexGadgetComponent.h"
 
@@ -19,6 +22,7 @@
 #include "HitscanWeapon.h"
 #include "UnrealClient.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerStart.h"
 #include "HAL/PlatformMisc.h"
@@ -38,6 +42,7 @@ AVanthexGameMode::AVanthexGameMode()
 void AVanthexGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
+ if(IsCTF()) RoundDuration=900.f;
 
 	UWorld* World = GetWorld();
 	if (!World)
@@ -87,7 +92,7 @@ void AVanthexGameMode::HandleStartingNewPlayer_Implementation(APlayerController*
             int32 SelectedSlot = 0;
             if (bRosterReady) {
                 AVanthexCharacter* Replacement = nullptr;
-                for (int32 Slot = 0; Slot < 3 && !Replacement; ++Slot) {
+                for (int32 Slot = 0; Slot < TeamSize() && !Replacement; ++Slot) {
                     for (EVanthexTeam Team : {EVanthexTeam::Bravo, EVanthexTeam::Alpha}) {
                         auto* Candidate = FindCombatant(Team, Slot);
                         if (Candidate && Cast<AVanthexBotController>(Candidate->GetController())) { Replacement = Candidate; SelectedTeam = Team; SelectedSlot = Slot; break; }
@@ -166,8 +171,12 @@ void AVanthexGameMode::PerformSessionReset()
 
 void AVanthexGameMode::BeginPlay()
 {
+ if(FParse::Param(FCommandLine::Get(),TEXT("CTFTest"))) { FTimerHandle Test; GetWorldTimerManager().SetTimer(Test,FTimerDelegate::CreateWeakLambda(this,[this](){extern void VanthexRunCTFTest(AVanthexGameMode*); VanthexRunCTFTest(this);}),.1f,true,2.f); }
 	Super::BeginPlay();
 #if !UE_BUILD_SHIPPING
+ if (FParse::Param(FCommandLine::Get(), TEXT("WeaponDropTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer, FTimerDelegate::CreateWeakLambda(this, [this]() { extern void VanthexRunWeaponDropTest(AVanthexGameMode*); VanthexRunWeaponDropTest(this); }), .05f, true, 1.f);
+ }
  if (FParse::Param(FCommandLine::Get(), TEXT("RoundCycleTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer, FTimerDelegate::CreateWeakLambda(this, [this]() { extern void VanthexRunRoundCycleTest(AVanthexGameMode*); VanthexRunRoundCycleTest(this); }), .05f, true, 1.f);
  }
@@ -351,11 +360,10 @@ void AVanthexGameMode::EnsureRoster()
 		return;
 	}
 
-	SpawnBot(EVanthexTeam::Alpha, 1);
-	SpawnBot(EVanthexTeam::Alpha, 2);
-	SpawnBot(EVanthexTeam::Bravo, 0);
-	SpawnBot(EVanthexTeam::Bravo, 1);
-	SpawnBot(EVanthexTeam::Bravo, 2);
+ for(int32 Slot=0;Slot<TeamSize();++Slot) {
+  if(Slot>0) SpawnBot(EVanthexTeam::Alpha,Slot);
+  SpawnBot(EVanthexTeam::Bravo,Slot);
+ }
 	bRosterReady = true;
 }
 
@@ -450,6 +458,11 @@ void AVanthexGameMode::NotifyCombatantDied(AVanthexCharacter* Combatant)
 		PlayerState->SetAlive(false);
 		PlayerState->HandleEconomyDeath();
 	}
+ if(IsCTF()) {
+  CTFRespawns.Add(Combatant,GetWorld()->GetTimeSeconds()+8.f);
+  if(auto* State=GetVanthexPlayerState(Combatant)) State->SetRespawnTime(GetGameState<AVanthexGameState>()->GetServerWorldTimeSeconds()+8.f);
+  return;
+ }
 	EvaluateElimination();
 }
 
@@ -540,6 +553,7 @@ void AVanthexGameMode::PublishMatch()
 {
 	if (AVanthexGameState* Match = GetGameState<AVanthexGameState>())
 	{
+		Match->SetCTFOvertime(bCTFOvertime);
 		Match->PublishRound(Phase, AlphaScore, BravoScore, RoundIndex, TimeRemaining, RoundWinner, MatchWinner);
 	}
 }
@@ -551,6 +565,7 @@ void AVanthexGameMode::RestartMatch()
 		World->GetTimerManager().ClearTimer(FlowTimer);
 	}
 
+	bCTFOvertime=false;
 	AlphaScore = 0;
 	AlphaLossStreak = BravoLossStreak = 0;
 	LastSettledRound = -1;
@@ -580,13 +595,16 @@ void AVanthexGameMode::BeginRound()
 	}
 
 	++RoundIndex;
+ AVanthexWeaponPickup::ClearForRound(GetWorld());
 	DamageHistory.Reset(); RewardedDeaths.Reset(); ProcessedThrows.Reset();
 	PaidPasses.Reset(); PaidPassPairs.Reset(); PaidIntercepts.Reset(); AlphaPasses = BravoPasses = 0;
 	RoundWinner = EVanthexTeam::None;
 	const bool Legacy = UsesLegacyCombatFixture();
 	TimeRemaining = Legacy ? RoundDuration : BuyDuration;
 	Phase = Legacy ? EVanthexRoundPhase::RoundStarting : EVanthexRoundPhase::BuyPhase;
+	CTFRespawns.Reset();
 	ResetCombatants();
+ if(IsCTF()) { for(AVanthexCharacter* Pawn:Combatants) RespawnCTF(Pawn); for(TActorIterator<AVanthexFlag> It(GetWorld());It;++It) It->ReturnHome(); }
 	if (!Legacy) {
 		for (AVanthexCharacter* Combatant : Combatants) if (Combatant) { Combatant->GetCharacterMovement()->StopMovementImmediately(); Combatant->GetCharacterMovement()->DisableMovement(); }
 		BuyForBots();
@@ -636,7 +654,7 @@ void AVanthexGameMode::TickRoundClock()
 		return;
 	}
 
-	UpdateExtraction(0.1f);
+ if(IsCTF()) TickCTF(); else UpdateExtraction(0.1f);
 	if (bEliminationDeferred) EvaluateElimination();
 	if (Phase != EVanthexRoundPhase::RoundActive)
 	{
@@ -662,6 +680,14 @@ void AVanthexGameMode::ResolveTimeout()
 		return;
 	}
 
+ if(IsCTF()) {
+  if(AlphaScore==BravoScore&&!bCTFOvertime) {
+   bCTFOvertime=true;TimeRemaining=180.f;PublishMatch();
+   GetWorldTimerManager().SetTimer(FlowTimer,this,&AVanthexGameMode::OnRoundFlow,.1f,true);return;
+  }
+  MatchWinner=AlphaScore==BravoScore?EVanthexTeam::None:AlphaScore>BravoScore?EVanthexTeam::Alpha:EVanthexTeam::Bravo;
+  CTFRespawns.Reset();EnterMatchEnded();return;
+ }
 	const int32 AlphaAlive = CountAlive(EVanthexTeam::Alpha);
 	const int32 BravoAlive = CountAlive(EVanthexTeam::Bravo);
 	UE_LOG(LogVanthex, Display, TEXT("Round timeout alive alpha %d bravo %d"), AlphaAlive, BravoAlive);
@@ -746,7 +772,7 @@ void AVanthexGameMode::EnterMatchEnded()
 		World->GetTimerManager().ClearTimer(FlowTimer);
 	}
 
-	if (MatchWinner == EVanthexTeam::None)
+	if (MatchWinner == EVanthexTeam::None && !IsCTF())
 	{
 		MatchWinner = AlphaScore >= BravoScore ? EVanthexTeam::Alpha : EVanthexTeam::Bravo;
 	}
@@ -966,7 +992,7 @@ void AVanthexGameMode::KillTeam(EVanthexTeam Team)
 
 bool AVanthexGameMode::AreCombatantsReady() const
 {
-	if (Combatants.Num() < MaxPlayersPerTeam * 2)
+	if (Combatants.Num() < TeamSize() * 2)
 	{
 		return false;
 	}
@@ -1696,9 +1722,9 @@ void AVanthexGameMode::AdvanceSelfTest()
 	case EVanthexSelfTestStage::JumpWait:
 	{
 		const bool bAirborne = Character && Character->GetCharacterMovement() && (Character->GetCharacterMovement()->IsFalling() || Character->GetCharacterMovement()->Velocity.Z > 10.f);
-		if (++SelfTestTicks > 10)
+		if (++SelfTestTicks >= 2)
 		{
-			SelfTestExpect(!bAirborne && Character && !Character->CanJump(), TEXT("jump_disabled"), TEXT("jump request leaves character grounded"));
+			SelfTestExpect(bAirborne, TEXT("jump"), TEXT("jump left the ground"));
 			Character->StopJumping();
 			SelfTestStage = EVanthexSelfTestStage::PlayerDeath;
 		}
@@ -2151,7 +2177,7 @@ bool AVanthexGameMode::HandOverPlayerSlot(AController* Exiting)
  if(!IsValid(Pawn) || Pawn->IsActorBeingDestroyed() || !State || !Combatants.Contains(Pawn) || !Pawn->GetHealthComponent()) return false;
  const auto Team=State->GetTeam();
  const int32 Slot=State->GetSpawnSlot();
- if((Team!=EVanthexTeam::Alpha && Team!=EVanthexTeam::Bravo) || Slot<0 || Slot>=MaxPlayersPerTeam) return false;
+ if((Team!=EVanthexTeam::Alpha && Team!=EVanthexTeam::Bravo) || Slot<0 || Slot>=TeamSize()) return false;
  FActorSpawnParameters Params;
  Params.SpawnCollisionHandlingOverride=ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
  auto* Bot=World->SpawnActor<AVanthexBotController>(AVanthexBotController::StaticClass(),Pawn->GetActorTransform(),Params);
@@ -2180,4 +2206,35 @@ void AVanthexGameMode::Logout(AController* Exiting)
 {
  HandOverPlayerSlot(Exiting);
  Super::Logout(Exiting);
+}
+
+bool AVanthexGameMode::IsCTF() const { return VanthexMap::IsCTF(GetWorld()); }
+void AVanthexGameMode::CaptureFlag(EVanthexTeam Team)
+{
+ if(!IsCTF()||!IsRoundActive()||Team==EVanthexTeam::None)return;
+ auto* Enemy=AVanthexFlag::Find(GetWorld(),Team==EVanthexTeam::Alpha?EVanthexTeam::Bravo:EVanthexTeam::Alpha);
+ auto* Own=AVanthexFlag::Find(GetWorld(),Team);
+ auto* Carrier=Enemy?Enemy->GetCarrier():nullptr;
+ const auto* State=Carrier?GetVanthexPlayerState(Carrier):nullptr;
+ if(!Own||!Own->IsHome()||!State||State->GetTeam()!=Team||Carrier->GetHealthComponent()->IsDead()||FVector::Dist2D(Carrier->GetActorLocation(),Own->Base())>=180)return;
+ if(Team==EVanthexTeam::Alpha)++AlphaScore;else ++BravoScore;
+ Enemy->ReturnHome();PublishMatch();
+}
+
+void AVanthexGameMode::RespawnCTF(AVanthexCharacter* Pawn)
+{
+ if(!Pawn||!Arena) return;
+ auto* State=GetVanthexPlayerState(Pawn);
+ auto* Start=State?Arena->GetTeamSpawn(State->GetTeam(),State->GetSpawnSlot()):nullptr;
+ if(!Start) return;
+ State->GiveCTFLoadout(); State->SetRespawnTime(0);
+ Pawn->PrepareForRound(Start->GetActorTransform());
+ Pawn->SyncEconomyLoadout(false);
+}
+void AVanthexGameMode::TickCTF()
+{
+ for(auto It=CTFRespawns.CreateIterator();It;++It) if(!It.Key().IsValid()||GetWorld()->GetTimeSeconds()>=It.Value()) {
+  if(auto* Pawn=It.Key().Get()) RespawnCTF(Pawn);
+  It.RemoveCurrent();
+ }
 }

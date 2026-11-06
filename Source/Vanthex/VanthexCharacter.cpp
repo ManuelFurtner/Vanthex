@@ -1,4 +1,6 @@
 #include "VanthexCharacter.h"
+#include "VanthexLocalSettings.h"
+#include "VanthexWeaponPickup.h"
 #include "VanthexEquipmentComponent.h"
 #include "VanthexGadgetComponent.h"
 #include "VanthexWeaponAudioComponent.h"
@@ -235,6 +237,7 @@ void AVanthexCharacter::BuildInput()
 	MapAxis(LookAction, EKeys::MouseX, false, false);
 	MapAxis(LookAction, EKeys::MouseY, true, true);
 
+	MappingContext->MapKey(JumpAction, EKeys::SpaceBar);
 	MappingContext->MapKey(SprintAction, EKeys::LeftShift);
  MappingContext->MapKey(AimAction,EKeys::RightMouseButton);
 	MappingContext->MapKey(CrouchAction, EKeys::LeftControl);
@@ -254,6 +257,7 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AVanthexCharacter::SelectRifle);
  PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AVanthexCharacter::SelectPistol);
 	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AVanthexCharacter::SelectKnife);
+ PlayerInputComponent->BindKey(EKeys::X, IE_Pressed, this, &AVanthexCharacter::DropSelectedWeapon);
 	PlayerInputComponent->BindKey(EKeys::MouseScrollDown, IE_Pressed, this, &AVanthexCharacter::NextWeapon);
 	PlayerInputComponent->BindKey(EKeys::MouseScrollUp, IE_Pressed, this, &AVanthexCharacter::PreviousWeapon);
  PlayerInputComponent->BindKey(EKeys::Four, IE_Pressed, this, &AVanthexCharacter::UseGadgetOne);
@@ -287,6 +291,9 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AVanthexCharacter::MoveInput);
 	EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVanthexCharacter::LookInput);
+	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartJump);
+	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopJump);
+	EnhancedInput->BindAction(JumpAction, ETriggerEvent::Canceled, this, &AVanthexCharacter::StopJump);
 	EnhancedInput->BindAction(SprintAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartSprint);
 	EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopSprint);
 	EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartCrouchInput);
@@ -298,7 +305,7 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Canceled,this,&AVanthexCharacter::StopAimingInput);
 	EnhancedInput->BindAction(ReloadAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartReload);
 	EnhancedInput->BindAction(RestartAction, ETriggerEvent::Started, this, &AVanthexCharacter::RequestRestart);
-	EnhancedInput->BindAction(PickupAction, ETriggerEvent::Started, this, &AVanthexCharacter::TryPickupCore);
+	EnhancedInput->BindAction(PickupAction, ETriggerEvent::Started, this, &AVanthexCharacter::TryPickupNearby);
 	EnhancedInput->BindAction(DropAction, ETriggerEvent::Started, this, &AVanthexCharacter::DropCarriedCore);
 	EnhancedInput->BindAction(ThrowAction, ETriggerEvent::Started, this, &AVanthexCharacter::ThrowCarriedCore);
 }
@@ -312,7 +319,8 @@ void AVanthexCharacter::MoveInput(const FInputActionValue& Value)
 void AVanthexCharacter::LookInput(const FInputActionValue& Value)
 {
 	const FVector2D Look = Value.Get<FVector2D>();
-	DoAim(Look.X, Look.Y);
+	const float MouseSensitivity = UVanthexLocalSettings::Get()->GetMouseSensitivity();
+	DoAim(Look.X * MouseSensitivity, Look.Y * MouseSensitivity);
 }
 
 void AVanthexCharacter::StartSprint()
@@ -400,9 +408,11 @@ void AVanthexCharacter::RefreshMovementSpeed()
 {
  if(!GetCharacterMovement()) return;
  const float Scale=IsAiming()&&Weapon?VanthexWeaponPresentation::Aim(Weapon->GetWeaponId()).MovementScale:1.f;
- const float KnifeScale=Equipment&&Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Equipment->IsSwitching()?1.15f:1.f;
- GetCharacterMovement()->MaxWalkSpeed=(bSprintWanted?SprintSpeed:WalkSpeed)*Scale*KnifeScale;
- GetCharacterMovement()->MaxWalkSpeedCrouched=280.f*(IsAiming()?.7f:1.f);
+ // Full speed only after the knife draw finishes; switching cannot bypass the weapon penalty.
+ const bool bKnifeReady=Equipment&&Equipment->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Equipment->IsSwitching();
+ const float EquipmentScale=!Equipment||bKnifeReady?1.f:FMath::Clamp(WeaponMovementScale,.1f,1.f);
+ GetCharacterMovement()->MaxWalkSpeed=(bSprintWanted?SprintSpeed:WalkSpeed)*Scale*EquipmentScale;
+ GetCharacterMovement()->MaxWalkSpeedCrouched=280.f*(IsAiming()?.7f:1.f)*EquipmentScale;
 }
 void AVanthexCharacter::TickAiming(float Delta)
 {
@@ -438,7 +448,7 @@ void AVanthexCharacter::SetSprinting(bool bNewSprinting)
 	if (bNewSprinting && bIsCrouched)
 	{
 		bSprintWanted = false;
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+		RefreshMovementSpeed();
 		return;
 	}
 
@@ -458,13 +468,18 @@ void AVanthexCharacter::SetCrouching(bool bNewCrouching)
 	if (bNewCrouching)
 	{
 		bSprintWanted = false;
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+		RefreshMovementSpeed();
 		Crouch();
 	}
 	else
 	{
 		UnCrouch();
 	}
+}
+
+bool AVanthexCharacter::CanJumpInternal_Implementation() const
+{
+ return CanPerformRoundActions() && Health && !Health->IsDead() && Super::CanJumpInternal_Implementation();
 }
 
 void AVanthexCharacter::StartJump()
@@ -540,6 +555,22 @@ void AVanthexCharacter::TryPickupCore()
 			}
 		}
 	}
+}
+
+void AVanthexCharacter::TryPickupNearby()
+{
+ if (!HasAuthority()) { ServerAction(7,false); return; }
+ auto* Mode=GetWorld()->GetAuthGameMode<AVanthexGameMode>();
+ if (!Mode || (!Mode->IsBuyPhase()&&!Mode->IsRoundActive()) || Health->IsDead()) return;
+ // Keep the existing objective interaction; a weapon never steals a Core pickup.
+ if (Mode->IsRoundActive()) if (auto* Core=Mode->GetCore()) if (Core->TryPickup(this)) { Mode->RefreshCoreReadout(); return; }
+ if (auto* Pickup=AVanthexWeaponPickup::FindFor(this)) Pickup->TryPickup(this);
+}
+
+void AVanthexCharacter::DropSelectedWeapon()
+{
+ if (!HasAuthority()) { ServerAction(8,false); return; }
+ if (Equipment) Equipment->DropSelectedWeapon();
 }
 
 void AVanthexCharacter::DropCarriedCore()
@@ -620,7 +651,7 @@ void AVanthexCharacter::PrepareForRound(const FTransform& Spawn)
 	{
 		Movement->StopMovementImmediately();
 		Movement->SetMovementMode(MOVE_Walking);
-		Movement->MaxWalkSpeed = WalkSpeed;
+		RefreshMovementSpeed();
 	}
 
 	const FVector Location = Spawn.GetLocation();
@@ -664,7 +695,7 @@ void AVanthexCharacter::SetTeamAppearance(EVanthexTeam Team)
 void AVanthexCharacter::HandleDeath(AActor* /*DeadActor*/)
 {
  SetAiming(false);
-	if (Equipment) Equipment->ResetEquipment();
+	if (Equipment) Equipment->DropWeaponsOnDeath();
 	StopFire();
 	if (Weapon) { Weapon->CancelReload(); }
 	GetCharacterMovement()->DisableMovement();
@@ -693,7 +724,7 @@ void AVanthexCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 }
 
 void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled) {
- switch(Action) { case 0: StartFire(); break; case 1: StopFire(); break; case 2: StartReload(); break; case 3: TryPickupCore(); break; case 4: DropCarriedCore(); break; case 5: ThrowCarriedCore(); break; case 6: SetSprinting(bEnabled); break; default: break; }
+ switch(Action) { case 0: StartFire(); break; case 1: StopFire(); break; case 2: StartReload(); break; case 3: TryPickupCore(); break; case 4: DropCarriedCore(); break; case 5: ThrowCarriedCore(); break; case 6: SetSprinting(bEnabled); break; case 7: TryPickupNearby(); break; case 8: DropSelectedWeapon(); break; default: break; }
 }
 
 

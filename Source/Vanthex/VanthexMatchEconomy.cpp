@@ -32,7 +32,7 @@ void AVanthexGameMode::TickBuyPhase()
 
 void AVanthexGameMode::BuyForBots()
 {
- if (!IsBuyPhase()) return;
+ if (!IsBuyPhase() || IsCTF()) return;
 #if !UE_BUILD_SHIPPING
  if(FParse::Param(FCommandLine::Get(),TEXT("AimTest"))||FParse::Param(FCommandLine::Get(),TEXT("AimShots"))||FParse::Param(FCommandLine::Get(),TEXT("AimNetworkTest")))return;
  if(FParse::Param(FCommandLine::Get(),TEXT("GadgetTest"))||FParse::Param(FCommandLine::Get(),TEXT("GadgetNetworkTest"))||FParse::Param(FCommandLine::Get(),TEXT("GadgetShots"))||FParse::Param(FCommandLine::Get(),TEXT("WeaponModelShots")))return;
@@ -57,8 +57,8 @@ void AVanthexGameMode::BuyForBots()
 
 int32 AVanthexGameMode::EconomySlot(const AVanthexPlayerState* State) const
 {
- if (!State || State->GetTeam() == EVanthexTeam::None || State->GetSpawnSlot() < 0 || State->GetSpawnSlot() >= MaxPlayersPerTeam) return -1;
- return (State->GetTeam() == EVanthexTeam::Bravo ? 3 : 0) + State->GetSpawnSlot();
+ if (!State || State->GetTeam() == EVanthexTeam::None || State->GetSpawnSlot() < 0 || State->GetSpawnSlot() >= TeamSize()) return -1;
+ return (State->GetTeam() == EVanthexTeam::Bravo ? TeamSize() : 0) + State->GetSpawnSlot();
 }
 
 AVanthexPlayerState* AVanthexGameMode::EconomyStateForSlot(int32 Key) const
@@ -160,7 +160,7 @@ void AVanthexGameMode::NotifyCoreCaught(uint32 ThrowId, AVanthexCharacter* Throw
   return;
  }
  int32& TeamPasses = From->GetTeam() == EVanthexTeam::Alpha ? AlphaPasses : BravoPasses;
- const int32 Pair = Sender * 6 + Receiver;
+ const int32 Pair = Sender * (TeamSize()*2) + Receiver;
  if (PaidPasses.FindRef(Sender) >= 2 || TeamPasses >= 4 || PaidPassPairs.Contains(Pair) || FVector::Dist(Origin, CatchPosition) < 400.f) return;
  const float Before = ShortestExtractionRoute(Origin), After = ShortestExtractionRoute(CatchPosition);
  if (!VanthexEconomyRewards::QualifiesPass(FVector::Dist(Origin, CatchPosition), Before, After)) return;

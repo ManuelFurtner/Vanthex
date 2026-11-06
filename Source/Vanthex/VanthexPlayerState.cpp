@@ -36,6 +36,7 @@ void AVanthexPlayerState::SetAlive(bool bNewAlive)
 void AVanthexPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AVanthexPlayerState, RespawnTime);
 	DOREPLIFETIME(AVanthexPlayerState, Team);
 	DOREPLIFETIME(AVanthexPlayerState, SpawnSlot);
 	DOREPLIFETIME(AVanthexPlayerState, bAlive);
@@ -59,6 +60,7 @@ void AVanthexPlayerState::CopyEconomyFrom(const AVanthexPlayerState* PreviousOwn
 {
 	if (!HasAuthority() || !PreviousOwner) return;
 	Economy = PreviousOwner->Economy;
+ RespawnTime=PreviousOwner->RespawnTime;
 	Kills = PreviousOwner->Kills; Deaths = PreviousOwner->Deaths; Assists = PreviousOwner->Assists;
 	LastPurchaseRequest = 0;
 	LastPurchaseError.Reset();
@@ -98,6 +100,14 @@ void AVanthexPlayerState::HandleEconomyDeath()
 	ForceNetUpdate();
 }
 
+void AVanthexPlayerState::SetCarriedWeapons(FName Primary, FName Sidearm)
+{
+ if (!HasAuthority()) return;
+ Economy.PrimaryWeapon = Primary;
+ Economy.Sidearm = Sidearm;
+ ForceNetUpdate();
+}
+
 bool AVanthexPlayerState::ConsumeGadget(int32 Slot,FName Expected)
 {
  if(!HasAuthority()||!Economy.Gadgets.IsValidIndex(Slot)||Economy.Gadgets[Slot]!=Expected)return false;
@@ -110,4 +120,12 @@ float AVanthexPlayerState::ApplyArmorDamage(float Damage, bool Head, bool Melee)
 	const float Remaining = VanthexEconomy::ApplyArmorDamage(Economy, Damage, Head, Melee);
 	ForceNetUpdate();
 	return Remaining;
+}
+
+void AVanthexPlayerState::GiveCTFLoadout()
+{
+ if(!HasAuthority()) return;
+ Economy.PrimaryWeapon=TEXT("M4"); Economy.Sidearm=TEXT("Pistol");
+ Economy.ArmorTier=EVanthexArmorTier::Light; Economy.ArmorPoints=VanthexEconomy::MaximumArmor(Economy.ArmorTier);
+ Economy.Gadgets.Reset(); ForceNetUpdate();
 }

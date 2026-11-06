@@ -8,6 +8,7 @@ class AVanthexCharacter;
 class USceneComponent;
 class UStaticMesh;
 class UStaticMeshComponent;
+struct FVanthexDroppedWeapon;
 
 UENUM()
 enum class EVanthexWeaponSlot : uint8 { Rifle, Knife, Pistol };
@@ -50,6 +51,9 @@ public:
  void SyncLoadout(FName PrimaryId, FName SidearmId, bool bRefillAmmo);
  bool HasSlot(EVanthexWeaponSlot Slot) const;
  FName GetSlotWeaponId(EVanthexWeaponSlot Slot) const;
+ bool DropSelectedWeapon();
+ void DropWeaponsOnDeath();
+ bool TakeDroppedWeapon(const FVanthexDroppedWeapon& Data);
 	void Attack();
 	void ResetEquipment();
 	bool CanUseRifle() const;
@@ -94,4 +98,8 @@ protected:
  void ApplySelectedWeapon();
  void CommitSwitch();
  uint32 AudioActionSequence=0, SwitchActionId=0;
+ void PublishCarriedWeapons();
+ void FinishInventoryTransfer(EVanthexWeaponSlot Slot);
+ bool bDeathWeaponsDropped = false;
+ float NextTransferTime = 0.f;
 };

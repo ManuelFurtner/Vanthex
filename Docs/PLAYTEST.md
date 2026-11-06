@@ -18,9 +18,14 @@ Disconnected players are replaced by bots. Leaving the host ends that session.
 
 ## Controls
 
-- WASD / mouse: move and aim; Shift: sprint; Ctrl: crouch; mouse wheel: weapons; Tab (hold): scoreboard; jumping disabled.
+- WASD / mouse: move and aim; Shift: sprint; Ctrl: crouch; mouse wheel: weapons; Tab (hold): scoreboard; Space: jump.
 - Left mouse: fire; R: reload.
 - E: pick up the core; G: drop; Q: throw.
+- X: throw the selected firearm. E also picks up a nearby firearm you are looking at.
+  If that slot is occupied, your previous firearm drops with its remaining ammunition.
+  Death drops both carried firearms for either team; knives remain equipped. Magazine
+  and reserve counts transfer unchanged. Empty slots stay empty until you acquire a
+  replacement. Unclaimed drops expire after three minutes or at the next round.
 - F: operate a nearby Shift device while looking toward it (250 cm).
 - C: ARC remote operation (1200 cm, 15 second cooldown, requires line of sight).
 - Escape: session menu. Online matches continue while the menu is open.
@@ -32,6 +37,13 @@ closing movement stops at a blocking actor. Devices and ability cooldowns reset
 each round. Dead players automatically watch a living teammate when available.
 
 ## Automated checks
+
+`Build/Test-WeaponDrops.ps1` runs weapon-transfer checks on GRID V4 and Crossroads
+CTF, plus a separate listen server/client test of owner RPCs, pickup replication,
+weapon models and exact ammunition. It uses the built Unreal editor executable.
+The test reports are written to `Saved/WeaponDrops/`. New weapon actors and controls
+require an updated client as well as an updated server; the previous distributed
+Windows ZIP does not include this feature.
 
 `-game -nullrhi -nosound -unattended -VanthexSelfTest` runs the original M1–M3
 suite plus ownership, death/reload, wall collision and Shift regression checks.
@@ -47,7 +59,7 @@ It disables bot decisions. It is not a substitute for a latency or six-player te
 ## Manual acceptance checks
 
 1. Host and join from separate machines; both see the same arena and six combatants.
-2. Check movement, sprint/crouch transitions, blocked jumping and aiming at ordinary latency.
+2. Check movement, sprint/crouch transitions, jumping/landing and aiming at ordinary latency.
 3. Shoot enemies and teammates: enemy health changes, friendly damage is rejected.
 4. Die during reload; observe a teammate; return with full health on the next round.
 5. Pass/intercept the core, throw against walls and platforms, extract at either zone.
@@ -68,3 +80,5 @@ controls linked lifts and lighting. Each outer upper platform also has a ramp.
 F operates an occupied lift while looking ahead and calls it from either landing.
 See Docs/GRID_MAP.md for layout, controls, limitations and verification.
 
+
+Space / Leertaste is the default jump key in Core and Capture the Flag. One grounded jump is allowed; release to clear the input. Jumping is blocked while crouched, dead, or outside active play.

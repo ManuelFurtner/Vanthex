@@ -45,6 +45,11 @@ AVanthexPlayerController::AVanthexPlayerController()
 void AVanthexPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+#if !UE_BUILD_SHIPPING
+ if(FParse::Param(FCommandLine::Get(),TEXT("WeaponDropNetworkTest"))) {
+  extern void VanthexStartWeaponDropNetworkTest(AVanthexPlayerController*);VanthexStartWeaponDropNetworkTest(this);
+ }
+#endif
  if(IsLocalController()) UVanthexLocalSettings::Get()->ApplyAudio(GetWorld());
  if(FParse::Param(FCommandLine::Get(),TEXT("LooseCoreNetworkTest"))) {
   extern void VanthexStartLooseCoreNetworkTest(AVanthexPlayerController* PC);VanthexStartLooseCoreNetworkTest(this);

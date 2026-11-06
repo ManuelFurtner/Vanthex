@@ -41,6 +41,10 @@ void AVanthexTestArena::Build()
 		return;
 	}
 
+if(VanthexMap::IsCTF(World)){
+ if(!World->GetMapName().EndsWith(TEXT("CrossroadsCTF"))||FParse::Param(FCommandLine::Get(),TEXT("BakeCTF"))) BuildCTF();
+ BuildCTFGameplay();return;
+}
 if(VanthexMap::IsGridV4(World)){
   const bool Baked=World->GetMapName().EndsWith(TEXT("GridV4"))&&!FParse::Param(FCommandLine::Get(),TEXT("BakeGridV4"));
   if(!Baked)BuildGridV4();BuildGridV4Gameplay();

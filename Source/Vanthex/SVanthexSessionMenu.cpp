@@ -1,6 +1,7 @@
 #include "SVanthexSessionMenu.h"
 #include "VanthexPlayerController.h"
 #include "VanthexLocalSettings.h"
+#include "Kismet/GameplayStatics.h"
 #include "VanthexCommunicationComponent.h"
 #include "VanthexPlayerState.h"
 #include "GameFramework/GameStateBase.h"
@@ -45,12 +46,12 @@ void SVanthexSessionMenu::Construct(const FArguments& Args)
 	const FString Map = Controller.IsValid() && VanthexMap::IsGridV4(Controller->GetWorld()) ? TEXT("AEGIS / GRID V4") : TEXT("VANTHEX FACILITY");
 	auto Navigation = SNew(SVerticalBox);
 	Navigation->AddSlot().AutoHeight().Padding(0,0,0,6)[Text(TEXT("V A N T H E X"),30,Cyan)];
-	Navigation->AddSlot().AutoHeight().Padding(0,0,0,34)[Text(TEXT("TACTICAL CORE OPERATIONS"),11,Muted)];
+	Navigation->AddSlot().AutoHeight().Padding(0,0,0,34)[Text(TEXT("TACTICAL TEAM OPERATIONS"),11,Muted)];
 	const TCHAR* Tabs[] = {TEXT("01   SPIELEN"),TEXT("02   EINSTELLUNGEN"),TEXT("03   STEUERUNG"),TEXT("04   FADENKREUZ")};
 	for (int32 I=0; I<4; ++I)
 		Navigation->AddSlot().AutoHeight().Padding(0,0,0,10)[Button(Tabs[I],[this,I](){ShowPage(I); return FReply::Handled();},false,I)];
 	Navigation->AddSlot().FillHeight(1)[SNew(SBox)];
-	Navigation->AddSlot().AutoHeight().Padding(0,24,0,10)[Text(TEXT("3 vs 3  /  CORE  /  TAKTIK"),12,Cyan)];
+	Navigation->AddSlot().AutoHeight().Padding(0,24,0,10)[Text(TEXT("CORE 3v3 / CAPTURE THE FLAG 5v5"),12,Cyan)];
 	Navigation->AddSlot().AutoHeight()[Text(TEXT("ESC  Zurueck ins Spiel\nDie laufende Runde geht weiter."),12,Muted)];
 	ChildSlot[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.003f,.007f,.01f,.96f)).Padding(20)
 	[SNew(SScaleBox).Stretch(EStretch::ScaleToFit).StretchDirection(EStretchDirection::DownOnly)
@@ -81,8 +82,10 @@ TSharedRef<SWidget> SVanthexSessionMenu::PlayPage()
 {
 	return SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,6)[Text(TEXT("BEREIT FUER DIE NAECHSTE RUNDE?"),27)]
-	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Text(TEXT("Sichere den Core. Decke dein Team. Kontrolliere die Anlage."),15,Muted)]
+	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Text(TEXT("Core 3v3 oder Capture the Flag 5v5. Waehle deinen Modus."),15,Muted)]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("WEITERSPIELEN"),[this](){Resume.ExecuteIfBound(); return FReply::Handled();},true)]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("CAPTURE THE FLAG / 5 GEGEN 5"),[this](){return RequestTravel(3);})]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Button(TEXT("CORE / GRID V4 / 3 GEGEN 3"),[this](){return RequestTravel(4);})]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,22)[Button(TEXT("LAN-SITZUNG HOSTEN"),[this](){return RequestTravel(1);})]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,8)[Text(TEXT("DIREKT BEITRETEN"),12,Cyan)]
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,10)[SAssignNew(AddressBox,SEditableTextBox)
@@ -127,6 +130,9 @@ TSharedRef<SWidget> SVanthexSessionMenu::SettingsPage()
 	[Button(Names[I],[this,I](){Quality=I; Feedback->SetText(FText::FromString(TEXT("Grafik ausgewaehlt. Mit Grafik anwenden bestaetigen."))); return FReply::Handled();})];
 	return SNew(SScrollBox)+SScrollBox::Slot()[SNew(SVerticalBox)
 	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,18)[Text(TEXT("DEIN SETUP"),27)]
+	+SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[NumberRow(TEXT("Maus-Empfindlichkeit"),&Settings->MouseSensitivity,.1f,5.f,1.f,.01f)]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,12)[Text(TEXT("0,10 - 5,00 | 1,00 = Standard. Wird automatisch gespeichert."),12)]
+ +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,24)[Button(TEXT("MAUS AUF STANDARD"),[Settings](){Settings->MouseSensitivity=1.f; Settings->Persist(); return FReply::Handled();})]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Gesamtlautstaerke"),&Settings->MasterVolume)]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Waffen & Bewegung"),&Settings->CombatVolume)]
 	+SVerticalBox::Slot().AutoHeight()[VolumeRow(TEXT("Menue & Kaufhinweise"),&Settings->UIVolume)]
@@ -163,7 +169,7 @@ TSharedRef<SWidget> SVanthexSessionMenu::ControlsPage()
 	for(int32 I=0; I<8; ++I) List->AddSlot().AutoHeight().Padding(0,0,0,2)
 	[SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Panel).Padding(14,12)
 	[SNew(SHorizontalBox)+SHorizontalBox::Slot().FillWidth(.46f)[Text(Keys[I],13,Cyan)]+SHorizontalBox::Slot().FillWidth(.54f)[Text(Actions[I],14)]]];
- List->AddSlot().AutoHeight().Padding(14,12)[Text(TEXT("Y: Teamchat   /   T: Alle   /   V halten: Team-Voice\nEnter senden / Esc abbrechen. Stummschaltung unter Einstellungen."),14,Cyan)];
+ List->AddSlot().AutoHeight().Padding(14,12)[Text(TEXT("X: Waffe wegwerfen   /   E: Waffe aufheben oder tauschen\nY: Teamchat   /   T: Alle   /   V halten: Team-Voice\nEnter senden / Esc abbrechen. Stummschaltung unter Einstellungen."),14,Cyan)];
 	return SNew(SScrollBox)+SScrollBox::Slot()[List];
 }
 
@@ -182,7 +188,7 @@ FReply SVanthexSessionMenu::OnPreviewKeyDown(const FGeometry& Geometry,const FKe
 FReply SVanthexSessionMenu::RequestTravel(int32 Action)
 {
 	if(PendingAction!=Action) { PendingAction=Action; Feedback->SetText(FText::FromString(TEXT("Die aktuelle Sitzung wird verlassen. Zum Bestaetigen dieselbe Schaltflaeche erneut waehlen."))); return FReply::Handled(); }
-	if(auto* PC=Controller.Get()) { Resume.ExecuteIfBound(); if(Action==1) PC->HostGame(); else PC->LeaveGame(); }
+	if(auto* PC=Controller.Get()) { Resume.ExecuteIfBound(); if(Action==3||Action==4) UGameplayStatics::OpenLevel(PC,FName(Action==3?TEXT("/Game/Vanthex/Maps/CrossroadsCTF"):TEXT("/Game/Vanthex/Maps/GridV4"))); else if(Action==1) PC->HostGame(); else PC->LeaveGame(); }
 	return FReply::Handled();
 }
 
@@ -227,13 +233,13 @@ public:
 };
 }
 
-TSharedRef<SWidget> SVanthexSessionMenu::CrosshairRow(const FString& Label,float* Value,float Min,float Max,float Fallback)
+TSharedRef<SWidget> SVanthexSessionMenu::NumberRow(const FString& Label,float* Value,float Min,float Max,float Fallback,float Step)
 {
  return SNew(SHorizontalBox)
   +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Text(Label,15)]
   +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(140)
    [SNew(SSpinBox<float>).MinValue(Min).MaxValue(Max).MinSliderValue(Min).MaxSliderValue(Max)
-    .Delta(Max<=1?.01f:.5f).MinFractionalDigits(0).MaxFractionalDigits(2)
+    .Delta(Step>0?Step:(Max<=1?.01f:.5f)).MinFractionalDigits(0).MaxFractionalDigits(2)
     .Value_Lambda([Value,Min,Max,Fallback](){return FVanthexCrosshairStyle::Safe(*Value,Min,Max,Fallback);})
     .OnValueChanged_Lambda([Value,Min,Max,Fallback](float V){*Value=FVanthexCrosshairStyle::Safe(V,Min,Max,Fallback);})
     .OnValueCommitted_Lambda([Value,Min,Max,Fallback](float V,ETextCommit::Type){*Value=FVanthexCrosshairStyle::Safe(V,Min,Max,Fallback); UVanthexLocalSettings::Get()->Persist();})
@@ -258,14 +264,14 @@ TSharedRef<SWidget> SVanthexSessionMenu::CrosshairPage()
  Rows->AddSlot().AutoHeight().Padding(0,0,0,16)[Text(TEXT("DEIN FADENKREUZ"),27)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[SNew(SBox).HeightOverride(140)[SNew(SCrosshairPreview)]];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,20)[Text(TEXT("Live-Vorschau auf dunklem und hellem Hintergrund. Aenderungen gelten sofort und werden lokal gespeichert."),13,Muted)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[CrosshairRow(TEXT("Dicke (1-8 px)"),&Settings->CrosshairThickness,1,8,1.5f)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[CrosshairRow(TEXT("Laenge pro Strich (2-32 px)"),&Settings->CrosshairLength,2,32,8)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,20)[CrosshairRow(TEXT("Abstand zur Mitte (0-24 px)"),&Settings->CrosshairGap,0,24,0)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[NumberRow(TEXT("Dicke (1-8 px)"),&Settings->CrosshairThickness,1,8,1.5f)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,12)[NumberRow(TEXT("Laenge pro Strich (2-32 px)"),&Settings->CrosshairLength,2,32,8)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,20)[NumberRow(TEXT("Abstand zur Mitte (0-24 px)"),&Settings->CrosshairGap,0,24,0)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[Text(TEXT("FARBE"),13,Cyan)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,14)[Presets];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[CrosshairRow(TEXT("Rot (0-1)"),&Settings->CrosshairColor.R,0,1,1)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[CrosshairRow(TEXT("Gruen (0-1)"),&Settings->CrosshairColor.G,0,1,1)];
- Rows->AddSlot().AutoHeight().Padding(0,0,0,18)[CrosshairRow(TEXT("Blau (0-1)"),&Settings->CrosshairColor.B,0,1,1)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[NumberRow(TEXT("Rot (0-1)"),&Settings->CrosshairColor.R,0,1,1)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,10)[NumberRow(TEXT("Gruen (0-1)"),&Settings->CrosshairColor.G,0,1,1)];
+ Rows->AddSlot().AutoHeight().Padding(0,0,0,18)[NumberRow(TEXT("Blau (0-1)"),&Settings->CrosshairColor.B,0,1,1)];
  Rows->AddSlot().AutoHeight().Padding(0,0,0,14)[Button(TEXT("FADENKREUZ ZURUECKSETZEN"),[Settings](){Settings->ResetCrosshair();return FReply::Handled();})];
  Rows->AddSlot().AutoHeight()[Text(TEXT("Betrifft das normale Fadenkreuz beim Schiessen ohne Visier. Reflexpunkt, Zielfernrohr und Trefferanzeige behalten ihre eigene Darstellung. Der Abstand wird von der Mitte bis zur inneren Strichkante gemessen."),12,Muted)];
  return SNew(SScrollBox)+SScrollBox::Slot()[Rows];
