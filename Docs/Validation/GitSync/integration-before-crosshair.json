@@ -1,0 +1,163 @@
+{
+  "partner_commit": "5b6e84b",
+  "editor_build": "Succeeded",
+  "game_build": "Succeeded",
+  "tests": [
+    {
+      "fullTestPath": "Vanthex.Aim.SightAlignmentAndSpread",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.BulletAudio.ClippedSegmentAndContinuity",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.BulletAudio.DistanceBands",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.BulletAudio.RealWallOcclusion",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Combat.SequentialKillsAndCorpseCollision",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Communication.CodecRoundTrip",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Communication.RecipientPolicy",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Communication.TextBounds",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Communication.VoiceBudget",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Economy.ArmorDamageBoundaries",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Economy.ArmorPurchaseRules",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Economy.AtomicPurchases",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Economy.CatalogAndDefaults",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Economy.CreditCapAndDeath",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Gadgets.BlastFalloff",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Gadgets.Catalog",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Gadgets.FlashFalloff",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Gadgets.PresentationAssets",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Gadgets.SmokeIntersection",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Gadgets.SmokeWallClipping",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.HUD.MinimapNoEnemies",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Menu.AudioBounds",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Menu.ConnectionInput",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Rendering.SavedMapShadowUpgrade",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.CompleteMonoBanks",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.EquipmentMovementCadence",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.MixPriorities",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.PhysicalPortalAndWall",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponModels.CompleteAuthoredArmory",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponModels.MagazineAndBoltPresentation",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponModels.OptionalLicensedBundle",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Weapons.CatalogAndHandling",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.Weapons.DeterministicSpreadAndRecoil",
+      "state": "Success"
+    }
+  ],
+  "audio_after_import": [
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.CompleteMonoBanks",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.EquipmentMovementCadence",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.MixPriorities",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Vanthex.WeaponAudio.PhysicalPortalAndWall",
+      "state": "Success"
+    }
+  ],
+  "source_wavs": 119,
+  "startup": "GridV4 rendered and process exited successfully",
+  "limitations": [
+    "No two-PC microphone test",
+    "No full manual UI matrix"
+  ]
+}

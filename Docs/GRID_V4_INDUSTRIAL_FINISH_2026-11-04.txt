@@ -1,0 +1,154 @@
+VANTHEX – GRID V4 / INDUSTRIELLE GESAMTÜBERARBEITUNG
+4. November 2026
+
+Auftrag: Nach Sichtung und Freigabe des TURBINE-POWER-Experiments hat der Nutzer
+ausdrücklich die Übertragung dieser Optik auf die ganze Karte beauftragt.
+Dieser Bericht ergänzt GRAPHICS_EXPERIMENT_2026-11-04.txt.
+
+GESTALTUNG
+
+Alle 25 Raum-IDs der vorhandenen GRID-V4-Karte sind berücksichtigt. TURBINE POWER
+behält die freigegebene Ausstattung. Die anderen Räume und Verbindungsgänge erhalten
+passende Wandkassetten, matte Oberflächen und modular gegliederte Decken. Forschung,
+Serverräume, Frachtbereiche und Extraction behalten ihre charakteristischen Objekte.
+Die offene Core-Galerie wurde nicht zugemauert; Schachtöffnung, Brücke und Treppen
+bleiben erhalten. Neue Decken wurden aus tatsächlich vorhandenen Deckenzellen
+abgeleitet, nicht aus pauschal über Räume gelegten Rechtecken.
+
+Umsetzung gegenüber dem Einraum-PoC:
+- 2.465 vorhandene Wandteile beidseitig verkleidet.
+- 1.163 Deckenmodule aus den bestehenden Deckenzellen gepackt.
+- 88 obere Bodenmodule auf die abgestimmte Betonoberfläche umgestellt.
+- Sechs weitere Boiler in Pumpen-/Kühlräumen durch passende Stromschränke ersetzt.
+- Kabeltrassen, Deckenbefestigungen und korrigierte Leuchtenproportionen ergänzt.
+- 53 neue Arbeitsleuchten; bisherige Raum-Fülllichter in den betroffenen Bereichen ersetzt.
+- 27 dieser 53 Leuchten werfen Schatten; vorhandene strukturelle Wände behalten ihre Schatten.
+- 6.816 zusätzliche visuelle Instanzen in nur sieben ISM-Gruppen.
+- 2.182 Actors insgesamt gegenüber 2.040 in der ursprünglichen Produktionskarte.
+
+Wiederverwendbare Produktionsassets liegen unter:
+/Game/Vanthex/Art/IndustrialFinish
+Die Gesamtkarte hängt nicht mehr vom experimentellen Revision4-Assetordner ab.
+Die Einraum-Versuchskarten bleiben unabhängig zur Nachvollziehbarkeit erhalten.
+
+GAMEPLAY UND KOLLISION
+
+Keine Änderungen an Waffen, Bots, Bewegung, Core-Regeln, Extraction-Regeln oder
+Gameplay-C++-Quellen. Die Gestaltung verwendet die vorhandenen Kollisionskörper.
+Neue Dekorationen besitzen NoCollision; es wurden keine zusätzlichen Hindernisse
+in die Laufwege eingeführt. Kleine Beschläge und Verkleidungstiefen werden weiterhin
+durch die vereinfachte bestehende Spielkollision repräsentiert.
+
+Unabhängige Prüfung nach dem Speichern und Neuladen:
+- Alle 1.753 Kollisionskomponenten stimmen mit der vorherigen Produktionskarte überein.
+- 3.886 Strahl-/Kapselabfragen über alle 25 Raumflächen.
+- 3.885 Abfragen liefern exakt dieselben gespeicherten Werte.
+- Eine Kapsel startet bereits innerhalb einer Wand. Sie ist vorher und nachher
+  sofort blockiert (Distanz 0); der vom Physiksolver bestimmte Kontaktpunkt variiert
+  in Z. Die Startüberlappung wurde zusätzlich in der Originalkarte bestätigt.
+  Dieser Kontaktpunkt ist nicht als geometrische Verschiebung gewertet worden.
+- Keine unerklärten Abfrageabweichungen, keine neu kollidierenden Dekorationskomponenten.
+- Keine Mesh-/Materialreferenzen auf den experimentellen GraphicsLab-Ordner.
+
+Gameplay-Test im tatsächlichen Spielmodus mit der gespeicherten Gesamtkarte:
+41 PASS-Prüfungen, OVERALL PASS.
+Enthalten: sechs Spielfiguren, neutraler Core, Aufnahme, Ablegen, Todesfall-Drop,
+Würfe/Fangen/Abfangen, Schachtbegrenzung, vier 15-Sekunden-Extraction-Fälle,
+alle sechs Höhenverbindungen aufwärts und abwärts sowie drei geschlossene Randstellen.
+NullRHI wurde nur für diese Gameplay-/Physikprüfung verwendet, nicht für Bilder.
+
+BILDPRÜFUNG UND ÜBERNAHME
+
+22 neue echte Unreal-Spielbilder wurden in 1920x1080 aufgenommen. 20 davon sind
+nutzbare und visuell kontrollierte Architektur-/Egoansichten einschließlich Core,
+Forschung, Energie, Wartung, Observation, beider Extraction-Räume, Teamzugänge,
+Egoansichten und aller sechs Treppen. Die Metalltreppen bleiben deutlich dunkler
+als die Arbeitsräume; eine vollständige Wettbewerbs-Sichtbarkeitsoptimierung fehlt.
+
+Zwei Diagnosebilder werden NICHT als erfolgreicher visueller Nachweis gewertet:
+Nr. 12 startet innerhalb der Bounds der bereits vorher vorhandenen Wandinstanz 1388
+und Structure_660. Der alte Aufbau ließ die Diagnosekamera hindurchsehen; die neue
+beidseitige Verkleidung zeigt dort schwarz. Die Wandkollision wurde nicht verschoben.
+Nr. 22 blickt direkt auf die geschlossene Servicebegrenzung und ist mit der matten
+Oberfläche praktisch schwarz. Beide Originalansichten wurden zusätzlich aufgenommen;
+capture_origin.json dokumentiert den Geometrievergleich. Ein vollständiger manueller
+Rundgang aus jeder möglichen Spielerposition wurde nicht durchgeführt.
+
+RTX 3070 Ti, 1920x1080, ScreenPercentage 100, VSync aus, kein FPS-Limit:
+Die 20 nutzbaren Ansichten liegen bei 17,123–32,103 ms mittlerer Bildzeit, also etwa
+31–58 FPS. Egoansichten: 20,626 / 22,247 ms, etwa 48 / 45 FPS. Je acht Sekunden
+Einschwingfenster im tatsächlichen Spielrenderer, ohne kämpfende Bots. Kein Match-
+Benchmark und kein 1%-Low-Nachweis. Durchgängige 60 FPS sind noch nicht erreicht.
+
+Die neue Karte ist unter /Game/Vanthex/Maps/GridV4 gespeichert.
+SHA256: 9659a6475d6f00151fac4217985d222595f8b4ffc09e4d9484e06dab42fc1875
+Unabhängiges Neuladen bestätigte erneut 1.753 identische Kollisionskomponenten,
+3.886 äquivalente Abfragen, elf vorhandene Produktionsassets und keine experimentellen
+Mesh-/Materialabhängigkeiten.
+
+Leistungs-Korrekturen nach der ersten vollständigen Übertragung:
+- Redundante Schatten der dünnen Wandverkleidungen und ihrer Stützen ausgeschaltet.
+  Die dahinterliegenden ursprünglichen Wände bleiben die Schattenwerfer.
+- Neue Raum-Schattenlichter auf 27 reduziert; 53 Lichtquellen insgesamt erhalten.
+- Nanite für die fünf selbst erstellten Produktionsmeshes aktiviert und gespeichert.
+  Das StaticMeshEditorSubsystem benötigt hierfür den vollständigen Editor;
+  der zunächst verwendete reine Commandlet-Lauf stellte es nicht bereit.
+- Bei identischen Einstellungen reduzierte Nanite die mittlere Bildzeit der
+  Core-Ansicht von 43,090 auf 24,990 ms, der Data-Vault-Ansicht von 30,649 auf
+  21,155 ms und der Power-Ansicht von 25,693 auf 19,621 ms.
+  Dies sind Vergleiche zweier Grafikstände dieser Überarbeitung, nicht Vergleiche
+  mit der alten Produktionskarte. Der separate ursprüngliche Power-Benchmark
+  betrug 14,341 ms; das Einraum-PoC 15,856 ms. Die gesamte Überarbeitung kostet
+  somit weiterhin zusätzliche Grafikleistung.
+
+SICHERUNG UND DATEIEN
+
+Unveränderte Originalkarte vor der Übernahme:
+H:\Vanthex\Saved\GraphicsLab\ProductionBackup_20261104\GridV4.umap
+SHA256: C41322AB876290C3597CB7BE4F5594089F3B8A49BA9526DFDC72315517CA2E6D
+DefaultEngine.ini wurde im selben Sicherungsordner ebenfalls gesichert.
+
+Die bestehende Startmap-Adresse /Game/Vanthex/Maps/GridV4 bleibt maßgeblich.
+Die endgültige Übernahme und ihr neuer Hash werden in promotion.json protokolliert.
+
+Belege:
+H:\Vanthex\Saved\GraphicsLab\Facility\generation.json
+H:\Vanthex\Saved\GraphicsLab\Facility\verification_candidate.json
+H:\Vanthex\Saved\GraphicsLab\Facility\gameplay.txt
+H:\Vanthex\Saved\GraphicsLab\Facility\Shots\
+
+Werkzeuge: Blender 4.3.2, Unreal Engine 5.8.3, Unreal Editor Python und PowerShell.
+Keine Käufe oder kostenpflichtigen Dienste. Kein Twinmotion-Authoring-API verwendet.
+Der Instanzgruppenaufbau benötigt den vollständigen Unreal-Editor mit
+-ExecutePythonScript; Actor-Duplizieren im reinen Python-Commandlet verursachte
+einen Engine-Absturz. Der erfolgreiche Lauf verwendet den Editor und speichert nur
+die separate Kandidatenkarte bis zum abschließenden Übernahmeschritt.
+
+Die erste Bildprüfung entdeckte nicht gespeicherte Assetkopien im neuen Art-Ordner.
+Asset-Duplizieren allein speichert in Unreal nicht automatisch die neue Datei.
+Die Pipeline speichert nun jede Kopie ausdrücklich, aktiviert die Materialnutzung
+für Instanzen und kontrolliert nach Neuladen sowohl die Meshreferenzen als auch
+das Vorhandensein aller elf Produktionsasset-Dateien. Die erste fehlerhafte Bildtour
+wurde abgebrochen und ist kein Erfolgsnachweis. Der korrigierte Stand wird erneut
+durch den Gameplay-Test und eine vollständige neue Bildtour geprüft.
+
+Die vorhandene öffentliche GitHub-/Fab-Regel bleibt bestehen. Neue abgeleitete
+Materialien und lokale Szenenassets unter IndustrialFinish sind von Git ausgenommen.
+Die endgültige Produktionsmap referenziert diese lokalen Abhängigkeiten; ein anderer
+PC benötigt den entsprechenden lokalen Assetbestand. Der Nutzer hat anschließend
+ausdrücklich Commit und GitHub-Upload beauftragt. Veröffentlicht werden die Map,
+die eigenen Erstellungs-/Prüfskripte und Dokumentation; ausgeschlossene lokale
+Fab-/Materialpakete werden nicht öffentlich hochgeladen. GitHub allein ist somit
+weiterhin kein vollständiger Asset-Download oder fertiger Dedicated Server.
+
+Wiederaufbauhinweis: Der bisherige C++-Befehl zum erneuten Backen von GRID V4
+erzeugt weiterhin die ursprüngliche Grundgestaltung. Die neue Optik ist in der
+gespeicherten Map und den Python-Skripten hinterlegt. Ein absichtlicher vollständiger
+Neubake muss anschließend wieder die Industrial-Finish-Pipeline anwenden.
+Normales Starten/Spielen führt diesen Neubake nicht aus.
+
+Die Ergebnisse sind keine vollständige neue Netzwerk-, Dedicated-Server- oder
+Shipping-Zertifizierung. Die vorhandenen Spielregeln wurden nicht verändert;
+getestet wurden die gespeicherte Karte, ihre Kollision und der genannte Gameplay-Ablauf.
+
+Abschließender Starttest: Start ohne explizite Map lud laut Log /Game/Vanthex/Maps/GridV4. Die Power-Raum-Aufnahme wurde erfolgreich erzeugt und visuell geprüft. Beleg: Docs/Validation/GraphicsLab/Facility/04_startup_power.png sowie Saved/GraphicsLab/Facility/startup-smoke.log.

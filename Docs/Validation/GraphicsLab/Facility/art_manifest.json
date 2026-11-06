@@ -1,0 +1,16 @@
+{
+  "assets": [
+    "/Game/Vanthex/Art/IndustrialFinish/Materials/M_LabAmber.M_LabAmber",
+    "/Game/Vanthex/Art/IndustrialFinish/Materials/M_LabConcrete.M_LabConcrete",
+    "/Game/Vanthex/Art/IndustrialFinish/Materials/M_LabPaint.M_LabPaint",
+    "/Game/Vanthex/Art/IndustrialFinish/Materials/M_LabPractical.M_LabPractical",
+    "/Game/Vanthex/Art/IndustrialFinish/Materials/M_LabRubber.M_LabRubber",
+    "/Game/Vanthex/Art/IndustrialFinish/Materials/M_LabSteel.M_LabSteel",
+    "/Game/Vanthex/Art/IndustrialFinish/Meshes/SM_LabCableTray.SM_LabCableTray",
+    "/Game/Vanthex/Art/IndustrialFinish/Meshes/SM_LabCeilingCassette.SM_LabCeilingCassette",
+    "/Game/Vanthex/Art/IndustrialFinish/Meshes/SM_LabPilaster.SM_LabPilaster",
+    "/Game/Vanthex/Art/IndustrialFinish/Meshes/SM_LabPowerCabinet.SM_LabPowerCabinet",
+    "/Game/Vanthex/Art/IndustrialFinish/Meshes/SM_LabWallCassette.SM_LabWallCassette"
+  ],
+  "mesh_components_updated": 0
+}

@@ -1,0 +1,142 @@
+{
+  "candidate": "/Game/Vanthex/Experiments/GraphicsLab/Maps/FacilityCandidate_GridV4",
+  "original_sha256": "c41322ab876290c3597cb7be4f5594089f3b8a49ba9526dfdc72315517ca2e6d",
+  "collision_components": 1753,
+  "collision_queries": 3886,
+  "signatures_equal": true,
+  "queries_equal": true,
+  "original_walls_clad": 2465,
+  "ceiling_modules": 1163,
+  "upper_floor_tiles": 88,
+  "boilers_replaced": 6,
+  "new_instanced_groups": 7,
+  "new_visual_instances": 6816,
+  "new_lights": 53,
+  "room_details": {
+    "0": {
+      "name": "ALPHA / SERVICE AIRLOCK",
+      "new_instances": 96,
+      "new_lights": 2
+    },
+    "1": {
+      "name": "SECURITY SCREENING",
+      "new_instances": 110,
+      "new_lights": 2
+    },
+    "2": {
+      "name": "DATA VAULT",
+      "new_instances": 133,
+      "new_lights": 4
+    },
+    "3": {
+      "name": "AEGIS / CORE CONTAINMENT",
+      "new_instances": 191,
+      "new_lights": 0
+    },
+    "4": {
+      "name": "CRYOGENIC RESEARCH",
+      "new_instances": 142,
+      "new_lights": 4
+    },
+    "5": {
+      "name": "BRAVO / SECURITY CONTROL",
+      "new_instances": 95,
+      "new_lights": 2
+    },
+    "6": {
+      "name": "BRAVO / DEPLOYMENT",
+      "new_instances": 91,
+      "new_lights": 2
+    },
+    "7": {
+      "name": "FREIGHT PROCESSING",
+      "new_instances": 127,
+      "new_lights": 4
+    },
+    "8": {
+      "name": "TURBINE POWER",
+      "new_instances": 0,
+      "new_lights": 0
+    },
+    "9": {
+      "name": "DECONTAMINATION",
+      "new_instances": 126,
+      "new_lights": 2
+    },
+    "10": {
+      "name": "WEST SERVICE",
+      "new_instances": 123,
+      "new_lights": 2
+    },
+    "11": {
+      "name": "PUMP STATION",
+      "new_instances": 134,
+      "new_lights": 2
+    },
+    "12": {
+      "name": "CORE UNDERCROFT",
+      "new_instances": 174,
+      "new_lights": 3
+    },
+    "13": {
+      "name": "COOLANT TRANSFER",
+      "new_instances": 106,
+      "new_lights": 2
+    },
+    "14": {
+      "name": "B / QUARANTINE CHECKPOINT",
+      "new_instances": 74,
+      "new_lights": 2
+    },
+    "15": {
+      "name": "B / ISOLATION EXTRACTION",
+      "new_instances": 118,
+      "new_lights": 4
+    },
+    "16": {
+      "name": "EAST SERVICE BYPASS",
+      "new_instances": 104,
+      "new_lights": 2
+    },
+    "17": {
+      "name": "OBSERVATION",
+      "new_instances": 4,
+      "new_lights": 0
+    },
+    "18": {
+      "name": "SUSPENDED BRIDGE",
+      "new_instances": 46,
+      "new_lights": 0
+    },
+    "19": {
+      "name": "RESEARCH CONTROL",
+      "new_instances": 117,
+      "new_lights": 2
+    },
+    "20": {
+      "name": "NORTH MANIFOLD",
+      "new_instances": 137,
+      "new_lights": 2
+    },
+    "21": {
+      "name": "A / TRANSFER CHECKPOINT",
+      "new_instances": 105,
+      "new_lights": 2
+    },
+    "22": {
+      "name": "A / ARMORED TRANSFER",
+      "new_instances": 145,
+      "new_lights": 4
+    },
+    "23": {
+      "name": "WEST GANTRY",
+      "new_instances": 113,
+      "new_lights": 2
+    },
+    "24": {
+      "name": "UPPER ROTUNDA",
+      "new_instances": 112,
+      "new_lights": 2
+    }
+  }
+}

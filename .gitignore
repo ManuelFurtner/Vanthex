@@ -34,3 +34,7 @@ Saved/
 
 # Local palette derivatives of the licensed environment kit
 /Content/Vanthex/Materials/Aegis/
+
+# Local visual experiment references licensed Factory/Fab textures and meshes.
+/Content/Vanthex/Experiments/GraphicsLab/
+/Content/Vanthex/Art/IndustrialFinish/

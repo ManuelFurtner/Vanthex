@@ -76,6 +76,7 @@ class AVanthexGameMode : public AGameModeBase
 	friend void VanthexRunLooseCoreExtractionTest(AVanthexGameMode*);
 	friend void VanthexRunExtractionRulesTest(AVanthexGameMode*);
 	friend void VanthexRunPoseHitTest(AVanthexGameMode*);
+	friend void VanthexRunRoundCycleTest(AVanthexGameMode*);
 	GENERATED_BODY()
 
 public:
@@ -145,6 +146,7 @@ protected:
 	void EndRound(EVanthexTeam Winner);
 	void EnterIntermission();
 	void EnterMatchEnded();
+	void TickMatchRestart();
 	void ResetCombatants();
 	void PublishMatch();
 	int32 CountAlive(EVanthexTeam Team) const;
@@ -212,6 +214,7 @@ protected:
 	float RoundStartDelay = 0.25f;
 	float RoundEndDelay = 1.f;
 	float IntermissionDuration = 2.f;
+	float MatchRestartDelay = 10.f;
  float ExtractionDuration = 15.f;
 	float ExtractionElapsed = 0.f;
 	EVanthexExtractionId ActiveExtraction = EVanthexExtractionId::None;

@@ -1,0 +1,22 @@
+[
+  {
+    "mesh": "SM_LabWallCassette",
+    "nanite_enabled": true
+  },
+  {
+    "mesh": "SM_LabCeilingCassette",
+    "nanite_enabled": true
+  },
+  {
+    "mesh": "SM_LabPilaster",
+    "nanite_enabled": true
+  },
+  {
+    "mesh": "SM_LabCableTray",
+    "nanite_enabled": true
+  },
+  {
+    "mesh": "SM_LabPowerCabinet",
+    "nanite_enabled": true
+  }
+]

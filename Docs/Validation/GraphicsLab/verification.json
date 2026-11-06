@@ -1,0 +1,12 @@
+{
+  "revision": 4,
+  "source_actor_count": 2040,
+  "experiment_actor_count": 2185,
+  "collision_component_count": 1753,
+  "rays": 306,
+  "capsules": 51,
+  "collision_components_equal": true,
+  "ray_results_equal": true,
+  "capsule_results_equal": true,
+  "production_sha256": "c41322ab876290c3597cb7be4f5594089f3b8a49ba9526dfdc72315517ca2e6d"
+}

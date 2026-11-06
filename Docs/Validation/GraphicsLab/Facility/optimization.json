@@ -1,0 +1,9 @@
+{
+  "decor_groups_without_redundant_shadow": [
+    "FacilityStyle_SM_LabWallCassette",
+    "FacilityStyle_SM_LabPilaster"
+  ],
+  "room_lights": 53,
+  "room_shadow_lights": 27,
+  "reason": "Structural wall backing retains shadow; one shadow source per fixture pair."
+}

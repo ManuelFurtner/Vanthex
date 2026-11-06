@@ -17,14 +17,27 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "HAL/PlatformMisc.h"
+#include "HAL/PlatformTime.h"
 #endif
 void VanthexRunCTFTest(AVanthexGameMode* Mode)
 {
 #if !UE_BUILD_SHIPPING
  if(!Mode||!Mode->HasAuthority())return;
- static int32 Step=0,Failures=0;static float DiedAt=0;static TArray<FString> Lines;
+ static int32 Step=0,Failures=0;static float DiedAt=0,MatchEndedAt=0;static TArray<FString> Lines;
  if(Step==100)return;
+ static const double StartedAt=FPlatformTime::Seconds();
  auto Check=[&](bool OK,const TCHAR* What){Lines.Add(FString(OK?TEXT("PASS "):TEXT("FAIL "))+What);if(!OK)++Failures;};
+ auto Finish=[&]() {
+  Step=100;
+  const FString Report=FString::Printf(TEXT("OVERALL %s CHECKS %d FAILURES %d\n"),Failures?TEXT("FAIL"):TEXT("PASS"),Lines.Num(),Failures)+FString::Join(Lines,TEXT("\n"));
+  FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/TEXT("CTFTest.txt")));
+  FPlatformMisc::RequestExitWithStatus(false,Failures?1:0);
+ };
+ if(FPlatformTime::Seconds()-StartedAt>35.0) {
+  Check(false,TEXT("CTF integration test completed within 35 seconds"));
+  Finish();
+  return;
+ }
  auto* A=Mode->FindCombatant(EVanthexTeam::Alpha,0);auto* Ally=Mode->FindCombatant(EVanthexTeam::Alpha,1);
  auto* B=Mode->FindCombatant(EVanthexTeam::Bravo,0);
  auto* AF=AVanthexFlag::Find(Mode->GetWorld(),EVanthexTeam::Alpha);auto* BF=AVanthexFlag::Find(Mode->GetWorld(),EVanthexTeam::Bravo);
@@ -90,12 +103,25 @@ void VanthexRunCTFTest(AVanthexGameMode* Mode)
   Check(Mode->bCTFOvertime&&Mode->TimeRemaining==180&&Mode->IsRoundActive(),TEXT("tied regulation grants three-minute overtime"));
   Mode->AlphaScore=3;Mode->TimeRemaining=0;Mode->ResolveTimeout();
   Check(Mode->Phase==EVanthexRoundPhase::MatchEnded&&Mode->MatchWinner==EVanthexTeam::Alpha,TEXT("higher capture score wins after overtime"));
-  Mode->Phase=EVanthexRoundPhase::RoundActive;Mode->AlphaScore=Mode->BravoScore=3;Mode->ResolveTimeout();
+  Mode->Phase=EVanthexRoundPhase::RoundActive;
+  B->SetActorLocation(AF->Base()+FVector(0,0,100));
+  Check(AF->TryTouch(B)&&!AF->IsHome(),TEXT("a flag is away from home when overtime ends"));
+  Mode->AlphaScore=Mode->BravoScore=3;Mode->ResolveTimeout();
   Check(Mode->Phase==EVanthexRoundPhase::MatchEnded&&Mode->MatchWinner==EVanthexTeam::None,TEXT("tied overtime ends in draw"));
-  Step=100;
-  const FString Report=FString::Printf(TEXT("OVERALL %s CHECKS %d FAILURES %d\n"),Failures?TEXT("FAIL"):TEXT("PASS"),Lines.Num(),Failures)+FString::Join(Lines,TEXT("\n"));
-  FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/TEXT("CTFTest.txt")));
-  FPlatformMisc::RequestExitWithStatus(false,Failures?1:0);return;
+  MatchEndedAt=Mode->GetWorld()->GetTimeSeconds();
+  ++Step;
+  return;
+ case 3: {
+  const float Elapsed=Mode->GetWorld()->GetTimeSeconds()-MatchEndedAt;
+  if(Mode->Phase==EVanthexRoundPhase::MatchEnded&&Elapsed<12.f)return;
+  Check(Elapsed>=9.5f&&Elapsed<12.f&&Mode->IsBuyPhase()&&Mode->RoundIndex==1,
+    TEXT("automatic CTF rematch starts a new buy phase after ten seconds"));
+  Check(Mode->AlphaScore==0&&Mode->BravoScore==0&&!Mode->bCTFOvertime&&Mode->MatchWinner==EVanthexTeam::None,
+    TEXT("CTF rematch clears scores, overtime and match winner"));
+  Check(AF->IsHome()&&BF->IsHome(),TEXT("CTF rematch returns both flags home"));
+  Finish();
+  return;
+ }
  }
 #endif
 }
