@@ -1,0 +1,22 @@
+# Allow only build inputs. In particular, never send .git, Saved or credentials.
+**
+!Vanthex.uproject
+!Source/
+!Source/**
+!Config/
+!Config/**
+!Content/
+!Content/**
+!Plugins/
+!Plugins/**
+!Build/
+!Build/LinuxServer/
+!Build/LinuxServer/Dockerfile
+!Build/LinuxServer/StartServer.sh
+**/Binaries/**
+**/Intermediate/**
+**/.git/**
+**/*.pdb
+**/.env
+**/*.pem
+**/*.key

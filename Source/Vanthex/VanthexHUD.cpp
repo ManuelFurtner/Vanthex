@@ -36,6 +36,8 @@ const TCHAR* TeamLabel(EVanthexTeam Team)
 
 AVanthexHUD::AVanthexHUD()
 {
+ // Fonts are client-only assets and may be stripped from a dedicated server cook.
+ if (IsRunningDedicatedServer()) return;
  static ConstructorHelpers::FObjectFinder<UFont> FontAsset(TEXT("/Engine/EngineFonts/RobotoDistanceField.RobotoDistanceField"));
  DisplayFont=FontAsset.Object;
 }

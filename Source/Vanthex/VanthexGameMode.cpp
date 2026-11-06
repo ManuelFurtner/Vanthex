@@ -167,6 +167,11 @@ void AVanthexGameMode::PerformSessionReset()
 void AVanthexGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+#if !UE_BUILD_SHIPPING
+ if (FParse::Param(FCommandLine::Get(), TEXT("RoundCycleTest"))) {
+  GetWorldTimerManager().SetTimer(SelfTestTimer, FTimerDelegate::CreateWeakLambda(this, [this]() { extern void VanthexRunRoundCycleTest(AVanthexGameMode*); VanthexRunRoundCycleTest(this); }), .05f, true, 1.f);
+ }
+#endif
  if(FParse::Param(FCommandLine::Get(),TEXT("PoseHitTest"))) {
   GetWorldTimerManager().SetTimer(SelfTestTimer,FTimerDelegate::CreateWeakLambda(this,[this]() { extern void VanthexRunPoseHitTest(AVanthexGameMode*); VanthexRunPoseHitTest(this); }),.05f,true,1.f);
  }
@@ -734,6 +739,8 @@ void AVanthexGameMode::EnterIntermission()
 
 void AVanthexGameMode::EnterMatchEnded()
 {
+	// Duplicate end notifications must not extend the results countdown.
+	if (Phase == EVanthexRoundPhase::MatchEnded) return;
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(FlowTimer);
@@ -744,8 +751,25 @@ void AVanthexGameMode::EnterMatchEnded()
 		MatchWinner = AlphaScore >= BravoScore ? EVanthexTeam::Alpha : EVanthexTeam::Bravo;
 	}
 	Phase = EVanthexRoundPhase::MatchEnded;
+	TimeRemaining = MatchRestartDelay;
 	PublishMatch();
+	FlowStep = 5;
+	GetWorldTimerManager().SetTimer(FlowTimer, this, &AVanthexGameMode::OnRoundFlow, .1f, true);
 	UE_LOG(LogVanthex, Display, TEXT("Match ended winner %d score %d-%d"), static_cast<int32>(MatchWinner), AlphaScore, BravoScore);
+	UE_LOG(LogVanthex, Display, TEXT("Next match starts automatically in %.0f seconds"), MatchRestartDelay);
+}
+
+void AVanthexGameMode::TickMatchRestart()
+{
+	if (Phase != EVanthexRoundPhase::MatchEnded) return;
+	TimeRemaining = FMath::Max(0.f, TimeRemaining - .1f);
+	PublishMatch();
+	if (TimeRemaining <= 0.f)
+	{
+		// Reset the match in place: keep human connections, teams and controllers.
+		UE_LOG(LogVanthex, Display, TEXT("Automatic match restart"));
+		RestartMatch();
+	}
 }
 
 void AVanthexGameMode::ResetCombatants()
@@ -786,6 +810,7 @@ void AVanthexGameMode::OnRoundFlow()
 	case 2: TickRoundClock(); break;
 	case 3: EnterIntermission(); break;
 	case 4: BeginRound(); break;
+	case 5: TickMatchRestart(); break;
 	default: break;
 	}
 }

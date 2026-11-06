@@ -60,7 +60,8 @@ void VanthexStartLooseCoreNetworkTest(AVanthexPlayerController* PC)
    if(Pawn->GetEquipment()->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Pawn->GetEquipment()->IsSwitching()&&FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,690.f))S->SawKnifeBonus=true;
    if(Host&&!S->SawKnifeBonus)return;
   }
-  AVanthexCore* Core=nullptr;for(TActorIterator<AVanthexCore> It(World);It;++It){Core=*It;break;}if(!Core)return;
+  TActorIterator<AVanthexCore> CoreIterator(World);
+  AVanthexCore* Core=CoreIterator?*CoreIterator:nullptr;if(!Core)return;
   AVanthexExtractionZone* Zone=nullptr;for(TActorIterator<AVanthexExtractionZone> It(World);It;++It)if(It->GetId()==EVanthexExtractionId::A){Zone=*It;break;}if(!Zone)return;
   if(Host&&S->SetupAt<0&&Match->GetPhase()==EVanthexRoundPhase::RoundActive){
    Core->ResetToSpawn();Pawn->SetActorLocation(Core->GetActorLocation()+FVector(0,0,60),false,nullptr,ETeleportType::TeleportPhysics);
