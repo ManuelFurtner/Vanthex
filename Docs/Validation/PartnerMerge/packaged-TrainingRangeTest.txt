@@ -1,0 +1,7 @@
+OVERALL PASS CHECKS 6 FAILURES 0
+PASS solo start without bots
+PASS three shooting distances and a separate moving target
+PASS normal hitscan damages a range target
+PASS moving target traverses its lane
+PASS destroyed dummy resets for another shot
+PASS completed extraction resets the core for another drill
