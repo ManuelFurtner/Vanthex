@@ -258,7 +258,7 @@ void VanthexRunGadgetTest(AVanthexGameMode* Mode)
   case 6:
    if(Age<.35)break;
    Probe->Check(Human->bIsCrouched&&FMath::IsNearlyEqual(Human->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(),60.f),TEXT("crouch applies 60 cm collision half-height through movement ticks"));
-   Probe->Check(FMath::IsNearlyEqual(Human->GetCharacterMovement()->GetMaxSpeed(),280.f),TEXT("crouching movement speed is 280 cm per second"));
+   Probe->Check(FMath::IsNearlyEqual(Human->GetCharacterMovement()->GetMaxSpeed(),238.f),TEXT("crouching with firearm applies the 15 percent movement penalty"));
    Probe->Check(FMath::IsNearlyEqual(Human->GetFirstPersonCamera()->GetRelativeLocation().Z,42.0),TEXT("crouch lowers first-person camera to 42 cm"));
    Probe->Ceiling=MakeGadgetBlocker(W,GadgetOrigin+FVector(10000,0,160),FVector(200,200,10));Probe->Fixtures.Add(Probe->Ceiling);
    Human->SetCrouching(false);Advance(7);break;

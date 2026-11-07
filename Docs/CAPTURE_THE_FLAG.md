@@ -13,6 +13,7 @@ VANTHEX startet im Hauptmenue. Unter **Spielen** die Karte **Capture the Flag** 
 - Bei Gleichstand nach 15 Minuten gibt es einmalig volle drei Minuten Nachspielzeit. Danach gewinnt das Team mit mehr Punkten; bei erneutem Gleichstand endet das Match unentschieden.
 - Flaggen werden beim Beruehren automatisch aufgenommen. Stirbt der Traeger, faellt die Flagge auf den Boden. Ein Mitspieler kann sie weitertragen; ein Angehoeriger des Flaggen-Teams bringt seine eigene Flagge durch Beruehren sofort zurueck.
 - Eine liegengelassene Flagge kehrt nach 30 Sekunden automatisch zur Basis zurueck.
+- Zehn Sekunden nach Matchende startet die naechste Partie. Punkte, Nachspielzeit und Flaggen werden zurueckgesetzt.
 - Respawn acht Sekunden nach dem Tod in der eigenen Basis, mit M4, Pistole, Messer, voller Gesundheit und leichter Ruestung. Punkte und persoenliche K/A/D bleiben erhalten.
 - Ein vollstaendig ausgeschaltetes Team verliert nicht automatisch: Respawns laufen waehrend der aktiven Spielzeit weiter.
 
@@ -22,6 +23,6 @@ Symmetrische roemische Hofarena (52 x 88 Meter) mit Alpha-/Bravo-Basen. Traverti
 
 ## Technische Pruefung
 
-`VanthexBuildArt -BakeCTF` erstellt die gespeicherte Unreal-Map. `-game -CTFTest -nullrhi -unattended` auf der CTF-Karte prueft im laufenden Spiel 24 Bedingungen zu Teamgroesse, roemischer Architektur, Pflaster, Himmel, Sonnen-Schatten, Navigation, Aufnahme, Tod, Uebergabe, Respawn, Punktestand und Zeitregeln. Bericht: `Saved/CTFTest.txt`.
+`VanthexBuildArt -BakeCTF` erstellt die gespeicherte Unreal-Map. `-game -CTFTest -nullrhi -unattended` auf der CTF-Karte prueft im laufenden Spiel 28 Bedingungen zu Teamgroesse, roemischer Architektur, Pflaster, Himmel, Sonnen-Schatten, Navigation, Aufnahme, Tod, Uebergabe, Respawn, Punktestand, Zeitregeln und automatischem Neustart. Bericht: `Saved/CTFTest.txt`.
 
 Der Server entscheidet ueber Flaggenbesitz, Punkte und Respawns. Flaggenbewegung/-status, Countdown und Nachspielzeit werden repliziert. Ein separater Mehrrechner-LAN-Playtest steht noch aus. Ein eigener mediterraner Himmel mit sichtbarer Atmosphaeren-Sonnenscheibe, warmem Nachmittagslicht, dynamischen Sonnenschatten und leichter Fernhaze beleuchtet die Aussenarena. Der Bake erhaelt auch dekorative Meshes ohne Kollision und gemeinsam verwendete Steinmaterialien. Balancing und Ausstattung koennen durch Playtests verfeinert werden.

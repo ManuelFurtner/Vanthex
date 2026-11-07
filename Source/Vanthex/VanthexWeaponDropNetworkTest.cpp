@@ -3,6 +3,7 @@
 #include "Vanthex.h"
 #include "VanthexCharacter.h"
 #include "VanthexEquipmentComponent.h"
+#include "VanthexLocalSettings.h"
 #include "VanthexPlayerState.h"
 #include "VanthexGameState.h"
 #include "VanthexBotController.h"
@@ -12,6 +13,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "EngineUtils.h"
+#include "InputKeyEventArgs.h"
 #include "TimerManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -65,17 +67,27 @@ void VanthexStartWeaponDropNetworkTest(AVanthexPlayerController* PC)
    if(Probe->Step==2&&!Drop&&W->GetWeaponId()==TEXT("P250")&&W->GetAmmoInMagazine()==4&&W->GetReserveAmmo()==11&&Pawn->GetPlayerState<AVanthexPlayerState>()->GetEconomy().Sidearm==TEXT("P250")){Probe->Step=3;Probe->Next=Now+4;return;}
    if(Probe->Step==3)Finish(true);
   } else {
+   const auto* Settings=UVanthexLocalSettings::Get();
+   const FKey DropKey=Settings->GetGameplayKey(EVanthexGameplayAction::DropWeapon);
+   const FKey PickupKey=Settings->GetGameplayKey(EVanthexGameplayAction::Pickup);
    if(Probe->Step==0&&W->GetWeaponId()==TEXT("P250")&&W->GetAmmoInMagazine()==4&&!E->IsSwitching()) {
-    Controller->SetControlRotation(FRotator::ZeroRotator);Pawn->DropSelectedWeapon();Probe->Step=1;return;
+    Controller->SetControlRotation(FRotator::ZeroRotator);
+    Controller->InputKey(FInputKeyEventArgs::CreateSimulated(DropKey, IE_Pressed, 1.f));
+    Probe->Step=1;return;
    }
    if(Probe->Step==1&&Drop) {
     TArray<UStaticMeshComponent*> Meshes;Drop->GetComponents(Meshes);
     Probe->SawVisual=!Meshes.IsEmpty();
     if(Drop->CanReach(Pawn)&&!E->HasSlot(EVanthexWeaponSlot::Pistol)&&!E->IsSwitching()) {
-     Pawn->TryPickupNearby();Probe->Step=2;return;
+     Controller->InputKey(FInputKeyEventArgs::CreateSimulated(DropKey, IE_Released, 0.f));
+     Controller->InputKey(FInputKeyEventArgs::CreateSimulated(PickupKey, IE_Pressed, 1.f));
+     Probe->Step=2;return;
     }
    }
-   if(Probe->Step==2&&!Drop&&W->GetWeaponId()==TEXT("P250")&&W->GetAmmoInMagazine()==4&&W->GetReserveAmmo()==11&&E->GetSlotWeaponId(EVanthexWeaponSlot::Pistol)==TEXT("P250"))Finish(Probe->SawVisual);
+   if(Probe->Step==2&&!Drop&&W->GetWeaponId()==TEXT("P250")&&W->GetAmmoInMagazine()==4&&W->GetReserveAmmo()==11&&E->GetSlotWeaponId(EVanthexWeaponSlot::Pistol)==TEXT("P250")) {
+    Controller->InputKey(FInputKeyEventArgs::CreateSimulated(PickupKey, IE_Released, 0.f));
+    Finish(Probe->SawVisual);
+   }
   }
  }),.05f,true);
 #endif

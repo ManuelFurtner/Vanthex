@@ -1,0 +1,6 @@
+PARTNER MERGE - 2026-11-07
+Merged origin/codex/audio-menu-polish (62ca4c5) with local visual upgrade/stair fix (97f514a).
+Preserved both alpha-underpass camera views and CTF capture support; preserved VisualProfile diagnostics.
+Added reliable delivery for ClientResolvePredictedShot: the initial 100 ms RTT / 2% outgoing packet loss test lost its unreliable hit acknowledgement while damage arrived. The unchanged test passed after correction in all four profiles (0/100 ms RTT x 0/2% loss). Cosmetic shot multicasts remain unreliable.
+Editor build passed. 35 Automation tests passed, zero failed/not run. GRID V4 self-test, geometry, live gameplay (including both underpass directions), network host/client passed. Partner controls 33 checks, CTF 36 checks, solo training 6 checks passed. Automated tests are not human playtests or an exhaustive visual review of every new UI feature. Original failed result retained alongside successful retest.
+Personal engine association and local IDE files excluded from commits.

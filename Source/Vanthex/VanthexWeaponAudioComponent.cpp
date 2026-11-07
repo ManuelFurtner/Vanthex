@@ -119,6 +119,7 @@ void UVanthexWeaponAudioComponent::Play(const FVanthexWeaponAudioPacket& P,USoun
 {
  const auto* Mix=UVanthexLocalSettings::Get();
  Volume*=UVanthexLocalSettings::SafeVolume(bUI?Mix->UIVolume:Mix->CombatVolume);
+ if(P.Event==EVanthexWeaponAudioEvent::EquipmentMove) Volume*=UVanthexLocalSettings::SafeVolume(Mix->MovementVolume);
  if(bRoomTail) Volume*=UVanthexLocalSettings::SafeVolume(Mix->RoomVolume);
  if(!Sound || !Profile || (!bUI && (!Profile->Attenuation || !Profile->Concurrency))) { ++MissingAssets; return; }
  if(!FMath::IsFinite(Volume) || Volume<=0.f) return;

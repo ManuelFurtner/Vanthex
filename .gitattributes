@@ -1,5 +1,6 @@
 *.uasset filter=lfs diff=lfs merge=lfs -text
 *.umap filter=lfs diff=lfs merge=lfs -text
+SourceArt/Environment/CrossroadsRoman/*.blend filter=lfs diff=lfs merge=lfs -text
 Build/LinuxServer/*.sh text eol=lf
 
 *.blend filter=lfs diff=lfs merge=lfs -text

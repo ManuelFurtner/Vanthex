@@ -1,0 +1,52 @@
+{
+  "AutomatedCases": 4,
+  "AutomatedPassed": 4,
+  "AutomatedFailed": 0,
+  "HumanPlaytests": 0,
+  "Cases": [
+    {
+      "Name": "DamagePrediction-rtt0-loss0",
+      "Status": "PASS",
+      "Detail": "PASS moving-target hit, blocked pistol miss, and reconciled held automatic burst stage=7 initial_hp=100 hit_hp=83 observed_hp=83 target_travel_cm=12.3 first_shot_ammo=11/12 hit_ack=1 miss_ack=1 miss_ammo=1 auto_shots=7 auto_ack=7",
+      "GameplayAssertions": null,
+      "TargetRttMs": 0,
+      "OutgoingPacketLossPercentPerPeer": 0,
+      "ReportPath": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt0-loss0\\Client\\Saved\\DamagePredictionTest.txt",
+      "PlaytestReportPath": null,
+      "LogDirectory": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt0-loss0"
+    },
+    {
+      "Name": "DamagePrediction-rtt0-loss2",
+      "Status": "PASS",
+      "Detail": "PASS moving-target hit, blocked pistol miss, and reconciled held automatic burst stage=7 initial_hp=100 hit_hp=83 observed_hp=83 target_travel_cm=12.5 first_shot_ammo=11/12 hit_ack=1 miss_ack=1 miss_ammo=1 auto_shots=7 auto_ack=7",
+      "GameplayAssertions": null,
+      "TargetRttMs": 0,
+      "OutgoingPacketLossPercentPerPeer": 2,
+      "ReportPath": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt0-loss2\\Client\\Saved\\DamagePredictionTest.txt",
+      "PlaytestReportPath": null,
+      "LogDirectory": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt0-loss2"
+    },
+    {
+      "Name": "DamagePrediction-rtt100-loss0",
+      "Status": "PASS",
+      "Detail": "PASS moving-target hit, blocked pistol miss, and reconciled held automatic burst stage=7 initial_hp=100 hit_hp=83 observed_hp=83 target_travel_cm=12.5 first_shot_ammo=11/12 hit_ack=1 miss_ack=1 miss_ammo=1 auto_shots=7 auto_ack=7",
+      "GameplayAssertions": null,
+      "TargetRttMs": 100,
+      "OutgoingPacketLossPercentPerPeer": 0,
+      "ReportPath": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt100-loss0\\Client\\Saved\\DamagePredictionTest.txt",
+      "PlaytestReportPath": null,
+      "LogDirectory": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt100-loss0"
+    },
+    {
+      "Name": "DamagePrediction-rtt100-loss2",
+      "Status": "PASS",
+      "Detail": "PASS moving-target hit, blocked pistol miss, and reconciled held automatic burst stage=7 initial_hp=100 hit_hp=83 observed_hp=83 target_travel_cm=12.5 first_shot_ammo=11/12 hit_ack=1 miss_ack=1 miss_ammo=1 auto_shots=7 auto_ack=7",
+      "GameplayAssertions": null,
+      "TargetRttMs": 100,
+      "OutgoingPacketLossPercentPerPeer": 2,
+      "ReportPath": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt100-loss2\\Client\\Saved\\DamagePredictionTest.txt",
+      "PlaytestReportPath": null,
+      "LogDirectory": "H:\\Vanthex\\Saved\\PlaytestChecks\\20261107-150957-05f92b88\\DamagePrediction-rtt100-loss2"
+    }
+  ]
+}

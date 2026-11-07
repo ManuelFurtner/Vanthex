@@ -52,6 +52,61 @@ bool FVanthexWeaponDeterminismTest::RunTest(const FString&)
  TestTrue(TEXT("Burst recoil rises and has repeatable lateral control"),Rifle.RecoilForShot(6).X>Rifle.RecoilForShot(0).X&&Rifle.RecoilForShot(2).Y<0&&Rifle.RecoilForShot(4).Y>0&&Rifle.RecoilForShot(4)==Rifle.RecoilForShot(4));
  return true;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FVanthexWeaponEngagementTest, "Vanthex.Weapons.EngagementDistances",
+ EAutomationTestFlags::EditorContext | EAutomationTestFlags::ClientContext | EAutomationTestFlags::EngineFilter)
+bool FVanthexWeaponEngagementTest::RunTest(const FString&)
+{
+ // Ideal body hits with no reload or spread misses. Each pellet consumes armor independently.
+ auto TriggerCount = [](const FVanthexWeaponProfile& Profile, float Distance, EVanthexArmorTier Tier)
+ {
+  FVanthexEconomyState Target;
+  Target.ArmorTier = Tier;
+  Target.ArmorPoints = VanthexEconomy::MaximumArmor(Tier);
+  float Health = 100.f;
+  for (int32 Shot = 1; Shot <= Profile.MagazineSize; ++Shot)
+  {
+   for (int32 Pellet = 0; Pellet < Profile.Pellets; ++Pellet)
+   {
+    Health -= VanthexEconomy::ApplyArmorDamage(Target, Profile.DamageAtDistance(Distance), false, false);
+    if (Health <= 0.f) return Shot;
+   }
+  }
+  return 0;
+ };
+
+ const auto& AUG = *VanthexWeapons::Find(TEXT("AUG"));
+ const auto& MP7 = *VanthexWeapons::Find(TEXT("MP7"));
+ constexpr EVanthexArmorTier Tiers[] = {EVanthexArmorTier::None, EVanthexArmorTier::Light, EVanthexArmorTier::Heavy};
+ constexpr float Distances[] = {500.f, 2000.f, 4500.f};
+ for (const auto& Profile : VanthexWeapons::All())
+ {
+  if (!VanthexEconomy::FindItem(Profile.Id)) continue;
+  for (const float Distance : Distances)
+  {
+   int32 PreviousShots = 0;
+   for (const auto Tier : Tiers)
+   {
+    const int32 Shots = TriggerCount(Profile, Distance, Tier);
+    const FString Sample = FString::Printf(TEXT("%s @ %.0f m, armor %d"), *Profile.Id.ToString(), Distance / 100.f, static_cast<int32>(Tier));
+    AddInfo(FString::Printf(TEXT("%s: %.2f HP raw per pellet, %d triggers, %.0f ms (0 triggers = needs reload)"),
+     *Sample, Profile.DamageAtDistance(Distance), Shots, Shots > 0 ? (Shots - 1) * Profile.FireInterval * 1000.f : 0.f));
+    TestTrue(Sample + TEXT(" cannot require fewer hits with more armor"),
+     Shots == 0 || (Tier == EVanthexArmorTier::None || (PreviousShots > 0 && Shots >= PreviousShots)));
+    PreviousShots = Shots;
+   }
+  }
+ }
+
+ auto IdealSeconds = [&TriggerCount](const FVanthexWeaponProfile& Profile, float Distance)
+ {
+  const int32 Shots = TriggerCount(Profile, Distance, EVanthexArmorTier::None);
+  return Shots > 0 ? (Shots - 1) * Profile.FireInterval : TNumericLimits<float>::Max();
+ };
+ TestTrue(TEXT("MP7 is faster on ideal close unarmored hits"), IdealSeconds(MP7, 500.f) < IdealSeconds(AUG, 500.f));
+ TestTrue(TEXT("AUG is faster on ideal distant unarmored hits"), IdealSeconds(AUG, 4500.f) < IdealSeconds(MP7, 4500.f));
+ return true;
+}
 #endif
 
 #include "VanthexGameMode.h"

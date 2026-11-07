@@ -15,6 +15,9 @@ struct FVanthexDamageRequest
 	AController* InstigatorController = nullptr;
 	float Damage = 0.f;
 	EVanthexDamageKind DamageKind = EVanthexDamageKind::Environment;
+	FName WeaponId;
 	bool bHeadshot = false;
 	FHitResult Hit;
+	/** Firearms aggregate hit feedback across all pellets in the shot. */
+	bool bDeferHitMarker = false;
 };

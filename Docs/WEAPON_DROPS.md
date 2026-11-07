@@ -3,6 +3,8 @@
 - **X** wirft die ausgewaehlte Schusswaffe nach vorne. Das Messer bleibt beim Spieler.
 - **E** nimmt eine nahe Waffe auf, auf die der Spieler schaut. Ein erreichbarer
   Core hat bei dieser Taste Vorrang; G und Q bleiben fuer den Core reserviert.
+- Das sind die Standardtasten. Aufnehmen und Waffenablegen lassen sich unter
+  **Maus & Steuerung** umbelegen.
 - Beim Tod fallen Primaerwaffe und Pistole zu Boden. Gegner und Mitspieler
   koennen beide Waffen aufnehmen. Es gibt keine Team- oder Besitzerbindung.
 - Ist der passende Slot bereits belegt, wird dessen bisherige Waffe fallengelassen.

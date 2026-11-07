@@ -11,6 +11,7 @@ class UCameraComponent;
 class UHealthComponent;
 class UInputAction;
 class UInputMappingContext;
+enum class EVanthexGameplayAction : uint8;
 class UStaticMeshComponent;
 class AHitscanWeapon;
 class AVanthexCore;
@@ -32,8 +33,10 @@ public:
 	void PreviousWeapon();
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+ void RefreshGameplayBindings();
 
 	UFUNCTION(Server, Reliable) void ServerAction(uint8 Action, bool bEnabled);
+	UFUNCTION(Server, Reliable) void ServerStartPredictedFire(uint32 Burst);
  void DoMove(float Right, float Forward);
 	void DoAim(float Yaw, float Pitch);
 	void SetSprinting(bool bNewSprinting);
@@ -97,6 +100,7 @@ protected:
 	void StartFire();
 	void StopFire();
 	void StartReload();
+	void PrepareWeaponSelection();
 	void SelectRifle();
  void SelectPistol();
 	void SelectKnife();
@@ -104,6 +108,8 @@ protected:
  void UseGadgetTwo();
 	void HandleDeath(AActor* DeadActor);
 	void BuildInput();
+ void BuildGameplayMappingKeys();
+ TMap<EVanthexGameplayAction, int32> LegacyGameplayBindingIndices;
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	TObjectPtr<UCameraComponent> FirstPersonCamera;

@@ -95,7 +95,7 @@ public:
  int32 TeamSize() const { return IsCTF()?5:3; }
  void CaptureFlag(EVanthexTeam Team);
  void TickCTF();
- void RespawnCTF(AVanthexCharacter* Pawn);
+ bool RespawnCTF(AVanthexCharacter* Pawn);
  friend void VanthexRunCTFTest(AVanthexGameMode*);
  TMap<TWeakObjectPtr<AVanthexCharacter>,float> CTFRespawns;
  bool bCTFOvertime=false;
@@ -143,6 +143,18 @@ protected:
 	int32 EconomySlot(const AVanthexPlayerState* State) const;
 	AVanthexPlayerState* EconomyStateForSlot(int32 Key) const;
 	void TickRoundClock();
+	void ResetPlaytestReport();
+	void RecordPlaytestSpawn(AVanthexCharacter* Pawn);
+	void RecordPlaytestDamage(AVanthexCharacter* Victim, const FVanthexDamageRequest& Request, float AppliedHP, bool bKilled, bool bEnemy);
+	void SamplePlaytestActivity();
+	void SavePlaytestReport() const;
+
+	bool bPlaytestReport = false;
+	double PlaytestStartedAt = 0.0;
+	double NextPlaytestSampleAt = 0.0;
+	int32 PeakPlayerSlots = 0;
+	TMap<TWeakObjectPtr<AVanthexCharacter>, double> PlaytestSpawnTimes;
+	TMap<FString, double> PlaytestMetrics;
 	void ResolveTimeout();
 	void EndRound(EVanthexTeam Winner);
 	void EnterIntermission();

@@ -4,7 +4,9 @@
 #include "WeaponBase.h"
 #include "HitscanWeapon.generated.h"
 
+class AVanthexPlayerController;
 class USceneComponent;
+struct FCollisionQueryParams;
 class UStaticMeshComponent;
 
 UCLASS()
@@ -18,6 +20,12 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 	virtual void StartFire() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	/** Cosmetic prediction for the owning client. Zero means there is no predicted burst. */
+	uint32 StartPredictedFire();
+	void StopPredictedFire();
+	void StartTaggedFire(uint32 Burst);
 	virtual void StopFire() override;
 	virtual void StartReload() override;
 
@@ -35,6 +43,11 @@ protected:
  virtual void OnWeaponProfileChanged() override;
  void ContinueAutomaticFire();
  void ScheduleAutomaticFire();
+ void PredictShot();
+ void ClearServerPrediction();
+ AVanthexPlayerController* GetPredictionController() const;
+ FVector TracePellet(FHitResult& Hit, const FCollisionQueryParams& Params, const FVector& Start,
+  const FRotator& View, uint32 Sequence, int32 Pellet, float MovementForSpread) const;
 
 	bool IsHeadHit(const FHitResult& Hit) const;
 
@@ -65,6 +78,20 @@ protected:
 	FTimerHandle FireTimer;
 	float NextFireTime = 0.f;
  float LastShotTime = -100.f;
+ UPROPERTY(Replicated)
  uint32 ShotSequence = 0;
+
+ // Per-press tokens are independent of the weapon's deterministic spread sequence.
+ uint32 ServerPredictionBurst = 0;
+ uint32 ServerPredictionShot = 0;
+ TWeakObjectPtr<AVanthexPlayerController> ServerPredictionOwner;
+ FTimerHandle PredictionTimer;
+ uint32 PredictionBurst = 0;
+ uint32 PredictionShot = 0;
+ uint32 PredictionSequence = 0;
+ int32 PredictionAmmoRemaining = 0;
+ float NextPredictionFireTime = 0.f;
+ FName PredictionWeaponId;
+ TWeakObjectPtr<AVanthexPlayerController> PredictionOwner;
  int32 BurstIndex = 0;
 };

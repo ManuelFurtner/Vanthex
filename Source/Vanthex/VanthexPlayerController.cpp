@@ -5,14 +5,17 @@
 
 #include "Vanthex.h"
 #include "VanthexCharacter.h"
+#include "VanthexFrontEndMode.h"
 #include "VanthexGameMode.h"
 #include "VanthexOperatorComponent.h"
 #include "VanthexMapLayout.h"
 #include "VanthexBuyMenuComponent.h"
+#include "VanthexModerationComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Framework/Application/IInputProcessor.h"
 #include "Framework/Application/SlateApplication.h"
 
@@ -40,6 +43,7 @@ AVanthexPlayerController::AVanthexPlayerController()
 	BulletAudio = CreateDefaultSubobject<UVanthexBulletAudioComponent>(TEXT("BulletAudio"));
 	WeaponAudio = CreateDefaultSubobject<UVanthexWeaponAudioComponent>(TEXT("WeaponAudio"));
 	BuyMenu = CreateDefaultSubobject<UVanthexBuyMenuComponent>(TEXT("BuyMenu"));
+	Moderation = CreateDefaultSubobject<UVanthexModerationComponent>(TEXT("Moderation"));
 	bShowMouseCursor = false;
 	bEnableClickEvents = false;
 	bEnableMouseOverEvents = false;
@@ -49,8 +53,20 @@ void AVanthexPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 #if !UE_BUILD_SHIPPING
- if(FParse::Param(FCommandLine::Get(),TEXT("WeaponDropNetworkTest"))) {
-  extern void VanthexStartWeaponDropNetworkTest(AVanthexPlayerController*);VanthexStartWeaponDropNetworkTest(this);
+ if (FParse::Param(FCommandLine::Get(), TEXT("DamagePredictionTest")))
+ {
+  extern void VanthexStartDamagePredictionTest(AVanthexPlayerController* PC);
+  VanthexStartDamagePredictionTest(this);
+ }
+ if (FParse::Param(FCommandLine::Get(), TEXT("ModerationNetworkTest")))
+ {
+  extern void VanthexStartModerationNetworkTest(AVanthexPlayerController* PC);
+  VanthexStartModerationNetworkTest(this);
+ }
+ if (FParse::Param(FCommandLine::Get(), TEXT("WeaponDropNetworkTest")))
+ {
+  extern void VanthexStartWeaponDropNetworkTest(AVanthexPlayerController* PC);
+  VanthexStartWeaponDropNetworkTest(this);
  }
 #endif
  if(IsLocalController()) UVanthexLocalSettings::Get()->ApplyAudio(GetWorld());
@@ -136,7 +152,8 @@ void AVanthexPlayerController::PawnLeavingGame()
 
 bool AVanthexPlayerController::IsFrontEnd() const
 {
- return VanthexMap::IsFrontEnd(GetWorld());
+ const UWorld* World = GetWorld();
+ return World && VanthexMap::IsFrontEnd(World) && World->GetAuthGameMode<AVanthexFrontEndMode>();
 }
 
 void AVanthexPlayerController::OpenSessionMap(const TCHAR* MapPath, bool bListen)
@@ -153,6 +170,15 @@ void AVanthexPlayerController::OpenSessionMap(const TCHAR* MapPath, bool bListen
 void AVanthexPlayerController::StartGame(bool bCaptureTheFlag, bool bListen)
 {
  OpenSessionMap(bCaptureTheFlag ? VanthexMap::CTFPath : VanthexMap::GridV4Path, bListen);
+}
+
+void AVanthexPlayerController::StartTraining()
+{
+ if (!IsLocalController() || !IsFrontEnd()) return;
+ UVanthexLocalSettings::Get()->Persist();
+ if (GEngine) GEngine->CancelPending(GetWorld());
+ UGameplayStatics::OpenLevel(this, FName(VanthexMap::FrontEndPath), true,
+  TEXT("game=/Script/Vanthex.VanthexTrainingMode"));
 }
 
 void AVanthexPlayerController::HostGame()
@@ -193,6 +219,9 @@ void AVanthexPlayerController::SetupInputComponent() {
  InputComponent->BindKey(EKeys::B,IE_Pressed,BuyMenu.Get(),&UVanthexBuyMenuComponent::Toggle);
  InputComponent->BindKey(EKeys::Tab,IE_Pressed,this,&AVanthexPlayerController::ShowScoreboard);
  InputComponent->BindKey(EKeys::Tab,IE_Released,this,&AVanthexPlayerController::HideScoreboard);
+ InputComponent->BindKey(EKeys::MiddleMouseButton,IE_Pressed,this,&AVanthexPlayerController::RequestTeamPing);
+ InputComponent->BindKey(EKeys::Left,IE_Pressed,this,&AVanthexPlayerController::SpectatePrevious).bConsumeInput=false;
+ InputComponent->BindKey(EKeys::Right,IE_Pressed,this,&AVanthexPlayerController::SpectateNext).bConsumeInput=false;
 }
 void AVanthexPlayerController::CloseSessionMenu()
 {
@@ -216,6 +245,7 @@ void AVanthexPlayerController::RemoveSessionMenu()
  SetIgnoreLookInput(false);
 }
 void AVanthexPlayerController::EndPlay(const EEndPlayReason::Type Reason) {
+ ResetDamageFeedback();
  if(ScoreboardKeyRelease&&FSlateApplication::IsInitialized()) FSlateApplication::Get().UnregisterInputPreProcessor(ScoreboardKeyRelease);
  ScoreboardKeyRelease.Reset();HideScoreboard();
  RemoveSessionMenu();
@@ -237,6 +267,7 @@ void AVanthexPlayerController::OpenSessionMenu()
  auto* Viewport = GetWorld() ? GetWorld()->GetGameViewport() : nullptr;
  if(!Viewport) return;
 
+ ResetDamageFeedback();
  HideScoreboard();
  Communication->CloseChat();
  if(BuyMenu) BuyMenu->Close();
@@ -260,7 +291,118 @@ void AVanthexPlayerController::OpenSessionMenu()
 #include "EngineUtils.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+
+void AVanthexPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+ Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+ DOREPLIFETIME_CONDITION(AVanthexPlayerController, SpectatedTeammate, COND_OwnerOnly);
+}
+
+bool AVanthexPlayerController::IsOwnCharacterDead() const
+{
+ const auto* OwnCharacter = Cast<AVanthexCharacter>(GetPawn());
+ const auto* Health = OwnCharacter ? OwnCharacter->GetHealthComponent() : nullptr;
+ return Health && Health->IsDead();
+}
+
+bool AVanthexPlayerController::IsLivingTeammate(const AVanthexCharacter* Candidate) const
+{
+ if (!IsValid(Candidate) || Candidate->IsActorBeingDestroyed() || Candidate == GetPawn()
+  || Candidate->GetWorld() != GetWorld())
+ {
+  return false;
+ }
+ const auto* OwnState = GetPlayerState<AVanthexPlayerState>();
+ const auto* OtherState = Candidate->GetPlayerState<AVanthexPlayerState>();
+ const auto* Health = Candidate->GetHealthComponent();
+ return OwnState && OwnState->GetTeam() != EVanthexTeam::None && OtherState
+  && OtherState->GetTeam() == OwnState->GetTeam() && OtherState->IsAlive()
+  && Health && !Health->IsDead();
+}
+
+AVanthexCharacter* AVanthexPlayerController::GetSpectatedTeammate() const
+{
+ return IsOwnCharacterDead() && IsLivingTeammate(SpectatedTeammate.Get()) ? SpectatedTeammate.Get() : nullptr;
+}
+
+AVanthexCharacter* AVanthexPlayerController::FindSpectateTarget(const AVanthexCharacter* Current, int32 Direction) const
+{
+ TArray<AVanthexCharacter*, TInlineAllocator<4>> Candidates;
+ for (TActorIterator<AVanthexCharacter> It(GetWorld()); It; ++It)
+ {
+  if (IsLivingTeammate(*It)) Candidates.Add(*It);
+ }
+ if (Candidates.IsEmpty()) return nullptr;
+ Candidates.Sort([](const AVanthexCharacter& A, const AVanthexCharacter& B)
+ {
+  return A.GetPlayerState<AVanthexPlayerState>()->GetSpawnSlot() < B.GetPlayerState<AVanthexPlayerState>()->GetSpawnSlot();
+ });
+ const int32 Index = Candidates.IndexOfByKey(Current);
+ if (Index == INDEX_NONE) return Direction < 0 ? Candidates.Last() : Candidates[0];
+ return Candidates[(Index + Direction + Candidates.Num()) % Candidates.Num()];
+}
+
+void AVanthexPlayerController::SetSpectateTarget(AVanthexCharacter* Target)
+{
+ if (SpectatedTeammate == Target) return;
+ SpectatedTeammate = Target;
+ ForceNetUpdate();
+ // The server also looks from that teammate, keeping distant pawns and their
+ // surroundings relevant to the connection.
+ if (!IsLocalController())
+ {
+  APawn* ViewPawn = Target;
+  if (!ViewPawn) ViewPawn = GetPawn();
+  if (ViewPawn) SetViewTarget(ViewPawn);
+ }
+}
+
+void AVanthexPlayerController::SpectatePrevious() { RequestSpectateCycle(-1); }
+void AVanthexPlayerController::SpectateNext() { RequestSpectateCycle(1); }
+
+void AVanthexPlayerController::RequestSpectateCycle(int32 Direction)
+{
+ if (IsLocalController() && IsOwnCharacterDead() && !bShowMouseCursor && !IsSessionMenuOpen()
+  && !IsScoreboardOpen() && (!BuyMenu || !BuyMenu->IsOpen()) && (!Communication || !Communication->IsChatOpen()))
+ {
+  ServerCycleSpectate(Direction);
+ }
+}
+
+void AVanthexPlayerController::ServerCycleSpectate_Implementation(int32 Direction)
+{
+ if ((Direction == -1 || Direction == 1) && IsOwnCharacterDead())
+ {
+  SetSpectateTarget(FindSpectateTarget(GetSpectatedTeammate(), Direction));
+ }
+}
+
+void AVanthexPlayerController::Tick(float DeltaSeconds)
+{
+ Super::Tick(DeltaSeconds);
+ if (!HasAuthority() || IsFrontEnd()) return;
+ if (IsOwnCharacterDead())
+ {
+  if (!GetSpectatedTeammate()) SetSpectateTarget(FindSpectateTarget(nullptr, 1));
+ }
+ else if (SpectatedTeammate)
+ {
+  SetSpectateTarget(nullptr);
+ }
+}
+
 void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
+ if (IsLocalController())
+ {
+  const auto* Match = GetWorld() ? GetWorld()->GetGameState<AVanthexGameState>() : nullptr;
+  if (Match && HitFeedbackRound != Match->GetRoundIndex())
+  {
+   ResetDamageFeedback();
+   HitFeedbackRound = Match->GetRoundIndex();
+  }
+  if ((ActiveHitBurst || HitMarkerUntil > 0.f) && !CanShowDamageFeedback())
+   ResetDamageFeedback();
+ }
  Super::PlayerTick(DeltaSeconds);
  if(IsFrontEnd())
  {
@@ -273,10 +415,9 @@ void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
  }
 
  if (IsLocalController() && !FParse::Param(FCommandLine::Get(),TEXT("OperatorShots")) && !FParse::Param(FCommandLine::Get(),TEXT("WeaponModelShots")) && !FParse::Param(FCommandLine::Get(),TEXT("GadgetShots"))) {
-  auto* OwnCharacter=Cast<AVanthexCharacter>(GetPawn());
-  if (OwnCharacter && OwnCharacter->GetHealthComponent()->IsDead()) {
-   if (APawn* Spectated = BulletAudio->GetListenerPawn()) { if(GetViewTarget()!=Spectated) SetViewTargetWithBlend(Spectated,0.3f); }
-  } else if(OwnCharacter && GetViewTarget()!=OwnCharacter) SetViewTarget(OwnCharacter);
+  APawn* ViewPawn = GetSpectatedTeammate();
+  if (!ViewPawn) ViewPawn = GetPawn();
+  if (ViewPawn && GetViewTarget() != ViewPawn) SetViewTarget(ViewPawn);
  }
  if(!FParse::Param(FCommandLine::Get(),TEXT("VanthexNetworkProbe")) || !IsLocalController() || bProbeReported) return;
  auto* ProbeCharacter=Cast<AVanthexCharacter>(GetPawn()); if(!ProbeCharacter || !ProbeCharacter->GetWeapon()) return;
@@ -304,7 +445,124 @@ void AVanthexPlayerController::PlayerTick(float DeltaSeconds) {
  FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/Name)); bProbeReported=true;
 }
 
-void AVanthexPlayerController::ClientConfirmHit_Implementation(bool bHeadshot) { HitMarkerUntil=GetWorld()->GetTimeSeconds()+0.2f; bHitMarkerHead=bHeadshot; }
+void AVanthexPlayerController::SetPawn(APawn* InPawn)
+{
+ if (GetPawn() != InPawn)
+ {
+  ResetDamageFeedback();
+  TeamPingUntil = 0.0;
+  if (HasAuthority()) SetSpectateTarget(nullptr);
+ }
+ Super::SetPawn(InPawn);
+}
+
+void AVanthexPlayerController::OnRep_Pawn()
+{
+ ResetDamageFeedback();
+ TeamPingUntil = 0.0;
+ Super::OnRep_Pawn();
+}
+
+bool AVanthexPlayerController::CanShowDamageFeedback() const
+{
+ const auto* OwnCharacter = Cast<AVanthexCharacter>(GetPawn());
+ const auto* Health = OwnCharacter ? OwnCharacter->GetHealthComponent() : nullptr;
+ return IsLocalController() && GetWorld() && Health && !Health->IsDead() &&
+  !bShowMouseCursor && !IsSessionMenuOpen() && (!BuyMenu || !BuyMenu->IsOpen()) &&
+  (!Communication || !Communication->IsChatOpen());
+}
+
+bool AVanthexPlayerController::CanPredictDamageFeedback() const
+{
+ const auto* OwnCharacter = Cast<AVanthexCharacter>(GetPawn());
+ return OwnCharacter && CanShowDamageFeedback() && OwnCharacter->CanPerformRoundActions();
+}
+
+void AVanthexPlayerController::ResetDamageFeedback()
+{
+ InvalidatedThroughHitBurst = LastIssuedHitBurst;
+ ActiveHitBurst = 0;
+ LastResolvedHitShot = 0;
+ PendingHitShot = 0;
+ PredictedHitUntil = 0.f;
+ HitMarkerUntil = 0.f;
+ bHitMarkerHead = false;
+}
+
+uint32 AVanthexPlayerController::BeginHitPrediction()
+{
+ if (!CanPredictDamageFeedback()) return 0;
+ if (++LastIssuedHitBurst == 0)
+ {
+  // Reserve zero for requests without prediction.
+  LastIssuedHitBurst = 1;
+  InvalidatedThroughHitBurst = 0;
+ }
+ ActiveHitBurst = LastIssuedHitBurst;
+ LastResolvedHitShot = 0;
+ PendingHitShot = 0;
+ PredictedHitUntil = 0.f;
+ return ActiveHitBurst;
+}
+
+bool AVanthexPlayerController::CanPredictShot(uint32 Burst, uint32 Shot) const
+{
+ return Burst != 0 && Burst == ActiveHitBurst && Shot > LastResolvedHitShot && CanPredictDamageFeedback();
+}
+
+void AVanthexPlayerController::ShowPredictedHit(uint32 Burst, uint32 Shot)
+{
+ if (!CanPredictShot(Burst, Shot) || Shot <= PendingHitShot) return;
+ PendingHitShot = Shot;
+ PredictedHitUntil = GetWorld()->GetTimeSeconds() + .14f;
+}
+
+bool AVanthexPlayerController::IsShowingPredictedHit() const
+{
+ return PendingHitShot != 0 && CanPredictDamageFeedback() && GetWorld()->GetTimeSeconds() < PredictedHitUntil;
+}
+
+bool AVanthexPlayerController::IsShowingConfirmedHit() const
+{
+ return CanShowDamageFeedback() && GetWorld()->GetTimeSeconds() < HitMarkerUntil;
+}
+
+void AVanthexPlayerController::ClientResolvePredictedShot_Implementation(uint32 Burst, uint32 Shot, bool bHit, bool bHeadshot)
+{
+ if (Burst <= InvalidatedThroughHitBurst || Burst > LastIssuedHitBurst) return;
+ if (!CanShowDamageFeedback())
+ {
+  ResetDamageFeedback();
+  return;
+ }
+
+ if (Burst == ActiveHitBurst)
+ {
+  if (Shot == 0)
+  {
+   ActiveHitBurst = 0;
+   PendingHitShot = 0;
+   PredictedHitUntil = 0.f;
+   return;
+  }
+  LastResolvedHitShot = FMath::Max(LastResolvedHitShot, Shot);
+  if (Shot == PendingHitShot)
+  {
+   PendingHitShot = 0;
+   PredictedHitUntil = 0.f;
+  }
+ }
+
+ // A confirmed hit still counts visually when a newer burst has already started.
+ if (Shot != 0 && bHit) ClientConfirmHit_Implementation(bHeadshot);
+}
+
+void AVanthexPlayerController::ClientConfirmHit_Implementation(bool bHeadshot)
+{
+ if (!CanShowDamageFeedback()) return;
+ HitMarkerUntil = GetWorld()->GetTimeSeconds() + .2f;
+ bHitMarkerHead = bHeadshot;
+}
 
 void AVanthexPlayerController::ClientBulletAudio_Implementation(const FVanthexBulletAudioPacket& Packet)
 {

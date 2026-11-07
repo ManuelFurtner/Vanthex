@@ -213,6 +213,15 @@ void AVanthexCharacter::BuildInput()
 	PickupAction = NewObject<UInputAction>(this, TEXT("IA_Pickup"));
 	DropAction = NewObject<UInputAction>(this, TEXT("IA_Drop"));
 	ThrowAction = NewObject<UInputAction>(this, TEXT("IA_Throw"));
+ BuildGameplayMappingKeys();
+}
+
+void AVanthexCharacter::BuildGameplayMappingKeys()
+{
+ const auto* Settings = UVanthexLocalSettings::Get();
+ using Action = EVanthexGameplayAction;
+ const auto Key = [Settings](Action Binding) { return Settings->GetGameplayKey(Binding); };
+ MappingContext->UnmapAll();
 
 	auto MapAxis = [this](UInputAction* Action, const FKey& Key, bool bNegate, bool bSwizzle)
 	{
@@ -230,40 +239,47 @@ void AVanthexCharacter::BuildInput()
 		}
 	};
 
-	MapAxis(MoveAction, EKeys::D, false, false);
-	MapAxis(MoveAction, EKeys::A, true, false);
-	MapAxis(MoveAction, EKeys::W, false, true);
-	MapAxis(MoveAction, EKeys::S, true, true);
+	MapAxis(MoveAction, Key(Action::Right), false, false);
+	MapAxis(MoveAction, Key(Action::Left), true, false);
+	MapAxis(MoveAction, Key(Action::Forward), false, true);
+	MapAxis(MoveAction, Key(Action::Back), true, true);
 	MapAxis(LookAction, EKeys::MouseX, false, false);
 	MapAxis(LookAction, EKeys::MouseY, true, true);
 
-	MappingContext->MapKey(JumpAction, EKeys::SpaceBar);
-	MappingContext->MapKey(SprintAction, EKeys::LeftShift);
- MappingContext->MapKey(AimAction,EKeys::RightMouseButton);
-	MappingContext->MapKey(CrouchAction, EKeys::LeftControl);
-	MappingContext->MapKey(FireAction, EKeys::LeftMouseButton);
-	MappingContext->MapKey(ReloadAction, EKeys::R);
+	MappingContext->MapKey(JumpAction, Key(Action::Jump));
+	MappingContext->MapKey(SprintAction, Key(Action::Sprint));
+ MappingContext->MapKey(AimAction, Key(Action::Aim));
+	MappingContext->MapKey(CrouchAction, Key(Action::Crouch));
+ if (Key(Action::Crouch) == EKeys::LeftControl) MappingContext->MapKey(CrouchAction, EKeys::RightControl);
+	MappingContext->MapKey(FireAction, Key(Action::Fire));
+	MappingContext->MapKey(ReloadAction, Key(Action::Reload));
 	MappingContext->MapKey(RestartAction, EKeys::F5);
-	MappingContext->MapKey(PickupAction, EKeys::E);
-	MappingContext->MapKey(DropAction, EKeys::G);
-	MappingContext->MapKey(ThrowAction, EKeys::Q);
+	MappingContext->MapKey(PickupAction, Key(Action::Pickup));
+	MappingContext->MapKey(DropAction, Key(Action::Drop));
+	MappingContext->MapKey(ThrowAction, Key(Action::Throw));
 }
 
 void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
- PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &AVanthexCharacter::InteractShift);
- PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &AVanthexCharacter::UseOperator);
-	PlayerInputComponent->BindKey(EKeys::One, IE_Pressed, this, &AVanthexCharacter::SelectRifle);
- PlayerInputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AVanthexCharacter::SelectPistol);
-	PlayerInputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AVanthexCharacter::SelectKnife);
- PlayerInputComponent->BindKey(EKeys::X, IE_Pressed, this, &AVanthexCharacter::DropSelectedWeapon);
-	PlayerInputComponent->BindKey(EKeys::MouseScrollDown, IE_Pressed, this, &AVanthexCharacter::NextWeapon);
-	PlayerInputComponent->BindKey(EKeys::MouseScrollUp, IE_Pressed, this, &AVanthexCharacter::PreviousWeapon);
- PlayerInputComponent->BindKey(EKeys::Four, IE_Pressed, this, &AVanthexCharacter::UseGadgetOne);
- PlayerInputComponent->BindKey(EKeys::Five, IE_Pressed, this, &AVanthexCharacter::UseGadgetTwo);
- PlayerInputComponent->BindKey(EKeys::RightControl, IE_Pressed, this, &AVanthexCharacter::StartCrouchInput);
- PlayerInputComponent->BindKey(EKeys::RightControl, IE_Released, this, &AVanthexCharacter::StopCrouchInput);
+ const auto* Settings = UVanthexLocalSettings::Get();
+ using Action = EVanthexGameplayAction;
+ LegacyGameplayBindingIndices.Reset();
+ const auto BindGameplayKey = [&](Action Binding, auto Method)
+ {
+  LegacyGameplayBindingIndices.Add(Binding, PlayerInputComponent->KeyBindings.Num());
+  PlayerInputComponent->BindKey(Settings->GetGameplayKey(Binding), IE_Pressed, this, Method);
+ };
+ BindGameplayKey(Action::Interact, &AVanthexCharacter::InteractShift);
+ BindGameplayKey(Action::Operator, &AVanthexCharacter::UseOperator);
+ BindGameplayKey(Action::Primary, &AVanthexCharacter::SelectRifle);
+ BindGameplayKey(Action::Sidearm, &AVanthexCharacter::SelectPistol);
+ BindGameplayKey(Action::Knife, &AVanthexCharacter::SelectKnife);
+ BindGameplayKey(Action::NextWeapon, &AVanthexCharacter::NextWeapon);
+ BindGameplayKey(Action::PreviousWeapon, &AVanthexCharacter::PreviousWeapon);
+ BindGameplayKey(Action::GadgetOne, &AVanthexCharacter::UseGadgetOne);
+ BindGameplayKey(Action::GadgetTwo, &AVanthexCharacter::UseGadgetTwo);
+ BindGameplayKey(Action::DropWeapon, &AVanthexCharacter::DropSelectedWeapon);
 
 	if (!MappingContext)
 	{
@@ -300,6 +316,7 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	EnhancedInput->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopCrouchInput);
 	EnhancedInput->BindAction(FireAction, ETriggerEvent::Started, this, &AVanthexCharacter::StartFire);
 	EnhancedInput->BindAction(FireAction, ETriggerEvent::Completed, this, &AVanthexCharacter::StopFire);
+	EnhancedInput->BindAction(FireAction, ETriggerEvent::Canceled, this, &AVanthexCharacter::StopFire);
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Started,this,&AVanthexCharacter::StartAimingInput);
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Completed,this,&AVanthexCharacter::StopAimingInput);
  EnhancedInput->BindAction(AimAction,ETriggerEvent::Canceled,this,&AVanthexCharacter::StopAimingInput);
@@ -308,6 +325,27 @@ void AVanthexCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	EnhancedInput->BindAction(PickupAction, ETriggerEvent::Started, this, &AVanthexCharacter::TryPickupNearby);
 	EnhancedInput->BindAction(DropAction, ETriggerEvent::Started, this, &AVanthexCharacter::DropCarriedCore);
 	EnhancedInput->BindAction(ThrowAction, ETriggerEvent::Started, this, &AVanthexCharacter::ThrowCarriedCore);
+}
+
+void AVanthexCharacter::RefreshGameplayBindings()
+{
+ auto* PC = Cast<APlayerController>(GetController());
+ if (!PC || !PC->IsLocalController() || !MappingContext || !InputComponent) return;
+
+ StopJumping();
+ if (bIsCrouched) StopCrouchInput();
+ BuildGameplayMappingKeys();
+ const auto* Settings = UVanthexLocalSettings::Get();
+ for (const auto& Binding : LegacyGameplayBindingIndices)
+ {
+  if (InputComponent->KeyBindings.IsValidIndex(Binding.Value))
+   InputComponent->KeyBindings[Binding.Value].Chord.Key = Settings->GetGameplayKey(Binding.Key);
+ }
+ if (auto* LocalPlayer = PC->GetLocalPlayer())
+ {
+  if (auto* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+   Subsystem->RequestRebuildControlMappings(FModifyContextOptions(), EInputMappingRebuildType::RebuildWithFlush);
+ }
 }
 
 void AVanthexCharacter::MoveInput(const FInputActionValue& Value)
@@ -319,7 +357,7 @@ void AVanthexCharacter::MoveInput(const FInputActionValue& Value)
 void AVanthexCharacter::LookInput(const FInputActionValue& Value)
 {
 	const FVector2D Look = Value.Get<FVector2D>();
-	const float MouseSensitivity = UVanthexLocalSettings::Get()->GetMouseSensitivity();
+ const float MouseSensitivity = UVanthexLocalSettings::Get()->GetMouseSensitivity(AimBlend);
 	DoAim(Look.X * MouseSensitivity, Look.Y * MouseSensitivity);
 }
 
@@ -420,7 +458,7 @@ void AVanthexCharacter::TickAiming(float Delta)
  if(Pending&&(!CanAim()||!Weapon||AimedWeaponId!=Weapon->GetWeaponId())) SetAiming(false);
  if(IsLocallyControlled()) {
   if(const auto* PC=Cast<APlayerController>(Controller))
-   if((bAimInputHeld&&!PC->IsInputKeyDown(EKeys::RightMouseButton))||((bAiming||bPredictedAiming)&&PC->bShowMouseCursor)) SetAiming(false);
+   if((bAimInputHeld&&!PC->IsInputKeyDown(UVanthexLocalSettings::Get()->GetGameplayKey(EVanthexGameplayAction::Aim)))||((bAiming||bPredictedAiming)&&PC->bShowMouseCursor)) SetAiming(false);
   const bool Active=IsAiming();
   if(Active&&!bAimCameraManaged&&FirstPersonCamera) { HipFieldOfView=FirstPersonCamera->FieldOfView; bAimCameraManaged=true; }
   AimBlend=FMath::FInterpTo(AimBlend,Active?1.f:0.f,Delta,16.f);
@@ -501,7 +539,14 @@ void AVanthexCharacter::StartFire()
 {
  if(!CanPerformRoundActions()) return;
 	if (Equipment && Equipment->GetSelectedSlot() == EVanthexWeaponSlot::Knife) { Equipment->Attack(); return; }
- if (!HasAuthority()) { ServerAction(0, false); return; }
+ if (!HasAuthority())
+ {
+  if (!IsLocallyControlled()) return;
+  const uint32 Burst = Weapon ? Weapon->StartPredictedFire() : 0;
+  if (Burst != 0) ServerStartPredictedFire(Burst);
+  else ServerAction(0, false);
+  return;
+ }
 	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
 	{
 		Weapon->StartFire();
@@ -510,7 +555,12 @@ void AVanthexCharacter::StartFire()
 
 void AVanthexCharacter::StopFire()
 {
- if (!HasAuthority()) { ServerAction(1, false); return; }
+ if (!HasAuthority())
+ {
+  if (Weapon) Weapon->StopPredictedFire();
+  ServerAction(1, false);
+  return;
+ }
 	if (Weapon)
 	{
 		Weapon->StopFire();
@@ -521,7 +571,15 @@ void AVanthexCharacter::StartReload()
 {
  SetAiming(false);
  if(!CanPerformRoundActions()) return;
- if (!HasAuthority()) { ServerAction(2, false); return; }
+ if (!HasAuthority())
+ {
+  if (Weapon && !Weapon->IsReloading() && Weapon->GetAmmoInMagazine() < Weapon->GetMagazineSize() && Weapon->GetReserveAmmo() > 0)
+  {
+   Weapon->StopPredictedFire();
+  }
+  ServerAction(2, false);
+  return;
+ }
 	if (Weapon && CanUseRifle() && !(Health && Health->IsDead()))
 	{
 		Weapon->StartReload();
@@ -569,7 +627,12 @@ void AVanthexCharacter::TryPickupNearby()
 
 void AVanthexCharacter::DropSelectedWeapon()
 {
- if (!HasAuthority()) { ServerAction(8,false); return; }
+ if (!HasAuthority())
+ {
+  if (IsLocallyControlled()) PrepareWeaponSelection();
+  ServerAction(8, false);
+  return;
+ }
  if (Equipment) Equipment->DropSelectedWeapon();
 }
 
@@ -723,17 +786,36 @@ void AVanthexCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
  DOREPLIFETIME(AVanthexCharacter,bAiming);
 }
 
+void AVanthexCharacter::ServerStartPredictedFire_Implementation(uint32 Burst)
+{
+ if (Burst == 0) return;
+ if (Weapon && CanUseRifle())
+ {
+  Weapon->StartTaggedFire(Burst);
+  return;
+ }
+ if (auto* PC = Cast<AVanthexPlayerController>(GetController()))
+ {
+  PC->ClientResolvePredictedShot(Burst, 0, false, false);
+ }
+}
+
 void AVanthexCharacter::ServerAction_Implementation(uint8 Action, bool bEnabled) {
  switch(Action) { case 0: StartFire(); break; case 1: StopFire(); break; case 2: StartReload(); break; case 3: TryPickupCore(); break; case 4: DropCarriedCore(); break; case 5: ThrowCarriedCore(); break; case 6: SetSprinting(bEnabled); break; case 7: TryPickupNearby(); break; case 8: DropSelectedWeapon(); break; default: break; }
 }
 
 
 void AVanthexCharacter::InteractShift() { ServerUseDevice(false); }
-void AVanthexCharacter::SelectRifle() { SetAiming(false); if (Equipment) Equipment->SelectRifle(); }
-void AVanthexCharacter::SelectPistol() { SetAiming(false); if (Equipment) Equipment->SelectPistol(); }
-void AVanthexCharacter::NextWeapon() { SetAiming(false); if (Equipment) Equipment->CycleWeapon(1); }
-void AVanthexCharacter::PreviousWeapon() { SetAiming(false); if (Equipment) Equipment->CycleWeapon(-1); }
-void AVanthexCharacter::SelectKnife() { SetAiming(false); if (Equipment) Equipment->SelectKnife(); }
+void AVanthexCharacter::PrepareWeaponSelection()
+{
+ SetAiming(false);
+ if (Weapon) Weapon->StopPredictedFire();
+}
+void AVanthexCharacter::SelectRifle() { PrepareWeaponSelection(); if (Equipment) Equipment->SelectRifle(); }
+void AVanthexCharacter::SelectPistol() { PrepareWeaponSelection(); if (Equipment) Equipment->SelectPistol(); }
+void AVanthexCharacter::NextWeapon() { PrepareWeaponSelection(); if (Equipment) Equipment->CycleWeapon(1); }
+void AVanthexCharacter::PreviousWeapon() { PrepareWeaponSelection(); if (Equipment) Equipment->CycleWeapon(-1); }
+void AVanthexCharacter::SelectKnife() { PrepareWeaponSelection(); if (Equipment) Equipment->SelectKnife(); }
 bool AVanthexCharacter::CanUseRifle() const { return CanPerformRoundActions() && (!Health || !Health->IsDead()) && (!Equipment || Equipment->CanUseRifle()); }
 void AVanthexCharacter::UseOperator() { ServerUseDevice(true); }
 void AVanthexCharacter::ServerUseDevice_Implementation(bool bRemote) {

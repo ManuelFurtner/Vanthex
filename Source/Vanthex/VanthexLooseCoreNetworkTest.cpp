@@ -22,7 +22,7 @@ struct FLooseCoreNetworkProbe {
  FTimerHandle Timer; TWeakObjectPtr<AVanthexCharacter> Pawn;
  double Started=0,SetupAt=-1,WonAt=-1;float FirstLoose=-1,LastRemaining=16;
  bool Dropped=false,SawHeld=false,SawLoose=false,Advanced=false,Monotonic=true,TeamCorrect=true,Done=false;
- bool Eliminated=false,SawAllDead=false,KnifeRequested=false,SawKnifeBonus=false;
+ bool Eliminated=false,SawAllDead=false,KnifeRequested=false,SawStandardKnifeSpeed=false;
  bool PickedUpAgain=false,SawFriendlyRecovery=false;
 };
 }
@@ -38,8 +38,8 @@ void VanthexStartLooseCoreNetworkTest(AVanthexPlayerController* PC)
   auto* World=Owner->GetWorld();const double Now=FPlatformTime::Seconds();
   const bool Elimination=FParse::Param(FCommandLine::Get(),TEXT("EliminationNetworkTest"));
   const bool Friendly=FParse::Param(FCommandLine::Get(),TEXT("FriendlyPickupNetworkTest"));
-  auto Finish=[&](bool OK){S->Done=true;const bool Pass=OK&&S->SawHeld&&S->SawLoose&&S->Advanced&&S->Monotonic&&S->TeamCorrect&&(!Elimination||(S->SawAllDead&&S->SawKnifeBonus))&&(!Friendly||S->SawFriendlyRecovery);
-   const FString Report=FString::Printf(TEXT("%s role=%s held=%d loose=%d countdown_advanced=%d monotonic=%d team_correct=%d victory=%d eliminated_team_extraction=%d knife_bonus=%d friendly_recovery=%d\n"),Pass?TEXT("PASS"):TEXT("FAIL"),Host?TEXT("host"):TEXT("client"),S->SawHeld,S->SawLoose,S->Advanced,S->Monotonic,S->TeamCorrect,OK,S->SawAllDead,S->SawKnifeBonus,S->SawFriendlyRecovery);
+  auto Finish=[&](bool OK){S->Done=true;const bool Pass=OK&&S->SawHeld&&S->SawLoose&&S->Advanced&&S->Monotonic&&S->TeamCorrect&&(!Elimination||(S->SawAllDead&&S->SawStandardKnifeSpeed))&&(!Friendly||S->SawFriendlyRecovery);
+   const FString Report=FString::Printf(TEXT("%s role=%s held=%d loose=%d countdown_advanced=%d monotonic=%d team_correct=%d victory=%d eliminated_team_extraction=%d standard_knife_speed=%d friendly_recovery=%d\n"),Pass?TEXT("PASS"):TEXT("FAIL"),Host?TEXT("host"):TEXT("client"),S->SawHeld,S->SawLoose,S->Advanced,S->Monotonic,S->TeamCorrect,OK,S->SawAllDead,S->SawStandardKnifeSpeed,S->SawFriendlyRecovery);
    const FString Name=FString(Friendly?TEXT("FriendlyPickupNetwork"):Elimination?TEXT("EliminationNetwork"):TEXT("LooseCoreNetwork"))+(Host?TEXT("Host.txt"):TEXT("Client.txt"));
    FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/Name));UE_LOG(LogVanthex,Display,TEXT("LOOSE_CORE_NETWORK %s"),*Report);World->GetTimerManager().ClearTimer(S->Timer);FPlatformMisc::RequestExitWithStatus(false,Pass?0:1);};
   if(Now-S->Started>60){Finish(false);return;}
@@ -57,8 +57,8 @@ void VanthexStartLooseCoreNetworkTest(AVanthexPlayerController* PC)
   auto* Pawn=S->Pawn.Get();auto* PS=Pawn?Pawn->GetPlayerState<AVanthexPlayerState>():nullptr;if(!PS)return;
   if(Elimination){
    if(!Host&&!S->KnifeRequested&&(Match->GetPhase()==EVanthexRoundPhase::BuyPhase||Match->GetPhase()==EVanthexRoundPhase::RoundActive)){Pawn->GetEquipment()->SelectKnife();S->KnifeRequested=true;}
-   if(Pawn->GetEquipment()->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Pawn->GetEquipment()->IsSwitching()&&FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,690.f))S->SawKnifeBonus=true;
-   if(Host&&!S->SawKnifeBonus)return;
+   if(Pawn->GetEquipment()->GetSelectedSlot()==EVanthexWeaponSlot::Knife&&!Pawn->GetEquipment()->IsSwitching()&&FMath::IsNearlyEqual(Pawn->GetCharacterMovement()->MaxWalkSpeed,600.f))S->SawStandardKnifeSpeed=true;
+   if(Host&&!S->SawStandardKnifeSpeed)return;
   }
   TActorIterator<AVanthexCore> CoreIterator(World);
   AVanthexCore* Core=CoreIterator?*CoreIterator:nullptr;if(!Core)return;

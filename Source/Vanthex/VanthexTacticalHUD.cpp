@@ -1,6 +1,7 @@
 #include "VanthexTacticalHUD.h"
 #include "VanthexHUD.h"
 #include "VanthexCharacter.h"
+#include "VanthexCommunicationComponent.h"
 #include "VanthexPlayerController.h"
 #include "VanthexPlayerState.h"
 #include "VanthexGameState.h"
@@ -25,6 +26,7 @@ void AVanthexHUD::DrawTacticalHUD()
  auto Rect=[&](float X,float Y,float Width,float Height,FLinearColor Color){DrawRect(Color,X*S,Y*S,Width*S,Height*S);};
  auto Text=[&](const FString& Value,float X,float Y,float Size,FLinearColor Color){DrawText(Value,Color,X*S,Y*S,Font,Size*S/FMath::Max(1,Font->GetMaxCharHeight()));};
  auto Line=[&](FVector2D A,FVector2D B,FLinearColor Color,float Width=1.f){DrawLine(A.X*S,A.Y*S,B.X*S,B.Y*S,Color,Width*S);};
+ const FVector* TeamPing = PC->GetTeamPingLocation();
  if(Pawn&&VanthexMap::IsFacility(GetWorld())) {
   const int32 Floor=VanthexTacticalHUD::Floor(Pawn->GetActorLocation().Z);
   // 70% of the previous panel dimensions; keep labels legible at the smaller size.
@@ -49,6 +51,12 @@ void AVanthexHUD::DrawTacticalHUD()
    const auto P=Project(It->GetActorLocation()); Rect(P.X-6,P.Y-6,12,12,FLinearColor(.08f,.34f,.24f));
    Text(It->GetId()==EVanthexExtractionId::A?TEXT("A"):TEXT("B"),P.X-4,P.Y-8,12,FLinearColor(.4f,1,.65f));
   }
+  if(TeamPing && VanthexTacticalHUD::Floor(TeamPing->Z) == Floor)
+  {
+   const FVector2D Ping = Project(*TeamPing);
+   Rect(Ping.X-3,Ping.Y-3,6,6,White);
+   Rect(Ping.X-2,Ping.Y-2,4,4,Cyan);
+  }
   for(TActorIterator<AVanthexCharacter> It(GetWorld());It;++It) {
    const auto* State=It->GetPlayerState<AVanthexPlayerState>();
    if(!State||!Own||!VanthexTacticalHUD::ShowTeammate(Own->GetTeam(),State->GetTeam(),State->IsAlive(),*It==Pawn)) continue;
@@ -62,31 +70,73 @@ void AVanthexHUD::DrawTacticalHUD()
   Text(TEXT("DU / TEAM"),36.4f,207.3f,10,Muted);
  }
  Text(TEXT("TAB  TEAMSTATUS"),W-160,51,11,Muted);
+ if(Pawn && Pawn->GetHealthComponent() && !Pawn->GetHealthComponent()->IsDead() && Pawn->CanPerformRoundActions())
+ {
+  Text(TEXT("MAUSRAD DRUECKEN  TEAM-PING"),W-212,67,10,Muted);
+  FVector2D Screen;
+  if(TeamPing && PC->ProjectWorldLocationToScreen(*TeamPing, Screen))
+  {
+   const FVector2D Point = Screen / S;
+   if(Point.X > 16 && Point.X < W-16 && Point.Y > 16 && Point.Y < H-16)
+   {
+    constexpr double Radius = 7.0;
+    const FVector2D Top = Point + FVector2D(0,-Radius), Right = Point + FVector2D(Radius,0);
+    const FVector2D Bottom = Point + FVector2D(0,Radius), Left = Point + FVector2D(-Radius,0);
+    Line(Top,Right,Cyan,2); Line(Right,Bottom,Cyan,2);
+    Line(Bottom,Left,Cyan,2); Line(Left,Top,Cyan,2);
+    const int32 Meters = FMath::RoundToInt(FVector::Distance(Pawn->GetActorLocation(),*TeamPing) / 100.0);
+    const float LabelX = Point.X + (Point.X < W-125 ? 12.f : -112.f);
+    Text(FString::Printf(TEXT("TEAM-PING  %d m"),Meters),LabelX,Point.Y-7,11,Cyan);
+   }
+  }
+ }
+ if(Pawn && Pawn->GetHealthComponent() && Pawn->GetHealthComponent()->IsDead())
+ {
+  const float X=(W-360)*.5f,Y=H-135;
+  Rect(X,Y,360,44,Ink);
+  Rect(X,Y,360,2,Cyan);
+  if(const auto* Teammate=PC->GetSpectatedTeammate())
+  {
+   const auto* State=Teammate->GetPlayerState<AVanthexPlayerState>();
+   const FString Name=UVanthexCommunicationComponent::CleanText(State->GetPlayerName(),28);
+   Text(TEXT("ZUSCHAUEN  /  ")+Name,X+12,Y+6,14,White);
+   Text(TEXT("PFEIL LINKS / RECHTS  TEAMMITGLIED WECHSELN"),X+12,Y+25,10,Muted);
+  }
+  else
+  {
+   Text(TEXT("KEIN LEBENDES TEAMMITGLIED VERFUEGBAR"),X+12,Y+14,12,Muted);
+  }
+ }
  if(!PC->IsScoreboardOpen()) return;
  Rect(0,0,W,H,FLinearColor(.002f,.006f,.012f,.68f));
- const float BoardHeight=VanthexMap::IsCTF(GetWorld())?570.f:430.f;
+ const bool bCTF=VanthexMap::IsCTF(GetWorld());
+ const float BoardHeight=bCTF?570.f:430.f;
  const float X=(W-820)*.5f,Y=(H-BoardHeight)*.5f;
  Rect(X,Y,820,BoardHeight,Ink); Rect(X,Y,820,3,Cyan);
  Text(TEXT("VANTHEX / TEAMSTATUS"),X+24,Y+19,23,White);
  Text(FString::Printf(TEXT("RUNDE %02d     ALPHA %d : %d BRAVO"),Match->GetRoundIndex(),Match->GetAlphaScore(),Match->GetBravoScore()),X+24,Y+53,12,Muted);
  for(int32 TeamIndex=0;TeamIndex<2;++TeamIndex) {
   const auto Team=TeamIndex==0?EVanthexTeam::Alpha:EVanthexTeam::Bravo; const auto Color=TeamIndex==0?Cyan:Amber;
-  const float Top=Y+86+TeamIndex*(VanthexMap::IsCTF(GetWorld())?224:154);
+  const float Top=Y+86+TeamIndex*(bCTF?224:154);
   Rect(X+16,Top,788,27,FLinearColor(.035f,.065f,.085f));
   Text(TeamIndex==0?TEXT("ALPHA"):TEXT("BRAVO"),X+28,Top+5,13,Color);
-  Text(TEXT("K"),X+480,Top+5,12,Muted); Text(TEXT("A"),X+535,Top+5,12,Muted); Text(TEXT("D"),X+590,Top+5,12,Muted);
+  Text(TEXT("K"),X+378,Top+5,12,Muted); Text(TEXT("A"),X+423,Top+5,12,Muted); Text(TEXT("D"),X+468,Top+5,12,Muted);
+  Text(bCTF?TEXT("FLAGGEN"):TEXT("PAESSE"),X+514,Top+5,12,Muted);
+  Text(bCTF?TEXT("ZURUECK"):TEXT("ABFANG"),X+583,Top+5,12,Muted);
   Text(TEXT("PING"),X+652,Top+5,12,Muted); Text(TEXT("STATUS"),X+714,Top+5,12,Muted);
   TArray<const AVanthexPlayerState*> Players;
   for(const auto& Entry:Match->PlayerArray) if(const auto* State=Cast<AVanthexPlayerState>(Entry);State&&State->GetTeam()==Team) Players.Add(State);
   Players.Sort([](const AVanthexPlayerState& A,const AVanthexPlayerState& B){return A.GetSpawnSlot()<B.GetSpawnSlot();});
-  for(int32 I=0;I<Players.Num()&&I<(VanthexMap::IsCTF(GetWorld())?5:3);++I) {
+  for(int32 I=0;I<Players.Num()&&I<(bCTF?5:3);++I) {
    const auto* State=Players[I]; const float Row=Top+31+I*36;
    if(State==Own) Rect(X+16,Row-1,788,33,FLinearColor(.05f,.14f,.17f));
    const auto Tint=State->IsAlive()?White:Muted;
    Text(FString::Printf(TEXT("%02d"),State->GetSpawnSlot()+1),X+28,Row+6,12,Color);
-   FString Name=State->GetPlayerName(); if(Name.Len()>32) Name=Name.Left(29)+TEXT("...");
+   FString Name=UVanthexCommunicationComponent::CleanText(State->GetPlayerName(),26);
    Text(Name+(State==Own?TEXT("  / DU"):TEXT("")),X+62,Row+5,14,Tint);
-   Text(FString::FromInt(State->GetKills()),X+480,Row+5,14,Tint); Text(FString::FromInt(State->GetAssists()),X+535,Row+5,14,Tint); Text(FString::FromInt(State->GetDeaths()),X+590,Row+5,14,Tint);
+   Text(FString::FromInt(State->GetKills()),X+378,Row+5,14,Tint); Text(FString::FromInt(State->GetAssists()),X+423,Row+5,14,Tint); Text(FString::FromInt(State->GetDeaths()),X+468,Row+5,14,Tint);
+   Text(FString::FromInt(bCTF?State->GetFlagCaptures():State->GetCorePasses()),X+514,Row+5,14,Tint);
+   Text(FString::FromInt(bCTF?State->GetFlagReturns():State->GetCoreIntercepts()),X+583,Row+5,14,Tint);
    Text(State->IsABot()?TEXT("BOT"):FString::Printf(TEXT("%d"),FMath::RoundToInt(State->GetPingInMilliseconds())),X+652,Row+6,12,Muted);
    Text(State->IsAlive()?TEXT("AKTIV"):TEXT("TOT"),X+714,Row+6,12,State->IsAlive()?Color:Muted);
   }
