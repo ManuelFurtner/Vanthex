@@ -1,0 +1,128 @@
+{
+  "Succeeded": 30,
+  "SucceededWithWarnings": 0,
+  "Failed": 0,
+  "NotRun": 0,
+  "Tests": [
+    {
+      "Name": "Vanthex.Aim.SightAlignmentAndSpread",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.BulletAudio.ClippedSegmentAndContinuity",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.BulletAudio.DistanceBands",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.BulletAudio.RealWallOcclusion",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Communication.CodecRoundTrip",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Communication.RecipientPolicy",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Communication.TextBounds",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Communication.VoiceBudget",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Economy.ArmorDamageBoundaries",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Economy.ArmorPurchaseRules",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Economy.AtomicPurchases",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Economy.CatalogAndDefaults",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Economy.CreditCapAndDeath",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Gadgets.BlastFalloff",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Gadgets.Catalog",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Gadgets.FlashFalloff",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Gadgets.PresentationAssets",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Gadgets.SmokeIntersection",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Gadgets.SmokeWallClipping",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Menu.AudioBounds",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Menu.ConnectionInput",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.WeaponAudio.CompleteMonoBanks",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.WeaponAudio.EquipmentMovementCadence",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.WeaponAudio.MixPriorities",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.WeaponAudio.PhysicalPortalAndWall",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.WeaponModels.CompleteAuthoredArmory",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.WeaponModels.MagazineAndBoltPresentation",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.WeaponModels.OptionalLicensedBundle",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Weapons.CatalogAndHandling",
+      "State": "Success"
+    },
+    {
+      "Name": "Vanthex.Weapons.DeterministicSpreadAndRecoil",
+      "State": "Success"
+    }
+  ]
+}

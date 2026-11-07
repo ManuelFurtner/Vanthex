@@ -185,7 +185,7 @@ void AVanthexGameMode::AdvanceGridV4GameTest()
   return;
  }
  case 16: {
-  if(VisualShotIndex>=3){Finish();return;}
+  if(VisualShotIndex>=3){VisualShotIndex=0;Next(18);return;}
   Park();Core->ResetToSpawn();
   const FVector Starts[]={FVector(-700,-2650,-500),FVector(1050,-1150,100),FVector(-5400,-1450,100)};
   const FVector Directions[]={FVector(0,1,0),FVector(1,0,0),FVector(-1,0,0)};
@@ -202,6 +202,25 @@ void AVanthexGameMode::AdvanceGridV4GameTest()
   const float Moved=FVector::Dist2D(Position,MoveStart);
   if(!Expect(Moved>10.f&&Moved<250.f&&FMath::Abs(Position.Z-MoveStart.Z)<45.f,TEXT("SEALED_EXIT_WALK_AND_JUMP"),FString::Printf(TEXT("former leak %d moved %.1f cm; position %s"),VisualShotIndex,Moved,*Position.ToString())))return;
   ++VisualShotIndex;Next(16);return;
+ }
+ case 18: {
+  if(VisualShotIndex>=2){Finish();return;}
+  Park();Core->ResetToSpawn();
+  const bool East=VisualShotIndex==0;
+  Place(Human,FVector(East?-3800:-2800,1000,100),FVector(East?1:-1,0,0));
+  MoveStart=FVector(East?-2800:-3800,1000,100);
+  Human->SetHoldForward(true);Next(19);return;
+ }
+ case 19: {
+  const FVector Position=Human->GetActorLocation();
+  if(FVector::Dist2D(Position,MoveStart)<80&&FMath::Abs(Position.Z-MoveStart.Z)<35) {
+   Human->SetHoldForward(false);Human->GetCharacterMovement()->StopMovementImmediately();
+   Expect(true,TEXT("ALPHA_DATA_UNDERPASS_WALK"),FString::Printf(TEXT("direction %d %.2fs position %s"),VisualShotIndex,Now-MoveStartTime,*Position.ToString()));
+   ++VisualShotIndex;Next(18);return;
+  }
+  Human->GetController()->SetControlRotation((MoveStart-Position).GetSafeNormal2D().Rotation());
+  if(Now-MoveStartTime>8)Expect(false,TEXT("ALPHA_DATA_UNDERPASS_WALK"),FString::Printf(TEXT("stuck %s goal %s"),*Position.ToString(),*MoveStart.ToString()));
+  return;
  }
  }
 }

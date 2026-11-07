@@ -1,0 +1,248 @@
+OVERALL FAIL
+CHECKS 196
+STAIR_VISUAL_CLEARANCE 288 treads; 18 false solid bases in physically walkable space
+GHOST_STAIR_BASE tread=35 point=X=-3300.000 Y=879.167 Z=98.000 visualHeight=450.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=36 point=X=-3300.000 Y=920.833 Z=98.000 visualHeight=462.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=37 point=X=-3300.000 Y=962.500 Z=98.000 visualHeight=475.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=38 point=X=-3300.000 Y=1004.167 Z=98.000 visualHeight=487.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=39 point=X=-3300.000 Y=1045.833 Z=98.000 visualHeight=500.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=40 point=X=-3300.000 Y=1087.500 Z=98.000 visualHeight=512.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=41 point=X=-3300.000 Y=1129.167 Z=98.000 visualHeight=525.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=136 point=X=1000.000 Y=-1112.500 Z=98.000 visualHeight=512.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=141 point=X=1000.000 Y=-904.167 Z=98.000 visualHeight=575.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=142 point=X=1000.000 Y=-862.500 Z=98.000 visualHeight=587.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=143 point=X=1000.000 Y=-820.833 Z=98.000 visualHeight=600.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=210 point=X=-700.000 Y=-2829.167 Z=-502.000 visualHeight=237.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=211 point=X=-700.000 Y=-2787.500 Z=-502.000 visualHeight=250.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=212 point=X=-700.000 Y=-2745.833 Z=-502.000 visualHeight=262.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=213 point=X=-700.000 Y=-2704.167 Z=-502.000 visualHeight=275.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=214 point=X=-700.000 Y=-2662.500 Z=-502.000 visualHeight=287.5 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=215 point=X=-700.000 Y=-2620.833 Z=-502.000 visualHeight=300.0 free standing capsule inside visible solid
+GHOST_STAIR_BASE tread=216 point=X=-700.000 Y=-2579.167 Z=-502.000 visualHeight=312.5 free standing capsule inside visible solid
+FAIL stair visuals leave physically traversable underpasses open
+COLLISION_SIGNATURE 1860 static surfaces SHA1=A358EFB49579314017BAABC2CE47A5F5F8ECB5FE baseline=MATCH
+RECORDED_COLLISION_CONTRACT MATCH
+PASS visual upgrade preserves the recorded physical surfaces and collision responses
+PASS facility architecture uses original Blender assets and engine primitives, no third-party graphics kits
+PASS original 128 by 106 metre design bounds retained
+ENVELOPE 8554 supported floor samples; 91188 standing/crouching/jump capsule sweeps; 0 unguarded exits to void/non-playable roofs
+PASS outer shell contains walking and jumping capsules at all supported floor edges
+FURNITURE 37 grounded cover instances checked at nine footprint points; 0 unsupported
+PASS greybox cover has actual support under its footprint
+PASS Core containment blocks direct fire from X=-800.000 Y=0.000 Z=165.000
+PASS Core containment blocks direct fire from X=800.000 Y=0.000 Z=165.000
+PASS Core containment blocks direct fire from X=0.000 Y=-1100.000 Z=165.000
+PASS Core containment blocks direct fire from X=0.000 Y=1100.000 Z=165.000
+PASS Core containment blocks direct fire from X=0.000 Y=0.000 Z=1100.000
+PASS exactly six team spawn actors
+PASS Core and both extraction objectives exist
+PASS 25 distinct authored spaces
+PASS 6 independent physical vertical links
+GREYBOX_STAIRS 288 visible cube treads; 864 centre/side samples; 0 missing or incorrect heights
+PASS visible stair treads ascend with the collision ramps and meet both landings
+PASS multilevel static graph: 2839 supported standing nodes, 8225 capsule-swept edges
+INFO 4 geometric graph components; all required destinations are checked separately below
+PASS Alpha spawn 1 exists
+PASS Alpha spawn 1 actual standing capsule is clear
+PASS Alpha spawn 1 has main-level floor support
+PASS Alpha spawn 1 reaches Core on correct floor
+METRIC Alpha spawn 1 -> Core: 58.85 m; 9.81 s at 600 cm/s walk; 6.54 s at 900 cm/s sprint; 38 waypoints
+PASS Alpha spawn 1 reaches extraction A
+METRIC Alpha spawn 1 -> extraction A: 88.69 m; 14.78 s nominal walk
+PASS Alpha spawn 1 reaches extraction B
+METRIC Alpha spawn 1 -> extraction B: 154.91 m; 25.82 s nominal walk
+PASS Alpha spawn 2 exists
+PASS Alpha spawn 2 actual standing capsule is clear
+PASS Alpha spawn 2 has main-level floor support
+PASS Alpha spawn 2 reaches Core on correct floor
+METRIC Alpha spawn 2 -> Core: 57.56 m; 9.59 s at 600 cm/s walk; 6.40 s at 900 cm/s sprint; 37 waypoints
+PASS Alpha spawn 2 reaches extraction A
+METRIC Alpha spawn 2 -> extraction A: 87.39 m; 14.57 s nominal walk
+PASS Alpha spawn 2 reaches extraction B
+METRIC Alpha spawn 2 -> extraction B: 153.61 m; 25.60 s nominal walk
+PASS Alpha spawn 3 exists
+PASS Alpha spawn 3 actual standing capsule is clear
+PASS Alpha spawn 3 has main-level floor support
+PASS Alpha spawn 3 reaches Core on correct floor
+METRIC Alpha spawn 3 -> Core: 57.56 m; 9.59 s at 600 cm/s walk; 6.40 s at 900 cm/s sprint; 37 waypoints
+PASS Alpha spawn 3 reaches extraction A
+METRIC Alpha spawn 3 -> extraction A: 87.39 m; 14.57 s nominal walk
+PASS Alpha spawn 3 reaches extraction B
+METRIC Alpha spawn 3 -> extraction B: 153.61 m; 25.60 s nominal walk
+PASS Bravo spawn 1 exists
+PASS Bravo spawn 1 actual standing capsule is clear
+PASS Bravo spawn 1 has main-level floor support
+PASS Bravo spawn 1 reaches Core on correct floor
+METRIC Bravo spawn 1 -> Core: 55.80 m; 9.30 s at 600 cm/s walk; 6.20 s at 900 cm/s sprint; 35 waypoints
+PASS Bravo spawn 1 reaches extraction A
+METRIC Bravo spawn 1 -> extraction A: 146.49 m; 24.42 s nominal walk
+PASS Bravo spawn 1 reaches extraction B
+METRIC Bravo spawn 1 -> extraction B: 69.42 m; 11.57 s nominal walk
+PASS Bravo spawn 2 exists
+PASS Bravo spawn 2 actual standing capsule is clear
+PASS Bravo spawn 2 has main-level floor support
+PASS Bravo spawn 2 reaches Core on correct floor
+METRIC Bravo spawn 2 -> Core: 55.80 m; 9.30 s at 600 cm/s walk; 6.20 s at 900 cm/s sprint; 35 waypoints
+PASS Bravo spawn 2 reaches extraction A
+METRIC Bravo spawn 2 -> extraction A: 146.49 m; 24.42 s nominal walk
+PASS Bravo spawn 2 reaches extraction B
+METRIC Bravo spawn 2 -> extraction B: 69.42 m; 11.57 s nominal walk
+PASS Bravo spawn 3 exists
+PASS Bravo spawn 3 actual standing capsule is clear
+PASS Bravo spawn 3 has main-level floor support
+PASS Bravo spawn 3 reaches Core on correct floor
+METRIC Bravo spawn 3 -> Core: 57.09 m; 9.52 s at 600 cm/s walk; 6.34 s at 900 cm/s sprint; 36 waypoints
+PASS Bravo spawn 3 reaches extraction A
+METRIC Bravo spawn 3 -> extraction A: 147.79 m; 24.63 s nominal walk
+PASS Bravo spawn 3 reaches extraction B
+METRIC Bravo spawn 3 -> extraction B: 67.72 m; 11.29 s nominal walk
+PASS spawn eye-height sightline Alpha 1 -> Bravo 1 is blocked
+PASS spawn eye-height sightline Alpha 1 -> Bravo 2 is blocked
+PASS spawn eye-height sightline Alpha 1 -> Bravo 3 is blocked
+PASS spawn eye-height sightline Alpha 2 -> Bravo 1 is blocked
+PASS spawn eye-height sightline Alpha 2 -> Bravo 2 is blocked
+PASS spawn eye-height sightline Alpha 2 -> Bravo 3 is blocked
+PASS spawn eye-height sightline Alpha 3 -> Bravo 1 is blocked
+PASS spawn eye-height sightline Alpha 3 -> Bravo 2 is blocked
+PASS spawn eye-height sightline Alpha 3 -> Bravo 3 is blocked
+PASS Core reaches room 00 ALPHA / SERVICE AIRLOCK at floor 0 cm
+PASS room 00 has a return walking route to Core
+PASS Core reaches room 01 SECURITY SCREENING at floor 0 cm
+PASS room 01 has a return walking route to Core
+PASS Core reaches room 02 DATA VAULT at floor 0 cm
+PASS room 02 has a return walking route to Core
+PASS Core reaches room 03 AEGIS / CORE CONTAINMENT at floor 0 cm
+PASS room 03 has a return walking route to Core
+PASS Core reaches room 04 CRYOGENIC RESEARCH at floor 0 cm
+PASS room 04 has a return walking route to Core
+PASS Core reaches room 05 BRAVO / SECURITY CONTROL at floor 0 cm
+PASS room 05 has a return walking route to Core
+PASS Core reaches room 06 BRAVO / DEPLOYMENT at floor 0 cm
+PASS room 06 has a return walking route to Core
+PASS Core reaches room 07 FREIGHT PROCESSING at floor 0 cm
+PASS room 07 has a return walking route to Core
+PASS Core reaches room 08 TURBINE POWER at floor 0 cm
+PASS room 08 has a return walking route to Core
+PASS Core reaches room 09 DECONTAMINATION at floor 0 cm
+PASS room 09 has a return walking route to Core
+PASS Core reaches room 10 WEST SERVICE at floor -600 cm
+PASS room 10 has a return walking route to Core
+PASS Core reaches room 11 PUMP STATION at floor -600 cm
+PASS room 11 has a return walking route to Core
+PASS Core reaches room 12 CORE UNDERCROFT at floor -600 cm
+PASS room 12 has a return walking route to Core
+PASS Core reaches room 13 COOLANT TRANSFER at floor -600 cm
+PASS room 13 has a return walking route to Core
+PASS Core reaches room 14 B / QUARANTINE CHECKPOINT at floor -600 cm
+PASS room 14 has a return walking route to Core
+PASS Core reaches room 15 B / ISOLATION EXTRACTION at floor -600 cm
+PASS room 15 has a return walking route to Core
+PASS Core reaches room 16 EAST SERVICE BYPASS at floor -600 cm
+PASS room 16 has a return walking route to Core
+PASS Core reaches room 17 OBSERVATION at floor 600 cm
+PASS room 17 has a return walking route to Core
+PASS Core reaches room 18 SUSPENDED BRIDGE at floor 600 cm
+PASS room 18 has a return walking route to Core
+PASS Core reaches room 19 RESEARCH CONTROL at floor 600 cm
+PASS room 19 has a return walking route to Core
+PASS Core reaches room 20 NORTH MANIFOLD at floor 600 cm
+PASS room 20 has a return walking route to Core
+PASS Core reaches room 21 A / TRANSFER CHECKPOINT at floor 600 cm
+PASS room 21 has a return walking route to Core
+PASS Core reaches room 22 A / ARMORED TRANSFER at floor 600 cm
+PASS room 22 has a return walking route to Core
+PASS Core reaches room 23 WEST GANTRY at floor 600 cm
+PASS room 23 has a return walking route to Core
+PASS Core reaches room 24 UPPER ROTUNDA at floor 600 cm
+PASS room 24 has a return walking route to Core
+PASS reachable room set covers all three authored levels
+PASS connection 00 (0 -> 1) local bends traversable
+PASS connection 01 (0 -> 7) local bends traversable
+PASS connection 02 (1 -> 2) local bends traversable
+PASS connection 03 (2 -> 7) local bends traversable
+PASS connection 04 (1 -> 3) local bends traversable
+PASS connection 05 (2 -> 3) local bends traversable
+PASS connection 06 (3 -> 4) local bends traversable
+PASS connection 07 (3 -> 5) local bends traversable
+PASS connection 08 (4 -> 5) local bends traversable
+PASS connection 09 (5 -> 6) local bends traversable
+PASS connection 10 (5 -> 8) local bends traversable
+PASS connection 11 (6 -> 8) local bends traversable
+PASS connection 12 (1 -> 9) local bends traversable
+PASS connection 13 (9 -> 4) local bends traversable
+PASS connection 14 (10 -> 11) local bends traversable
+PASS connection 15 (11 -> 12) local bends traversable
+PASS connection 16 (12 -> 13) local bends traversable
+PASS connection 17 (10 -> 12) local bends traversable
+PASS connection 18 (11 -> 13) local bends traversable
+PASS connection 19 (13 -> 14) local bends traversable
+PASS connection 20 (14 -> 15) local bends traversable
+PASS connection 21 (13 -> 16) local bends traversable
+PASS connection 22 (16 -> 15) local bends traversable
+PASS connection 23 (14 -> 16) local bends traversable
+PASS connection 24 (17 -> 18) local bends traversable
+PASS connection 25 (18 -> 19) local bends traversable
+PASS connection 26 (19 -> 20) local bends traversable
+PASS connection 27 (20 -> 24) local bends traversable
+PASS connection 28 (24 -> 17) local bends traversable
+PASS connection 29 (24 -> 21) local bends traversable
+PASS connection 30 (21 -> 22) local bends traversable
+PASS connection 31 (24 -> 23) local bends traversable
+PASS connection 32 (23 -> 22) local bends traversable
+PASS connection 33 (23 -> 21) local bends traversable
+PASS connection 34 (2 -> 2) local bends traversable
+PASS connection 35 (24 -> 24) local bends traversable
+PASS connection 36 (8 -> 8) local bends traversable
+PASS connection 37 (20 -> 20) local bends traversable
+PASS connection 38 (4 -> 4) local bends traversable
+PASS connection 39 (18 -> 18) local bends traversable
+PASS connection 40 (10 -> 10) local bends traversable
+PASS connection 41 (7 -> 7) local bends traversable
+PASS connection 42 (13 -> 13) local bends traversable
+PASS connection 43 (9 -> 9) local bends traversable
+PASS connection 44 (16 -> 16) local bends traversable
+PASS connection 45 (6 -> 6) local bends traversable
+PASS connection 46 (7 -> 1) local bends traversable
+PASS connection 47 (4 -> 8) local bends traversable
+PASS connection 48 (10 -> 11) local bends traversable
+PASS connection 49 (19 -> 20) local bends traversable
+PASS vertical link 0: continuous supported slope with full capsule clearance
+PASS vertical link 0 routes up directly (20.88 m)
+PASS vertical link 0 routes down directly (20.88 m)
+PASS vertical link 1: continuous supported slope with full capsule clearance
+PASS vertical link 1 routes up directly (21.58 m)
+PASS vertical link 1 routes down directly (21.58 m)
+PASS vertical link 2: continuous supported slope with full capsule clearance
+PASS vertical link 2 routes up directly (23.27 m)
+PASS vertical link 2 routes down directly (23.27 m)
+PASS vertical link 3: continuous supported slope with full capsule clearance
+PASS vertical link 3 routes up directly (21.58 m)
+PASS vertical link 3 routes down directly (21.58 m)
+PASS vertical link 4: continuous supported slope with full capsule clearance
+PASS vertical link 4 routes up directly (21.58 m)
+PASS vertical link 4 routes down directly (21.58 m)
+PASS vertical link 5: continuous supported slope with full capsule clearance
+PASS vertical link 5 routes up directly (21.58 m)
+PASS vertical link 5 routes down directly (21.58 m)
+PASS Core reaches extraction A
+PASS extraction A requires at least 75 m walking from Core (109.92 m)
+PASS extraction requires a floor change
+PASS extraction is screened from the Core sightline
+METRIC Core -> extraction A: 109.92 m; 18.32 s nominal walk plus 15.00 s extraction hold
+PASS Core reaches extraction B
+PASS extraction B requires at least 75 m walking from Core (122.86 m)
+PASS extraction requires a floor change
+PASS extraction is screened from the Core sightline
+METRIC Core -> extraction B: 122.86 m; 20.48 s nominal walk plus 15.00 s extraction hold
+METRIC mean Core route: Alpha 57.99 m / 9.66 s, Bravo 56.23 m / 9.37 s; relative distance difference 3.1%
+PASS mean spawn-to-Core walking distance differs by no more than 10 percent
+PASS Core drop-well landing reaches lower extraction
+METRIC lower drop landing -> extraction B: 84.70 m; excludes approach, jump and fall time
+PASS even the drop shortcut leaves at least 70 m of lower-floor approach
+PASS site room 22 has two separately traversed approach connections
+PASS capture footprint is recessed at least 3 m from room edges
+PASS site room 15 has two separately traversed approach connections
+PASS capture footprint is recessed at least 3 m from room edges
+SCOPE Geometry queries use actual cooked world-static collision, standing capsule radius 42 cm / half-height 96 cm, sampled floor support and bidirectional routes at all three elevations.
+LIMIT Route lengths are 150 cm graph approximations; nominal travel times exclude acceleration, player decisions, combat, interactions and congestion. No runtime FPS or human competitive balance claim is made.
+LIMIT These checks do not prove freedom from every possible collision trap, dynamic obstruction or CharacterMovement edge case. The separate gameplay suite and rendered inspection cover additional behavior.

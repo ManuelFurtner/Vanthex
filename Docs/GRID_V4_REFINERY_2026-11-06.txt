@@ -1,0 +1,132 @@
+VANTHEX / GRID V4 / REFINERY VISUAL UPGRADE
+Date: 2026-11-06
+
+PURPOSE AND SCOPE
+Apply the supplied references' industrial construction, connected utilities,
+material separation and practical lighting to the existing playable layout.
+No reference pixels, meshes, proprietary level layouts or purchased content were
+used. All newly authored environment meshes and maps in ArtSource/Refinery are
+original. The existing layout, floor collision, routes, cover and game rules remain.
+
+AUTHORING AND IMPORT
+Blender 4.5.14 LTS background Python authors editable collection-based sources.
+ArtSource/Industrial preserves the initial Blender edition.
+ArtSource/Refinery/Vanthex_Refinery.blend contains the detailed edition.
+ArtSource/Refinery/industrial.json is the evaluated triangle/material interchange.
+Build/Blender/build_industrial.py -- --refinery generates the source.
+Build/Blender/refinery_details.py supplies the detailed module geometry.
+Build/Blender/refinery_textures.py bakes 15 original seamless 2048x2048 PNG maps:
+base colour, normal and packed AO/roughness/metallic for five material families.
+Source/Vanthex/VanthexBlenderImport.cpp imports real MeshDescriptions, materials,
+texture compression/colour-space settings and Nanite meshes into Unreal.
+Latest verified import: 318,536 source triangles. This is the source library total,
+not the rendered triangle count or an assertion about the entire world's geometry.
+
+New details include formed/flanged pipes, cable ladders, copper/red utility runs,
+louvers, electrical panels, process gauges/valves, data panels, server bays,
+machinery fans, bolted structural channels, reactor coolant drives, a suspended
+containment crown and flush floor grates with recessed pipes. Modules are instanced.
+Placement remains generated from the existing room and connection data.
+
+MATERIALS AND LIGHT
+Physical world-scale projection separates concrete, floors, metal, paint and rubber.
+The old runtime procedural-noise surface is replaced in the detailed edition by
+texture-backed PBR materials. Detail includes pores, brushing, sparse coating wear
+and restrained roughness variation. This is procedural authored wear, not scanned
+photogrammetry or a bespoke texture set for every room.
+Practical tube fixtures use downward rect key lights. Refined point fills use
+explicit lumen units. Roof traces position key fixtures beneath actual ceilings.
+Exposure and fill strengths were corrected after overexposed initial captures.
+Existing Lumen GI/reflections and virtual shadow maps remain enabled.
+No path-traced/offline Blender render is presented as playable Unreal output.
+
+MAPS AND CORRECTION PASSES
+RefineryLab_GridV4 is the separate Core/corridor prototype, using the same layout.
+The prototype was rendered and validated before expanding the art to GridV4.
+Original pre-upgrade map/source backups remain locally under Saved/HighFidelity/Before.
+Corrections addressed: overexposure; empty walls; sparse ceiling utilities; plain
+reactor construction; material contrast; fixture attachment; empty floor surfaces.
+Art variants distinguish process, data and general electrical wall equipment.
+Gameplay logic is not rewritten to create a visually different layout.
+
+COLLISION AND GAMEPLAY CONTRACT
+The pre-upgrade physical-world fingerprint has 1,860 blocking static surfaces:
+SHA1 9ACE2225FCF5565FEE45ADC813C24C47A51620BB.
+Canonical signed-zero form: A358EFB49579314017BAABC2CE47A5F5F8ECB5FE.
+It includes mesh identity, world transform, collision mode, step-up and all channel
+responses. Visual-only decoration/materials are excluded. A recorded constant keeps
+this check active on fresh clones and packaged builds without a Saved baseline.
+New art meshes have NoCollision. Core/extraction cosmetic parts have NoCollision.
+The extraction light materials use the existing supplied charge alpha; extraction
+duration, ownership, loose-Core rules and round transitions were not changed.
+Local SHA256 comparisons confirm unchanged VanthexGridV4Layout.h,
+VanthexGameMode.cpp, VanthexGridV4Gameplay.cpp and VanthexCTFMap.cpp.
+
+PERFORMANCE / CONTROLLED CAMERA MEASUREMENTS
+Unreal 5.8.3 Development, RTX 3070 Ti, 1600x900, same scenic cameras.
+Twinmotion closed. One rendered process at a time. No simultaneous build/test load.
+VSync/frame cap/background-idle sleeping disabled identically in both versions.
+1,200 CSV frames per camera, after camera settling. No visible combat roster in
+these scenic views. These are camera comparisons, not a six-player combat benchmark.
+
+                         Before       After
+Core mean frame ms       9.338        8.577
+Core frame p95 ms        9.637        8.915
+Core mean GPU ms         8.264        7.523
+Core mean draw calls     319.7        335.6
+Corridor mean frame ms   7.736        7.720
+Corridor frame p95 ms    7.992        7.908
+Corridor mean GPU ms     6.656        6.526
+Corridor mean draw calls 368.2        332.3
+Reported local GPU use after: about 3,302-3,311 MB mean in these views.
+Raw CSVs/logs: Saved/HighFidelity/{Before,After}/profile-{1,12}.{csv,log}.
+Build/Blender/Measure-VisualComparison.ps1 runs comparisons sequentially.
+After a production replacement, use -AfterOnly to preserve the original baseline.
+Build/Blender/summarize_profiles.py extracts numeric samples and ignores metadata.
+An earlier background-throttled/overlapping run was discarded and is not used here.
+
+VALIDATION
+PASS Editor Development build; PASS Game Development build; PASS Win64 BuildCookRun.
+PASS 195 editor-world geometry checks, including immutable physical contract.
+PASS VanthexSelfTest, live GRID V4 Core/round/stair/walk-and-jump checks.
+PASS GRID V4 host/client world probe.
+PASS weapon drops: 29 checks each on GridV4 and CrossroadsCTF, plus host/client
+owner-RPC, pickup replication, exact ammunition and duplicate-prevention checks.
+PASS Automation report: 30 succeeded, 0 warnings, 0 failed, 0 not run.
+PASS all 22 requested actual Unreal screenshot files captured.
+PASS packaged Windows executable: 194 geometry checks and physical contract.
+The editor adds one editor-only asset inspection; the packaged count is 194.
+PASS packaged actual 1600x900 first-person screenshot, with HUD and weapon visible.
+PASS negative packaged audit: deliberately invalid local audit baseline produced
+OVERALL FAIL and exit 1; restored baseline then produced OVERALL PASS and exit 0.
+
+The first packaged audit exposed signed-zero formatting differences in rotations:
+264 records differed textually only as -0.000 versus 0.000. All 1,860 sorted records
+were compared independently; canonicalising signed zero yielded zero differences.
+The audit now normalises only values rounding to zero at its original precision.
+It still compares every position/rotation/scale/channel and the immutable original
+contract. The original raw digest remains documented, not silently replaced.
+The failed packaged run also exposed a graceful Windows shutdown returning 0 for
+a failed report. Failing diagnostic runs now force exit 1 after saving the report;
+the separate negative test verifies that behavior. No ordinary game exit changed.
+
+Standalone launcher:
+H:\Vanthex\Saved\Standalone-Refinery\Windows\Vanthex.exe
+Keep the entire Windows directory together; the small launcher EXE is not the game
+content by itself. This build was not deployed to Edgegap.
+Review captures/reports: Docs/Validation/Refinery and Saved/HighFidelity.
+
+LIMITS AND REMAINING VISUAL WORK
+This is a denser procedural industrial environment. It does not yet match the
+reference images' bespoke modelling, irregular set dressing, surface storytelling,
+animation or material variety. Repeated modules, broad clean floor areas and
+generic room silhouettes remain visible. More identical panels alone will not
+close that gap. Further work needs individual hero assets, room-specific equipment
+assemblies and authored wear/decal composition, checked again in gameplay.
+No claim of AAA/CS/Rainbow-equivalent graphics, universal frame rate, freedom from
+every visual intersection or a human competitive playtest is made.
+Twinmotion was not used; the Computer Use kernel failure remains a separate issue.
+The reproducible Blender/Unreal commandlet pipeline runs without GUI automation.
+No purchase, paid service, Edgegap deployment or raw licensed asset publication
+was performed for this upgrade. Existing local licensed character/weapon assets
+are outside the newly original environment library.

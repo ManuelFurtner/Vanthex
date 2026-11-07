@@ -1,0 +1,144 @@
+VANTHEX / MATERIAL, CONSTRUCTION AND LIGHTING UPGRADE
+2026-11-07 / Unreal Engine 5.8.3 / Blender 4.5.14 LTS
+
+SCOPE
+Visual refinement of the existing GRID V4. No new layout was designed. The
+architecture, routes, stair ramps, physical cover, spawns and objectives are kept.
+No multiplayer, weapon, hitbox, Core-mechanic or CTF source was modified for this
+pass. The monitoring display and slow indicator modulation are cosmetic.
+
+FALLBACK AND REPRODUCTION
+Exact pre-pass map and shared Refinery assets:
+H:\Vanthex\Saved\Photorealism\Fallback
+The earlier complete application remains at:
+H:\Vanthex\Saved\Standalone-Refinery\Windows\Vanthex.exe
+Build/Blender/Restore-PhotorealFallback.ps1 restores the saved map and shared assets
+without deleting new authored content or modifying gameplay source. It was not
+executed after the final visual pass. Save and close the editor before restoring.
+Build/Blender/Build-Photoreal.ps1 authors/imports the small connections, finishes,
+normals and materials. Default output is PhotorealLab_GridV4, a separate review
+level. -FullMap explicitly applies the pass to the existing GridV4 map.
+
+TEXTURE AND MATERIAL AUDIT
+Source images and texture metadata were inspected, not selected by filename alone.
+Several 4096-square inputs were model-specific atlases and were rejected for
+arbitrary world tiling. Reused existing local Fab/project PBR sets:
+ /Game/Textures/T_FrontConcrete01_{BC,N,ORM} (2048-square source)
+ /Game/Textures/T_FactoryConcreteFloor01_{BC,N,ORM} (2048-square source)
+These source textures were referenced directly, not copied or edited.
+Cast concrete and floors use physical 400 cm projection tiles with signed surface
+bases; the projection keeps normal orientation consistent on opposing wall faces.
+Correct source colour-space and normal/mask sampling are used. Two small opaque
+master variants support existing linear-color versus mask-compressed ORM inputs.
+
+New materials are separate MI_P_* instances in /Game/Vanthex/Blender/Photoreal.
+The initial Refinery material set remains available in the fallback backup.
+Changes include fuller texture-backed roughness variation, concrete formwork and
+subtle imperfections, coated-steel edge highlights, brushed aluminium/copper,
+dielectric rubber/plastic and a separate translucent instrument-glass material.
+ArtSource/Photoreal/Textures contains three original 2048-square zinc maps. Crystal
+scale is 6.25 mm in a 100 cm tile. These are authored finish maps, not scanned data.
+Existing original brushed-metal/rubber/paint textures are reused where suitable.
+No blanket procedural grunge or new texture atlas is applied to every surface.
+
+CONSTRUCTION AND OPERATIONAL DETAIL
+Four small original Blender fittings supplement existing assemblies:
+ PhotoRailJoint: feet, mounting plates, sleeves and visible fasteners.
+ PhotoCableSaddle: ceiling anchors, rods, insulated support and crossbar.
+ PhotoCoreJoint: layered mechanical collars on existing ceiling supports.
+ PhotoMonitor: instrument housing, glass cover, identification/status text and
+ wall-supported conduit. Its status is decorative, not a new simulation.
+The circular installation and central machinery retain their existing form.
+The misplaced Core terminal was moved from an opening onto an existing solid wall.
+Wall-mounted equipment now faces outward after the Blender-to-Unreal handedness
+conversion. This changes visual placement/orientation only, not physical cover.
+Curved mesh shading normals were repaired in Blender; collision proxies are separate.
+Meshes are reused/instanced. No architecture library was duplicated for the new look.
+
+LIGHTING AUDIT AND FINAL SETTINGS
+Runtime audit confirms Lumen GI=1, Lumen reflections=1, virtual shadow maps=1 and
+both screen-trace paths enabled. Extended EV100 range is disabled, so the existing
+0.32-0.50 exposure bounds are luminance values, not EV100. Exposure bias remains -1.5.
+The pass does not silently change project-wide exposure conventions.
+Final Gather quality 1.25; Scene Lighting quality 1.0; Reflection quality 1.25.
+Bloom reduced to 0.07; existing restrained fog remains. No added cinematic fog.
+Photoreal rect key intensities use the existing lumen input times 0.18; point fills
+use times 0.07. Key contact-shadow length is 0.025 and bias is 0.35. Fixtures remain
+attached to traced ceiling surfaces. The final inventory is in FullLightingAudit.txt.
+No new dynamic light population, path tracing or offline render substitutes were used.
+Reflection captures were not added indiscriminately to this Lumen-lit interior.
+
+CORRECTION PASSES AND MEASURED DEFECTS
+1. Initial material preview exposed an ORM sampler mismatch; fixed before acceptance.
+2. Metal highlights exposed faceted shading. Curved normals were repaired, roughness
+   was moderated and unstable anisotropy was disabled. No anisotropic BRDF claim is
+   made for the final material; brushed texture detail remains.
+3. Unused Glass palette slots caused opaque Nanite meshes to fall back to raster
+   proxies. Initial draw calls rose above 1,300. Import now removes empty material
+   groups. Only the small glass-covered monitor uses ordinary raster geometry.
+4. Core illumination and Lumen quality were corrected to preserve surface texture,
+   contact and competitive readability while controlling cost.
+5. Back-facing and unsupported visual electronics were repositioned/oriented.
+
+PERFORMANCE / IDENTICAL CAMERA COMPARISON
+RTX 3070 Ti, Development, 1600x900. Twinmotion/other Unreal render processes closed.
+One rendered process at a time; no simultaneous build/test load during profiling.
+VSync/frame cap/background-idle sleeping disabled identically. 1,200 CSV frames
+per camera after settling. Scenic roster is hidden: this is not a combat benchmark.
+
+                          Before       Final full map
+Core mean frame ms        8.471        8.744
+Core frame p95 ms         8.669        9.056
+Core mean GPU ms          7.424        7.667
+Core mean draw calls      335.6        378.6
+Corridor mean frame ms    7.652        7.704
+Corridor frame p95 ms     7.856        7.945
+Corridor mean GPU ms      6.533        6.598
+Corridor mean draw calls  332.3        358.3
+Reported local GPU allocation: approximately 3,309-3,313 MB mean after the pass.
+Raw results: Saved/Photorealism/Before and Saved/HighFidelity/PhotoFull.
+Summary: Saved/Photorealism/performance.json. Do not convert these two scenic
+measurements into a universal online FPS or full-match performance promise.
+
+COLLISION AND GAMEPLAY VERIFICATION
+The immutable physical contract still matches all 1,860 original blocking static
+surfaces, including transforms, step-up behavior and collision-channel responses:
+A358EFB49579314017BAABC2CE47A5F5F8ECB5FE (signed-zero canonical SHA1).
+New art has NoCollision. Nav/route queries and live stair traversal are verified
+against actual world geometry. No test thresholds were relaxed for the artwork.
+The asset-origin check adds only the four original SM_B_Photo* fittings.
+SHA256 comparison confirms unchanged layout, GameMode, Core gameplay and CTF source.
+Editor and Game Development builds: PASS.
+195 geometry/layout checks: PASS. VanthexSelfTest: PASS. Core/round/walk/jump/stair
+gameplay scenarios: PASS. GRID V4 host and client probes: PASS.
+Weapon drops/pickups: 29 checks each on GRID V4 and CTF, plus owner-RPC/network ammo
+and duplicate-prevention scenarios: PASS.
+Automation: 30 succeeded, 0 failed, 0 not run.
+22 actual Unreal views were captured; shader-fallback scan found no failed material.
+Win64 BuildCookRun: PASS. Actual packaged executable: 194 geometry checks PASS,
+including the immutable 1,860-surface contract without a local Saved baseline.
+The editor has one additional editor-only inspection, hence 195 versus 194.
+Actual packaged 1600x900 first-person render: PASS. Final logs show no missing
+objects, failed material compilation or use of a default fallback material.
+Packaging review found existing runtime-loaded energy materials and room ambience
+missing from the cook. Their existing directories were added to the cook rules;
+no Core or audio-system implementation was changed. The corrected package was
+tested again, not accepted solely because packaging returned exit 0.
+
+New local application:
+H:\Vanthex\Saved\Standalone-Photoreal\Windows\Vanthex.exe
+Keep the whole Windows directory together. The EXE alone does not contain the game.
+The previous Standalone-Refinery directory was preserved unchanged.
+Evidence: Docs/Validation/Photorealism (comparison images, packaged image, physics,
+network, automation and performance summaries), with full raw logs in
+Saved/Photorealism. No Edgegap or GitHub update was performed by this visual pass.
+
+REMAINING WEAKNESSES / LIMITS
+The pass visibly improves surface response and connections. Repeated wall panels,
+similar room silhouettes and some sparse areas still reveal procedural assembly.
+Some bright Core surfaces and dark upper recesses remain; human competitive testing
+is needed across displays and quality settings. Machinery is largely static; the
+new indicator is cosmetic. Characters and weapons retain their prior visual quality.
+No claim of photograph/AAA equivalence, perfect artistic completion or universal
+freedom from visual intersections is made. No purchase, paid service, Edgegap
+deployment, GitHub upload or publication of raw licensed maps was performed.

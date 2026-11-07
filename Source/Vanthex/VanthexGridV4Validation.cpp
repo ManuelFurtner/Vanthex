@@ -12,6 +12,8 @@
 #include "GameFramework/PlayerStart.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/Parse.h"
+#include "Misc/CommandLine.h"
 
 void AVanthexTestArena::ValidateGridV4()
 {
@@ -30,15 +32,20 @@ void AVanthexTestArena::ValidateGridV4()
   return Length;
  };
  UWorld* World=GetWorld();
- int32 StructureMeshes=0;bool PrimitiveOnly=true;
+ extern bool VanthexAuditStairPassages(UWorld*,TArray<FString>&);
+ Check(VanthexAuditStairPassages(World,Lines),TEXT("stair visuals leave physically traversable underpasses open"));
+ if(FParse::Param(FCommandLine::Get(),TEXT("VisualWallAudit"))){extern bool VanthexAuditVisibleWalls(UWorld*,TArray<FString>&);Check(VanthexAuditVisibleWalls(World,Lines),TEXT("visible solid walls agree with blocking collision at reachable heights"));}
+ extern bool VanthexAuditVisualCollision(UWorld*,TArray<FString>&);
+ Check(VanthexAuditVisualCollision(World,Lines),TEXT("visual upgrade preserves the recorded physical surfaces and collision responses"));
+ int32 StructureMeshes=0;bool OriginalOnly=true;
  for(TActorIterator<AActor> It(World);It;++It) {
   TArray<UStaticMeshComponent*> Parts;It->GetComponents(Parts);
   for(auto* Part:Parts)if(Part->ComponentHasTag(TEXT("GridV4Greybox"))) {
    ++StructureMeshes;
-   PrimitiveOnly &= Part->GetStaticMesh()&&Part->GetStaticMesh()->GetPathName()==TEXT("/Engine/BasicShapes/Cube.Cube");
+   OriginalOnly &= Part->GetStaticMesh()&&(Part->GetStaticMesh()->GetPathName()==TEXT("/Engine/BasicShapes/Cube.Cube")||(Part->GetStaticMesh()->GetPathName().StartsWith(TEXT("/Game/Vanthex/Blender/SM_B_"))||Part->GetStaticMesh()->GetPathName().StartsWith(TEXT("/Game/Vanthex/Blender/Refinery/SM_B_"))||Part->GetStaticMesh()->GetPathName().StartsWith(TEXT("/Game/Vanthex/Blender/Photoreal/SM_B_Photo"))));
   }
  }
- Check(StructureMeshes>0&&PrimitiveOnly,TEXT("facility architecture uses engine primitives without graphics kits"));
+ Check(StructureMeshes>0&&OriginalOnly,TEXT("facility architecture uses original Blender assets and engine primitives, no third-party graphics kits"));
  Check(GridV4::Bounds().GetSize().Equals(FVector(12800,10600,2300)),TEXT("original 128 by 106 metre design bounds retained"));
  extern bool VanthexValidateGridV4Envelope(UWorld*,TArray<FString>&);
  Check(VanthexValidateGridV4Envelope(World,Lines),TEXT("outer shell contains walking and jumping capsules at all supported floor edges"));
@@ -199,5 +206,7 @@ void AVanthexTestArena::ValidateGridV4()
  const FString Report=FString::Join(Lines,TEXT("\n"));
  const bool Saved=FFileHelper::SaveStringToFile(Report,*(FPaths::ProjectSavedDir()/TEXT("GridV4Validation.txt")));
  UE_LOG(LogVanthex,Display,TEXT("%s"),*Report);
- FPlatformMisc::RequestExitWithStatus(false,Passed && Saved?0:1);
+ // Some packaged Windows shutdown paths replace a graceful failure exit with 0.
+ // The diagnostic report has been saved; force only a failing diagnostic run.
+ FPlatformMisc::RequestExitWithStatus(!Passed||!Saved,Passed && Saved?0:1);
 }

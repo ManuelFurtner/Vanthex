@@ -1,4 +1,4 @@
-param([string]$Engine = 'H:\epic\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe')
+param([string]$Engine = 'H:\epic\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe', [string]$Map = '/Game/Vanthex/Maps/GridV4')
 $ErrorActionPreference = 'Stop'
 $projectFile = Join-Path $PSScriptRoot 'Vanthex.uproject'
 $saved = Join-Path $PSScriptRoot 'Saved'
@@ -19,8 +19,8 @@ function Assert-Report([string]$Name, [datetime]$Since, [string]$Pattern='^OVERA
 try {
     foreach ($check in @(
         @('/Engine/Maps/Entry','-VanthexSelfTest','VanthexSelfTest.txt','GridV4-regression.log'),
-        @('/Game/Vanthex/Maps/GridV4','-GridV4Test','GridV4Validation.txt','GridV4-validation.log'),
-        @('/Game/Vanthex/Maps/GridV4','-GridV4GameTest','GridV4Gameplay.txt','GridV4-gameplay.log')
+        @($Map,'-GridV4Test','GridV4Validation.txt','GridV4-validation.log'),
+        @($Map,'-GridV4GameTest','GridV4Gameplay.txt','GridV4-gameplay.log')
     )) {
         $started = Get-Date
         $process = Start-GridCheck @($check[0],$check[1]) $check[3]
@@ -31,7 +31,7 @@ try {
         Assert-Report $check[2] $started
     }
     $started = Get-Date
-    $hostCheck = Start-GridCheck @('/Game/Vanthex/Maps/GridV4?listen','-port=17844','-VanthexNetworkProbe') 'GridV4-network-host.log'
+    $hostCheck = Start-GridCheck @(($Map+'?listen'),'-port=17844','-VanthexNetworkProbe') 'GridV4-network-host.log'
     Start-Sleep -Seconds 8
     $clientCheck = Start-GridCheck @('127.0.0.1:17844','-VanthexNetworkProbe') 'GridV4-network-client.log'
     $deadline = (Get-Date).AddSeconds(90)

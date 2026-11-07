@@ -1,0 +1,1 @@
+PASS netmode=2 characters=6 operators=6 cores=1 devices=0 offline=0 team=1 moved=463.1 health=100 ammo=28

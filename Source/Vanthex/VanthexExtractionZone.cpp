@@ -41,18 +41,25 @@ void AVanthexExtractionZone::Setup(EVanthexExtractionId InId, const FVector& InH
 		Pad->SetVisibility(false);
 
   if(VanthexMap::IsGridV4(GetWorld())) {
-   // A flush kit platform leaves the full capture footprint open. Corner
+   // An original Blender platform leaves the full capture footprint open. Corner
    // beacons show live charge without the legacy gate obscuring either door.
    const FLinearColor Accent=bA?FLinearColor(.1f,.85f,.55f):FLinearColor(.75f,.25f,1.f);
    auto* ChargeGlow=VanthexArt::MakeEnergy(this,Accent,.7f);
    ChargeMaterials.Reset(); if(ChargeGlow) ChargeMaterials.Add(ChargeGlow);
    const FVector Floor=GetActorLocation()-FVector(0,0,20);
    auto Kit=[&](const TCHAR* Name,FVector Center,FVector Size,UMaterialInterface* Override=nullptr){
-    const FString Path=FString::Printf(TEXT("/Game/Meshes/%s.%s"),Name,Name);
+    const FString Module=FCString::Strcmp(Name,TEXT("SM_Platform_01"))==0?TEXT("TransferReceiver"):FCString::Strcmp(Name,TEXT("SM_Column_02"))==0?TEXT("TransferBeacon"):TEXT("Beam");
+    const FString AssetName=TEXT("SM_B_")+Module;
+    const FString Path=FString::Printf(TEXT("/Game/Vanthex/Blender/Refinery/%s.%s"),*AssetName,*AssetName);
     auto* Mesh=LoadObject<UStaticMesh>(nullptr,*Path); if(!Mesh)return;
     const FBox Bounds=Mesh->GetBoundingBox(); const FVector Native=Bounds.GetSize();
     const FVector Scale(Size.X/FMath::Max(1.,Native.X),Size.Y/FMath::Max(1.,Native.Y),Size.Z/FMath::Max(1.,Native.Z));
-    VanthexArt::AddMesh(this,SceneRoot,Mesh,Floor+Center-Bounds.GetCenter()*Scale,FRotator::ZeroRotator,Scale,Override,false);
+    if(auto* Part=VanthexArt::AddMesh(this,SceneRoot,Mesh,Floor+Center-Bounds.GetCenter()*Scale,FRotator::ZeroRotator,Scale,Override,false)) {
+     if(!Override&&ChargeGlow)for(int32 Slot=0;Slot<Mesh->GetStaticMaterials().Num();++Slot) {
+      const FString MaterialName=Mesh->GetStaticMaterials()[Slot].MaterialSlotName.ToString();
+      if(MaterialName.EndsWith(TEXT("_Light"))||MaterialName.EndsWith(TEXT("_Screen")))Part->SetMaterial(Slot,ChargeGlow);
+     }
+    }
    };
    Kit(TEXT("SM_Platform_01"),FVector(0,0,-8),FVector(440,440,16));
    for(float Side:{-1.f,1.f}) {

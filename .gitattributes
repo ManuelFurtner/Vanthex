@@ -1,3 +1,8 @@
 *.uasset filter=lfs diff=lfs merge=lfs -text
 *.umap filter=lfs diff=lfs merge=lfs -text
 Build/LinuxServer/*.sh text eol=lf
+
+*.blend filter=lfs diff=lfs merge=lfs -text
+ArtSource/**/*.json filter=lfs diff=lfs merge=lfs -text
+ArtSource/**/*.png filter=lfs diff=lfs merge=lfs -text
+Docs/Validation/**/*.png filter=lfs diff=lfs merge=lfs -text

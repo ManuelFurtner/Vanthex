@@ -1,5 +1,26 @@
 # VANTHEX — High-fidelity pipeline
 
+Current material/construction refinement (2026-11-07):
+[PHOTOREALISM_UPGRADE_2026-11-07.txt](PHOTOREALISM_UPGRADE_2026-11-07.txt).
+`Build/Blender/Build-Photoreal.ps1` defaults to a separate review map; `-FullMap`
+updates the existing map. `Restore-PhotorealFallback.ps1` restores the saved art.
+
+## Current GRID V4 Blender pipeline — 2026-11-06
+
+The sections below describe an older procedural art pass. GRID V4 now uses original
+Blender-authored Industrial/Refinery modules, including baked PBR maps. The current
+implementation and measured limits are recorded in
+[GRID_V4_REFINERY_2026-11-06.txt](GRID_V4_REFINERY_2026-11-06.txt).
+
+Reproduction: `Build/Blender/Build-Refinery.ps1` defaults to the separate
+`RefineryLab_GridV4` review level. `-FullMap` explicitly replaces the GRID V4 art.
+`-ExportEditedBlend` exports editable source collections without regenerating them.
+Blender 4.5 LTS and Unreal Engine 5.8.3 are used. Physics remains in the separate
+original engine-cube proxies; new visual meshes have no collision.
+
+These changes increase industrial detail; they do not establish visual equivalence
+to the supplied reference images or a finished AAA environment.
+
 Visual Pass 03. This is the honest limit of what the project can render without outside assets.
 
 The supplied GRID image is art direction: structural depth, practical light, a heavy core, large transfer machines, and a ballistic rifle. It is not a layout to copy, and this pass does not reproduce it.

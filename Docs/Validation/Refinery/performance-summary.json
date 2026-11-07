@@ -1,0 +1,118 @@
+[
+  {
+    "file": "Saved\\HighFidelity\\Before\\profile-1.csv",
+    "metrics": {
+      "RHI/DrawCalls": {
+        "samples": 1200,
+        "mean": 319.73583333333335,
+        "p50": 316.0,
+        "p95": 336.0
+      },
+      "GPUMem/LocalUsedMB": {
+        "samples": 1200,
+        "mean": 3254.92200275,
+        "p50": 3257.6367,
+        "p95": 3257.6367
+      },
+      "FrameTime": {
+        "samples": 1200,
+        "mean": 9.33817625,
+        "p50": 8.723,
+        "p95": 9.637
+      },
+      "GPUTime": {
+        "samples": 1200,
+        "mean": 8.263925083333334,
+        "p50": 8.1486,
+        "p95": 8.8997
+      }
+    }
+  },
+  {
+    "file": "Saved\\HighFidelity\\Before\\profile-12.csv",
+    "metrics": {
+      "RHI/DrawCalls": {
+        "samples": 1200,
+        "mean": 368.17583333333334,
+        "p50": 368.0,
+        "p95": 369.0
+      },
+      "GPUMem/LocalUsedMB": {
+        "samples": 1200,
+        "mean": 3246.6169506666665,
+        "p50": 3249.3242,
+        "p95": 3249.3242
+      },
+      "FrameTime": {
+        "samples": 1200,
+        "mean": 7.736231416666667,
+        "p50": 7.1423000000000005,
+        "p95": 7.9922
+      },
+      "GPUTime": {
+        "samples": 1200,
+        "mean": 6.656464916666667,
+        "p50": 6.575799999999999,
+        "p95": 7.2419
+      }
+    }
+  },
+  {
+    "file": "Saved\\HighFidelity\\After\\profile-1.csv",
+    "metrics": {
+      "RHI/DrawCalls": {
+        "samples": 1200,
+        "mean": 335.61083333333335,
+        "p50": 336.0,
+        "p95": 336.0
+      },
+      "GPUMem/LocalUsedMB": {
+        "samples": 1200,
+        "mean": 3310.62606525,
+        "p50": 3313.3867,
+        "p95": 3313.3867
+      },
+      "FrameTime": {
+        "samples": 1200,
+        "mean": 8.577073583333334,
+        "p50": 7.98255,
+        "p95": 8.9154
+      },
+      "GPUTime": {
+        "samples": 1200,
+        "mean": 7.52300925,
+        "p50": 7.43975,
+        "p95": 8.1516
+      }
+    }
+  },
+  {
+    "file": "Saved\\HighFidelity\\After\\profile-12.csv",
+    "metrics": {
+      "RHI/DrawCalls": {
+        "samples": 1200,
+        "mean": 332.2683333333333,
+        "p50": 332.0,
+        "p95": 333.0
+      },
+      "GPUMem/LocalUsedMB": {
+        "samples": 1200,
+        "mean": 3301.86135825,
+        "p50": 3310.1367,
+        "p95": 3310.1367
+      },
+      "FrameTime": {
+        "samples": 1200,
+        "mean": 7.71986975,
+        "p50": 7.0699000000000005,
+        "p95": 7.9081
+      },
+      "GPUTime": {
+        "samples": 1200,
+        "mean": 6.526344916666667,
+        "p50": 6.44745,
+        "p95": 7.1209
+      }
+    }
+  }
+]

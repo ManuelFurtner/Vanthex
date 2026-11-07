@@ -16,11 +16,13 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/PackageName.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "UObject/SavePackage.h"
 
 bool VanthexBakeFoundry(bool bGridV3 = false, bool bGridV4 = false, bool bCTF = false)
 {
- const FString LevelName=bCTF?TEXT("CrossroadsCTF"):bGridV4?TEXT("GridV4"):bGridV3?TEXT("GridV3"):TEXT("Foundry");
+ const FString LevelName=bCTF?TEXT("CrossroadsCTF"):bGridV4?(FParse::Param(FCommandLine::Get(),TEXT("PhotorealPrototype"))?TEXT("PhotorealLab_GridV4"):FParse::Param(FCommandLine::Get(),TEXT("RefineryPrototype"))?TEXT("RefineryLab_GridV4"):TEXT("GridV4")):bGridV3?TEXT("GridV3"):TEXT("Foundry");
  const FString Folder=bCTF?TEXT("CROSSROADS CTF"):bGridV4?TEXT("GRID V4 AEGIS"):bGridV3?TEXT("GRID V3"):TEXT("FOUNDRY");
  auto* Package=CreatePackage(*(TEXT("/Game/Vanthex/Maps/")+LevelName));
  UWorld::InitializationValues IV; IV.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false).ShouldSimulatePhysics(false);

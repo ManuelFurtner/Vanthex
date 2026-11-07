@@ -38,3 +38,8 @@ Saved/
 # Local visual experiment references licensed Factory/Fab textures and meshes.
 /Content/Vanthex/Experiments/GraphicsLab/
 /Content/Vanthex/Art/IndustrialFinish/
+
+# Blender's rotating local backups; keep the actual authored .blend file.
+/ArtSource/Industrial/*.blend[0-9]
+/ArtSource/Refinery/*.blend[0-9]
+/ArtSource/Photoreal/*.blend[0-9]

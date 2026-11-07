@@ -29,6 +29,18 @@ struct FGridV4View
 
 const TArray<FGridV4View>& GridV4Views()
 {
+ if(FParse::Param(FCommandLine::Get(),TEXT("AlphaWallShots"))) {
+  static const TArray<FGridV4View> Alpha={
+   {{-3000,-1200,165},{-3000,800,165},TEXT("alpha_01_security_to_data.png")},
+   {{-3000,-500,165},{-3000,1000,165},TEXT("alpha_02_data_approach.png")},
+   {{-3000,300,165},{-3000,1300,165},TEXT("alpha_03_stair_crossing.png")},
+   {{-2850,500,165},{-3450,500,450},TEXT("alpha_04_stair_side.png")},
+   {{-3300,-850,165},{-3300,1200,500},TEXT("alpha_05_stair_entry.png")},
+   {{-3800,1000,165},{-2600,1000,165},TEXT("alpha_06_underpass_from_freight.png")},
+   {{-3530,1000,165},{-2950,1000,165},TEXT("alpha_07_underpass_entry.png")},
+   {{-2900,1000,165},{-3700,1000,165},TEXT("alpha_08_underpass_from_data.png")}
+  };return Alpha;
+ }
  // These are player-height views in the authored layout, not detached overview cameras.
  // A separate pose/settle/capture sequence lets streaming and Lumen react to each move.
  static const TArray<FGridV4View> Views = {
@@ -157,6 +169,12 @@ void AVanthexGameMode::AdvanceGridV4Shots()
   Run.TimingCsv += FString::Printf(TEXT("%d,%s,%.3f,%llu,%.3f,%s,%s\n"), ViewIndex + 1, View.Filename, Elapsed, static_cast<unsigned long long>(Frames), MeanMs, *View.Eye.ToString(), *View.Target.ToString());
   FFileHelper::SaveStringToFile(Run.TimingCsv, *(Directory / TEXT("capture_timing.csv")));
   FScreenshotRequest::RequestScreenshot(File, false, false);
+  if(FParse::Param(FCommandLine::Get(),TEXT("VisualProfile"))) {
+   // Diagnostic-only: profile the settled, identical camera for a fixed frame count.
+   GetWorldTimerManager().ClearTimer(VisualShotTimer);
+   if(auto* PC=Cast<APlayerController>(Human->GetController()))PC->ConsoleCommand(TEXT("csvprofile frames=1200"),false);
+   UE_LOG(LogTemp,Display,TEXT("VISUAL_PROFILE settled camera %d; 1200 frames; use -ExitAfterCsvProfiling"),ViewIndex+1);
+  }
   UE_LOG(LogTemp, Display, TEXT("GRID V4 SHOTS: capture %02d %s; %.2fs / %llu frames / %.2fms mean (settling window)"), ViewIndex + 1, View.Filename, Elapsed, static_cast<unsigned long long>(Frames), MeanMs);
  }
  ++VisualShotIndex;

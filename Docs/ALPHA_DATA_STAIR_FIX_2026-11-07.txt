@@ -1,0 +1,17 @@
+VANTHEX - Alpha / Datenraum: Treppenunterführung korrigiert, 07.11.2026
+
+Ursache: Die 48 sichtbaren Stufen jeder Treppe wurden bisher jeweils vom unteren Boden bis zur Stufenoberkante gezogen. Dadurch lag im vorgesehenen, physikalisch freien Korridor unter der Datenraumtreppe eine scheinbar massive Treppenbasis. Keine echte Wandkollision fehlte.
+Korrektur: Einzelne flache Stufen bei unveränderten Oberkanten; geneigte sichtbare Unterseite passend zum vorhandenen Rampenkollider. Gilt für alle sechs Treppen. Keine Änderung an Layout, Kollisionsflächen, Navigation, Deckung oder Gameplay-Systemen.
+
+Nachweise:
+- Vorher reproduzierbar: 18 unzulässige visuelle Stufenbasis-Samples; nachher 0 bei 288 Stufen.
+- 1851 sichtbare Wandinstanzen geprüft; 0 fehlende erreichbare Kollisions-Samples.
+- Editor: 197 Geometrieprüfungen mit optionalem Wandaudit bestanden.
+- Live-Spiel: Datenraum-Unterführung in beiden Richtungen mit normaler Charakterbewegung bestanden (je 1,95 s).
+- Gesamtes Run-GridV4-Checks.ps1 bestanden: SelfTest, Geometrie, Gameplay, Netzwerk Host und Client.
+- Windows BuildCookRun erfolgreich; verpackte Anwendung: 196 Geometrieprüfungen mit Wandaudit bestanden.
+- Physikalischer Vertrag unverändert: 1860 Flächen, SHA1 A358EFB49579314017BAABC2CE47A5F5F8ECB5FE; geschützte Gameplay-Quelldateien SHA256 unverändert.
+- Vorher/Nachher aus derselben echten Unreal-Kamera; zusätzliche Aufnahme der verpackten Anwendung unter Docs/Validation/AlphaWallFix.
+
+Aktuelle eigenständige Anwendung: H:\Vanthex\Saved\Standalone-Photoreal\Windows\Vanthex.exe
+Produktionsmap GridV4 aktualisiert. Sicherung: Saved/AlphaWallFix/GridV4-before.umap. Kein GitHub-Upload oder Edgegap-Deployment im Rahmen dieser Korrektur.

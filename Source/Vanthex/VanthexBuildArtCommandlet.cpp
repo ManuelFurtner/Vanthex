@@ -440,6 +440,11 @@ bool BuildSign()
 int32 UVanthexBuildArtCommandlet::Main(const FString& Params)
 {
 #if WITH_EDITOR
+ if(FParse::Param(*Params,TEXT("InspectPhotorealTextures"))){extern bool VanthexInspectPhotorealTextures();return VanthexInspectPhotorealTextures()?0:1;}
+ if(FParse::Param(*Params,TEXT("BuildPhotorealMaterials"))){extern bool VanthexBuildPhotorealMaterials();return VanthexBuildPhotorealMaterials()?0:1;}
+ if(FParse::Param(*Params,TEXT("ImportPhotoConnections"))){extern bool VanthexImportBlenderIndustrial(bool,bool);return VanthexImportBlenderIndustrial(true,true)?0:1;}
+ if(FParse::Param(*Params,TEXT("ImportRefinery"))){extern bool VanthexImportBlenderIndustrial(bool,bool);return VanthexImportBlenderIndustrial(true,false)?0:1;}
+ if(FParse::Param(*Params,TEXT("ImportBlenderIndustrial"))){extern bool VanthexImportBlenderIndustrial(bool,bool);return VanthexImportBlenderIndustrial(false,false)?0:1;}
 	if(FParse::Param(*Params, TEXT("BakeMainMenu")))
  {
   extern bool VanthexBakeMainMenu();
